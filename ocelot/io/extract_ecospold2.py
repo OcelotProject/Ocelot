@@ -2,17 +2,42 @@
 from .ecospold2_meta import *
 from lxml import objectify
 from time import time
+import arrow
 import multiprocessing
 import os
 import pprint
 import pyprind
 
 
+def _(string):
+    return string.replace("{http://www.EcoInvent.org/EcoSpold02}", "")
+
+
+def extract_minimal_exchange(exc):
+    return {
+        'tag': _(exc.tag),
+        'name': exc.name.text,
+        'unit': exc.unitName.text,
+        'type': (INPUT_GROUPS[exc.inputGroup.text]
+                 if hasattr(exc, "inputGroup")
+                 else OUTPUT_GROUPS[exc.outputGroup.text])
+    }
+
+
 def extract_minimal_ecospold2_info(elem):
     data = {
         'name': elem.activityDescription.activity.activityName.text,
         'location': elem.activityDescription.geography.shortname.text,
-        'type': SPECIAL_ACTIVITY_TYPE[elem.activityDescription.activity.get('specialActivityType')]
+        'type': SPECIAL_ACTIVITY_TYPE[elem.activityDescription.activity.get('specialActivityType')],
+        'technology level': TECHNOLOGY_LEVEL[elem.activityDescription.technology.get('technologyLevel')],
+        'temporal': (
+            arrow.get(elem.activityDescription.timePeriod.get("startDate")),
+            arrow.get(elem.activityDescription.timePeriod.get("endDate"))
+        ),
+        'economic': elem.activityDescription.macroEconomicScenario.name.text,
+        'exchanges': [extract_minimal_exchange(exc)
+                      for exc in elem.flowData.iterchildren()
+                      if 'Exchange' in exc.tag]
     }
     return data
 

@@ -28,6 +28,7 @@ setup(
     },
     install_requires=[
         'appdirs',
+        'arrow',
         'docopt',
         'flask',
         'lxml',
