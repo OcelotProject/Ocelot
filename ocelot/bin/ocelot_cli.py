@@ -5,6 +5,7 @@
 Usage:
   ocelot-cli <dirpath>
   ocelot-cli fix <dirpath>
+  ocelot-cli validate <dirpath> <schema>
   ocelot-cli -l | --list
   ocelot-cli -h | --help
   ocelot-cli --version
@@ -16,13 +17,15 @@ Options:
 
 """
 from docopt import docopt
-from ocelot import extract_directory, xmlify_directory
+from ocelot import extract_directory, xmlify_directory, validate_directory
 
 
 def main():
     args = docopt(__doc__, version='Ocelot LCI 0.1')
     if args['fix']:
         xmlify_directory(args['<dirpath>'])
+    elif args['validate']:
+        validate_directory(args['<dirpath>'], args['<schema>'])
     else:
         data = extract_directory(args["<dirpath>"])
 
