@@ -71,7 +71,7 @@ def extract_directory(dirpath, use_mp=True):
     filelist = [os.path.join(dirpath, filename)
                 for filename in os.listdir(dirpath)
                 if filename.lower().endswith(".spold")
-                ][:100]
+                ]
 
     print("Extracting {} undefined datasets".format(len(filelist)))
 
@@ -81,8 +81,8 @@ def extract_directory(dirpath, use_mp=True):
             data = pool.map(generic_extractor, filelist)
         print("Extracted {} undefined datasets in {:.1f} seconds".format(len(data), time() - start))
     else:
-        data = []
-        for fp in pyprind.prog_bar(filelist):
-            data.append(generic_extractor(fp))
+        data = [generic_extractor(fp)
+                for fp in pyprind.prog_bar(filelist)]
 
-    pprint.pprint(data)
+    # Unroll lists of lists
+    return [y for x in data for y in x]
