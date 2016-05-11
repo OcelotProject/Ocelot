@@ -8,3 +8,4 @@ MANIFEST
 *.sublime*
 *.egg-info
 notebooks/.ipynb_checkpoints
+*.pickle
