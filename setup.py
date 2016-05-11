@@ -39,6 +39,7 @@ setup(
         'pyprind',
         'pyrsistent',
         'python-json-logger',
+        'toolz',
     ],
     url="https://ocelot.space/",
     long_description=open('README.md').read(),
