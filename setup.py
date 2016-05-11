@@ -21,6 +21,9 @@ setup(
     author="Chris Mutel",
     author_email="cmutel@gmail.com",
     license=open('LICENSE.txt').read(),
+    package_data={'ocelot': [
+        "data/*.*",
+    ]},
     entry_points = {
         'console_scripts': [
             'ocelot-cli = ocelot.bin.ocelot_cli:main',
