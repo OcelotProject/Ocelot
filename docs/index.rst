@@ -1,8 +1,5 @@
-.. image:: images/ocelotlogo.png
+.. image:: images/ocelot-logo.png
     :align: center
-
-.. From https://www.flickr.com/photos/sometimesong/4234585135
-.. License: https://creativecommons.org/licenses/by-nc-nd/2.0/
 
 Welcome to Ocelot's documentation!
 ==================================
@@ -16,7 +13,7 @@ Contents:
 .. graphviz::
 
    digraph foo {
-      "bar" -> "baz";
+      "bar" -> "awesome";
       "foo" -> "bar";
    }
 
