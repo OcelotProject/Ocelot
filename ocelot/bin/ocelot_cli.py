@@ -19,7 +19,12 @@ Options:
 
 """
 from docopt import docopt
-from ocelot import extract_directory, xmlify_directory, validate_directory, data_dir
+from ocelot import (
+    data_dir,
+    SystemModel,
+    validate_directory,
+    xmlify_directory,
+)
 import os
 
 
@@ -32,8 +37,10 @@ def main():
           args['<dirpath>'],
           args['<schema>'] or os.path.join(data_dir, 'EcoSpold02.xsd')
         )
+    elif args['run']:
+        SystemModel(args["<dirpath>"], args['<config>'])
     else:
-        data = extract_directory(args["<dirpath>"])
+        raise ValueError
 
 
 if __name__ == "__main__":
