@@ -3,9 +3,11 @@
 """Ocelot command line interface. See https://ocelot.space/ for more info.
 
 Usage:
-  ocelot-cli <dirpath>
+  ocelot-cli run <dirpath>
+  ocelot-cli run <dirpath> <config>
   ocelot-cli fix <dirpath>
   ocelot-cli validate <dirpath> <schema>
+  ocelot-cli validate <dirpath>
   ocelot-cli -l | --list
   ocelot-cli -h | --help
   ocelot-cli --version
@@ -17,7 +19,8 @@ Options:
 
 """
 from docopt import docopt
-from ocelot import extract_directory, xmlify_directory, validate_directory
+from ocelot import extract_directory, xmlify_directory, validate_directory, data_dir
+import os
 
 
 def main():
@@ -25,7 +28,10 @@ def main():
     if args['fix']:
         xmlify_directory(args['<dirpath>'])
     elif args['validate']:
-        validate_directory(args['<dirpath>'], args['<schema>'])
+        validate_directory(
+          args['<dirpath>'],
+          args['<schema>'] or os.path.join(data_dir, 'EcoSpold02.xsd')
+        )
     else:
         data = extract_directory(args["<dirpath>"])
 
