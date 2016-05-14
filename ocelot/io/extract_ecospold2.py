@@ -14,14 +14,24 @@ def _(string):
 
 
 def extract_minimal_exchange(exc):
-    return {
+    data = {
         'tag': _(exc.tag),
         'name': exc.name.text,
         'unit': exc.unitName.text,
+        'amount': float(exc.get('amount')),
         'type': (INPUT_GROUPS[exc.inputGroup.text]
                  if hasattr(exc, "inputGroup")
-                 else OUTPUT_GROUPS[exc.outputGroup.text])
+                 else OUTPUT_GROUPS[exc.outputGroup.text]),
+        'production volume': float(exc.get('productionVolumeAmount') or 0),
     }
+    try:
+        data['pedigree matrix'] = [
+            int(exc.uncertainty.pedigreeMatrix.get(label))
+            for label in PEDIGREE_LABELS
+        ]
+    except:
+        pass
+    return data
 
 
 def extract_minimal_ecospold2_info(elem):
@@ -39,6 +49,9 @@ def extract_minimal_ecospold2_info(elem):
                       for exc in elem.flowData.iterchildren()
                       if 'Exchange' in exc.tag]
     }
+    data['combined production'] = len([
+        1 for exc in data['exchanges']
+        if exc['type'] == "reference product"]) > 1
     return data
 
 

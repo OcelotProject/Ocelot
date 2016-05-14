@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 SPECIAL_ACTIVITY_TYPE = {
     "0": "transforming activity",
     "1": "market activity",
@@ -14,6 +15,7 @@ SPECIAL_ACTIVITY_TYPE = {
 
 TECHNOLOGY_LEVEL = {
     "0": "undefined",
+    "None": "undefined",
     "1": "new",
     "2": "modern",
     "3": "current",
@@ -36,3 +38,11 @@ OUTPUT_GROUPS = {
     "4": "to environment",
     "5": "stock addition"
 }
+
+PEDIGREE_LABELS = [
+    "reliability",
+    "completeness",
+    "temporalCorrelation",
+    "geographicalCorrelation",
+    "furtherTechnologyCorrelation"
+]
