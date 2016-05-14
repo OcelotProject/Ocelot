@@ -38,7 +38,7 @@ setup(
         'psutil',
         'pyprind',
         'pyrsistent',
-        'python-json-logger',
+        'pytest',
         'toolz',
     ],
     url="https://ocelot.space/",
