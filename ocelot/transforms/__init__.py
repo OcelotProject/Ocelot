@@ -1,8 +1,9 @@
-try:
-    import cytoolz as toolz
-    from cytoolz.curried import get, pluck
-except ImportError:
-    import toolz
-    from toolz.curried import get, pluck
-
+# -*- coding: utf-8 -*-
 from .locations import relabel_global_to_row
+
+
+def dummy_transform(data, report):
+    """This is a dummy transform that doesn't do anything.
+
+    Used primarily for testing."""
+    return data

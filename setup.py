@@ -33,7 +33,7 @@ setup(
         'appdirs',
         'arrow',
         'docopt',
-        'flask',
+        'jinja2',
         'lxml',
         'psutil',
         'pyprind',
