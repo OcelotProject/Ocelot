@@ -23,7 +23,7 @@ def SystemModel(data_path, config=None):
         * Log the transforming function end
     * Finally, write a report.
 
-     """
+    """
     config = config or default_configuration
     data = extract_directory(data_path)
     report = Report(data)

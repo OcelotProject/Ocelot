@@ -2,8 +2,9 @@
 __all__ = (
     "Configuration",
     "data_dir",
-    "SystemModel",
+    "HTMLReport",
     "Report",
+    "SystemModel",
 )
 
 
@@ -26,4 +27,4 @@ from .data import data_dir
 from .io import *
 from .configuration import Configuration, default_configuration
 from .model import SystemModel
-from .report import Report
+from .report import Report, HTMLReport

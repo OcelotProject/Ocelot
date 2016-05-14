@@ -11,7 +11,12 @@ import uuid
 class Report(object):
     """A class that provides a JSON logger during a model run, and formats a nice report afterwards.
 
-    Logs messages are a dictionary with """
+    Logs messages are a dictionary with at a minimum the key ``type``. The following types of log messages are understand by the ``Report`` object:
+
+    * Foo
+    * Bar
+
+    """
     def __init__(self, data):
         self.directory = os.path.join(get_base_output_directory(), uuid.uuid4().hex)
         try:
