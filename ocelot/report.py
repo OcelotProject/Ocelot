@@ -16,6 +16,14 @@ class Report(object):
     * Foo
     * Bar
 
+    TODO:
+
+    - Add charts: http://www.chartjs.org/docs/
+    - Add media for charts/css
+    - Adapt code from ecoinvent-row-report to create static directory and copy JS/CSS over
+    - Adapt table code from http://geography.ecoinvent.org/rows/
+    - Adapt template from ocelot.space website
+
     """
     def __init__(self, data):
         self.directory = os.path.join(get_base_output_directory(), uuid.uuid4().hex)
@@ -34,6 +42,10 @@ class Report(object):
             'type': 'start report',
             'time': time()
         })
+        self.index = 1
+
+    def set_index(self, index):
+        self.index = index + 1
 
     def log(self, message):
         self.logfile.write(json.dumps(message) + "\n")

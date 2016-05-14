@@ -30,6 +30,7 @@ def SystemModel(data_path, config=None):
 
     for index, function in enumerate(config):
         metadata = get_function_meta(function)
+        report.set_index(index)
         report.start_function(metadata, data)
         print("Applying transform {}".format(metadata['name']))
         data = function(data, report)
