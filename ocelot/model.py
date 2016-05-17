@@ -34,7 +34,10 @@ def SystemModel(data_path, config=None):
         report.start_function(metadata, data)
         print("Applying transform {}".format(metadata['name']))
         data = function(data, report)
-        dump_fp = os.path.join(report.directory, safe_filename(metadata['name']) + ".pickle")
+        dump_fp = os.path.join(
+            report.directory,
+            "{}.".format(index) + safe_filename(metadata['name']) + ".pickle"
+        )
         with open(dump_fp, "wb") as f:
             pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
         report.end_function(metadata, data)
