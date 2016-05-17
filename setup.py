@@ -23,6 +23,7 @@ setup(
     license=open('LICENSE.txt').read(),
     package_data={'ocelot': [
         "data/*.*",
+        "data/*/*.*",
     ]},
     entry_points = {
         'console_scripts': [
