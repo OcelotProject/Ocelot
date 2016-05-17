@@ -11,11 +11,15 @@ def relabel_global_to_row(data, report):
             for ds in datasets:
                 if ds['location'] == 'GLO':
                     ds['location'] = 'RoW'
+                    report.log({
+                        'type': 'table element',
+                        'data': key
+                    })
                 processed.append(ds)
         else:
             processed.extend(datasets)
     return processed
 
 relabel_global_to_row.__table__ = [
-    ('changed_location', "Location convered to RoW")
+    ('changed_location', "Location converted to RoW")
 ]
