@@ -5,6 +5,7 @@ from time import time
 import jinja2
 import json
 import os
+import shutil
 import uuid
 
 
@@ -26,7 +27,8 @@ class Report(object):
 
     """
     def __init__(self, data):
-        self.directory = os.path.join(get_base_output_directory(), uuid.uuid4().hex)
+        report_id = uuid.uuid4().hex
+        self.directory = os.path.join(get_base_output_directory(), report_id)
         try:
             create_dir(self.directory)
             assert check_dir(self.directory)
@@ -39,8 +41,9 @@ class Report(object):
         print("Opening log file at: {}".format(self.fp))
         self.logfile = open(self.fp, "w", encoding='utf-8')
         self.log({
-            'type': 'start report',
-            'time': time()
+            'type': 'report start',
+            'time': time(),
+            'uuid': report_id
         })
         self.index = 1
 
@@ -55,6 +58,7 @@ class Report(object):
             'type': 'function start',
             'count': len(data),
             'time': time(),
+            'index': self.index,
         }
         log_data.update(metadata)
         self.log(log_data)
@@ -64,13 +68,14 @@ class Report(object):
             'type': 'function end',
             'count': len(data),
             'time': time(),
+            'index': self.index,
         }
         log_data.update(metadata)
         self.log(log_data)
 
     def finish(self):
         self.log({
-            'type': 'end report',
+            'type': 'report end',
             'time': time()
         })
         self.logfile.close()
@@ -81,12 +86,63 @@ class Report(object):
         print("Generated report at: {}".format(self.fp))
 
 
+def read_json_log(fp):
+    with open(fp, encoding='utf-8') as f:
+        for line in f:
+            yield json.loads(line)
+
+
 class HTMLReport(object):
     """Generate an HTML report from a :ref:`report` logfile.
 
     Reports are generated in the same directory as the logfile."""
     def __init__(self, fp):
-        self.template_filepath = os.path.join(data_dir, "report-template.jinja2")
-        self.data = []
-        with open(fp, encoding='utf-8'):
-            pass
+        base_dir = os.path.abspath(os.path.dirname(fp))
+        data = self.read_log(fp)
+        self.create_assets_directory(base_dir)
+        self.write_page(data, base_dir)
+        self.index = 1
+        self.data_holder = []
+
+    def read_log(self, fp):
+        data = {}
+        for line in read_json_log(fp):
+            self.handle_line(line, data)
+        data['elapsed'] = "{:.1f}".format(data['end'] - data['start'])
+        return data
+
+    def write_page(self, data, base_dir):
+        template_filepath = os.path.join(data_dir, "report-template.jinja2")
+        template = jinja2.Template(open(template_filepath).read())
+        with open(os.path.join(base_dir, "report.html"), "w") as f:
+            f.write(template.render(**data))
+
+    def create_assets_directory(self, base_dir):
+        assets_from_dir = os.path.join(data_dir, "assets")
+        assets_to_dir = os.path.join(base_dir, "assets")
+        shutil.copytree(assets_from_dir, assets_to_dir)
+
+    def handle_line(self, line, data):
+        if line['type'] == 'report start':
+            data.update({
+                'counts': [line['count']],
+                'labels': [],
+                'start': line['time'],
+                'times': [],
+                'uuid': line['uuid'],
+            })
+        elif line['type'] == 'report end':
+            data.update({
+                'end': line['time'],
+            })
+        elif line['type'] == 'function start':
+            data['functions'][line] = {
+                'start': line['start'],
+                ''
+            }
+
+
+# {"type": "start report", "time": 1463249183.372906}
+# {"type": "function start", "count": 11552, "time": 1463249183.373087, "description": "Change ``GLO`` locations to ``RoW`` if there are region-specific datasets in the activity group.", "table": [["changed_location", "Location converted to RoW"]], "name": "relabel_global_to_row"}
+# {"type": "table element", "data": ["market for fluting medium", ["fluting medium"]]}
+# {"type": "table element", "data": ["anti-reflex-coating, etching, solar glass", ["anti-r
