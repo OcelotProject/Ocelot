@@ -33,7 +33,7 @@ Alternatively, if you want to specify a custom configuration:
 Tests
 -----
 
-Run tests with `py.test <http://pytest.org/latest/>`__ using the command ``py.test``. Requires a source checkout.
+Run tests with `py.test <http://pytest.org/latest/>`__ using the command ``py.test`` in the source directory. Requires a source checkout.
 
 Manual
 ======
