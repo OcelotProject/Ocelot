@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold02">
+  <childActivityDataset>
+    <activityDescription>
+      <activity specialActivityType="0">
+        <activityName>Jagger Lakin</activityName>
+      </activity>
+      <geography>
+        <shortname>TW</shortname>
+      </geography>
+      <technology technologyLevel="2">
+      </technology>
+      <timePeriod startDate="1990-01-01" endDate="2015-12-31">
+      </timePeriod>
+      <macroEconomicScenario>
+        <name>Business-as-Usual</name>
+      </macroEconomicScenario>
+    </activityDescription>
+    <flowData>
+      <intermediateExchange id="fb31ee9b-d01e-4121-9732-01b9bdd491ef" amount="1" productionVolumeAmount="23" productionVolumeVariableName="Cason_Volkman" productionVolumeMathematicalRelation="">
+        <name>Messiah Schiller</name>
+        <unitName>kWh</unitName>
+        <productionVolumeUncertainty>
+          <lognormal meanValue="1" mu="2" variance="3" varianceWithPedigreeUncertainty="4" />
+          <pedigreeMatrix reliability="1" completeness="2" temporalCorrelation="3" geographicalCorrelation="4" furtherTechnologyCorrelation="5" />
+        </productionVolumeUncertainty>
+        <outputGroup>0</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="e1c9f077-547d-4c10-81c1-148e4a7e0df0" variableName="fly_ash" amount="-1.8" productionVolumeAmount="4" productionVolumeMathematicalRelation="fly_ash * apv_electricity">
+        <name>Ellery Crooks</name>
+        <unitName>kg</unitName>
+        <uncertainty>
+          <lognormal meanValue="1" mu="2" variance="3" varianceWithPedigreeUncertainty="4" />
+          <pedigreeMatrix reliability="1" completeness="2" temporalCorrelation="3" geographicalCorrelation="4" furtherTechnologyCorrelation="5" />
+        </uncertainty>
+        <inputGroup>5</inputGroup>
+      </intermediateExchange>
+    </flowData>
+  </childActivityDataset>
+</ecoSpold>
