@@ -2,7 +2,6 @@
 from .ecospold2_meta import *
 from lxml import objectify
 from time import time
-import arrow
 import multiprocessing
 import os
 import pprint
@@ -93,6 +92,7 @@ def extract_production_volume(exc):
 def extract_minimal_exchange(exc):
     # Basic data
     data = {
+        'id': exc.get('id'),
         'tag': _(exc.tag),
         'name': exc.name.text,
         'unit': exc.unitName.text,
@@ -126,8 +126,8 @@ def extract_minimal_ecospold2_info(elem):
         'type': SPECIAL_ACTIVITY_TYPE[elem.activityDescription.activity.get('specialActivityType')],
         'technology level': TECHNOLOGY_LEVEL[elem.activityDescription.technology.get('technologyLevel')],
         'temporal': (
-            arrow.get(elem.activityDescription.timePeriod.get("startDate")),
-            arrow.get(elem.activityDescription.timePeriod.get("endDate"))
+            elem.activityDescription.timePeriod.get("startDate"),
+            elem.activityDescription.timePeriod.get("endDate")
         ),
         'economic': elem.activityDescription.macroEconomicScenario.name.text,
         'exchanges': [extract_minimal_exchange(exc)
