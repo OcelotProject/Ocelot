@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold02">
+  <childActivityDataset>
+    <activityDescription>
+      <activity id="" specialActivityType="0">
+        <activityName>Miss Morgan Wolf</activityName>
+      </activity>
+      <geography>
+        <shortname>RoW</shortname>
+      </geography>
+      <technology technologyLevel="3">
+      </technology>
+      <timePeriod startDate="1996-01-01" endDate="2015-12-31" />
+      <macroEconomicScenario>
+        <name>Business-as-Usual</name>
+      </macroEconomicScenario>
+    </activityDescription>
+    <flowData>
+      <intermediateExchange id="3b954491-a88c-484d-8332-d3941828cb4c" amount="-0.99"  productionVolumeAmount="0.0029892">
+        <name>Dr. Brayden Kilback IV</name>
+        <unitName>m3</unitName>
+        <comment />
+        <uncertainty>
+          <lognormal meanValue="1" mu="2" variance="3" varianceWithPedigreeUncertainty="4" />
+          <pedigreeMatrix reliability="1" completeness="2" temporalCorrelation="3" geographicalCorrelation="4" furtherTechnologyCorrelation="5" />
+        </uncertainty>
+        <property amount="999">
+          <name>Jarod Kuhic</name>
+          <unitName>kg</unitName>
+        </property>
+        <inputGroup>5</inputGroup>
+      </intermediateExchange>
+      <elementaryExchange id="fd251456-233f-4425-aba8-38ca43bf8095" variableName="water_to_air_unspecified" amount="0.1">
+        <name>Water</name>
+        <unitName>m3</unitName>
+        <uncertainty>
+          <lognormal meanValue="1" mu="2" variance="3" varianceWithPedigreeUncertainty="4" />
+          <pedigreeMatrix reliability="1" completeness="2" temporalCorrelation="3" geographicalCorrelation="4" furtherTechnologyCorrelation="5" />
+        </uncertainty>
+        <compartment>
+          <compartment>air</compartment>
+          <subcompartment>unspecified</subcompartment>
+        </compartment>
+        <outputGroup>4</outputGroup>
+      </elementaryExchange>
+    </flowData>
+  </childActivityDataset>
+</ecoSpold>

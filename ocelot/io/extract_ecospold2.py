@@ -35,7 +35,7 @@ def parameterize(elem, data):
             'name': param.name.text,
         }
         if hasattr(param, "uncertainty"):
-            uncertainty = extract_uncertainty(param.uncertainty)
+            obj['uncertainty'] = extract_uncertainty(param.uncertainty)
         formula = param.get('mathematicalRelation')
         if formula:
             obj['formula'] = formula
@@ -44,8 +44,8 @@ def parameterize(elem, data):
 
 def extract_pedigree_matrix(elem):
     try:
-        return ([
-            int(exc.uncertainty.pedigreeMatrix.get(label))
+        return tuple([
+            int(elem.pedigreeMatrix.get(label))
             for label in PEDIGREE_LABELS
         ])
     except:
@@ -53,9 +53,14 @@ def extract_pedigree_matrix(elem):
 
 
 def extract_uncertainty(unc):
-    data = {UNCERTAINTY_MAPPING.get(key, key): unc.get(key) for key in unc.keys()}
+    distribution_labels = ['lognormal', 'normal', 'triangular',
+                           'uniform', 'undefined']
+    distribution = next((getattr(unc, label)
+                         for label in distribution_labels
+                         if hasattr(unc, label)))
+    data = {UNCERTAINTY_MAPPING.get(key, key): float(distribution.get(key)) for key in distribution.keys()}
     data.update({
-        'type': _(unc.tag),
+        'type': _(distribution.tag),
     })
     pm = extract_pedigree_matrix(unc)
     if pm:

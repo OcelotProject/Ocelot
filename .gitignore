@@ -9,3 +9,4 @@ MANIFEST
 *.egg-info
 notebooks/.ipynb_checkpoints
 *.pickle
+.cache
