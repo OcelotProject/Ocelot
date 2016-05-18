@@ -22,7 +22,25 @@ def is_combined_production(dataset):
 
 
 def parameterize(elem, data):
-    pass
+    parameters = [
+        obj for obj in elem.flowData.iterchildren()
+        if 'parameter' in obj.tag
+    ]
+    if not parameters:
+        return
+    else:
+        data['parameters'] = []
+    for param in parameters:
+        obj = {
+            'variable': param.get('variableName'),
+            'name': param.name.text,
+        }
+        if hasattr(param, "uncertainty"):
+            uncertainty = extract_uncertainty(param.uncertainty)
+        formula = param.get('mathematicalRelation')
+        if formula:
+            obj['formula'] = formula
+        data['parameters'].append(obj)
 
 
 def extract_pedigree_matrix(elem):
