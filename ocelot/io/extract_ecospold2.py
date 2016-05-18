@@ -13,7 +13,67 @@ def _(string):
     return string.replace("{http://www.EcoInvent.org/EcoSpold02}", "")
 
 
+def is_combined_production(dataset):
+    """"Combined production datasets have multiple reference products.
+
+    Returns a boolean."""
+    return len([1 for exc in dataset['exchanges']
+                if exc['type'] == "reference product"]) > 1
+
+
+def parameterize(elem, data):
+    pass
+
+
+def extract_pedigree_matrix(elem):
+    try:
+        return ([
+            int(exc.uncertainty.pedigreeMatrix.get(label))
+            for label in PEDIGREE_LABELS
+        ])
+    except:
+        pass
+
+
+def extract_uncertainty(unc):
+    data = {UNCERTAINTY_MAPPING.get(key, key): unc.get(key) for key in unc.keys()}
+    data.update({
+        'type': _(unc.tag),
+    })
+    pm = extract_pedigree_matrix(unc)
+    if pm:
+        data['pedigree matrix'] = pm
+    return data
+
+
+def extract_compartments(exc):
+    try:
+        return (
+            exc.compartment.compartment.text,
+            exc.compartment.subcompartment.text,
+        )
+    except:
+        pass
+
+
+def extract_production_volume(exc):
+    pv = exc.get('productionVolumeAmount')
+    if not pv:
+        return
+    data = {'amount': float(pv)}
+    if hasattr(exc, "productionVolumeUncertainty"):
+        data['uncertainty'] = extract_uncertainty(exc.productionVolumeUncertainty)
+    formula = exc.get('productionVolumeMathematicalRelation')
+    if formula:
+        data['formula'] = formula
+    variable = exc.get('productionVolumeVariableName')
+    if variable:
+        data['variable'] = variable
+    return data
+
+
 def extract_minimal_exchange(exc):
+    # Basic data
     data = {
         'tag': _(exc.tag),
         'name': exc.name.text,
@@ -22,15 +82,22 @@ def extract_minimal_exchange(exc):
         'type': (INPUT_GROUPS[exc.inputGroup.text]
                  if hasattr(exc, "inputGroup")
                  else OUTPUT_GROUPS[exc.outputGroup.text]),
-        'production volume': float(exc.get('productionVolumeAmount') or 0),
     }
-    try:
-        data['pedigree matrix'] = [
-            int(exc.uncertainty.pedigreeMatrix.get(label))
-            for label in PEDIGREE_LABELS
-        ]
-    except:
-        pass
+
+    # Biosphere compartments
+    compartments = extract_compartments(exc)
+    if compartments:
+        data['compartments'] = compartments
+
+    # Production volume & uncertainty
+    pv = extract_production_volume(exc)
+    if pv:
+        data['production volume'] = pv
+
+    # Uncertainty
+    if hasattr(exc, "uncertainty"):
+        data['uncertainty'] = extract_uncertainty(exc.uncertainty)
+
     return data
 
 
@@ -49,19 +116,12 @@ def extract_minimal_ecospold2_info(elem):
                       for exc in elem.flowData.iterchildren()
                       if 'Exchange' in exc.tag]
     }
-    data['combined production'] = len([
-        1 for exc in data['exchanges']
-        if exc['type'] == "reference product"]) > 1
+    if is_combined_production(data):
+         # Dataset will require recalculation, so variableName
+         # and mathematicalRelation are necessary
+        data['combined production'] = True
+        parameterize(elem, data)
     return data
-
-
-def parse_element(elem):
-    return {
-        'tag': str(elem.tag),
-        'attributes': dict(elem.attrib),
-        'text': str(elem.text or ""),
-        'children': [parse_element(child) for child in elem.iterchildren()]
-    }
 
 
 def generic_extractor(filepath):

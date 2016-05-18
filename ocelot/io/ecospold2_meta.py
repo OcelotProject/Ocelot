@@ -46,3 +46,11 @@ PEDIGREE_LABELS = [
     "geographicalCorrelation",
     "furtherTechnologyCorrelation"
 ]
+
+UNCERTAINTY_MAPPING = {
+    # Translate some ecoinvent terms to their actual names
+    'maxValue': 'maximum',
+    'meanValue': 'mean',
+    'minValue': 'minimum',
+    'mostLikelyValue': 'mode',
+}
