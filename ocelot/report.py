@@ -41,9 +41,10 @@ class Report(object):
         print("Opening log file at: {}".format(self.fp))
         self.logfile = open(self.fp, "w", encoding='utf-8')
         self.log({
-            'type': 'report start',
+            'count': len(data),
             'time': time(),
-            'uuid': report_id
+            'type': 'report start',
+            'uuid': report_id,
         })
         self.index = 1
 
@@ -105,7 +106,7 @@ class HTMLReport(object):
         self.data_holder = []
 
     def read_log(self, fp):
-        data = {}
+        data = {'functions': {}}
         for line in read_json_log(fp):
             self.handle_line(line, data)
         data['elapsed'] = "{:.1f}".format(data['end'] - data['start'])
@@ -136,10 +137,17 @@ class HTMLReport(object):
                 'end': line['time'],
             })
         elif line['type'] == 'function start':
-            data['functions'][line] = {
-                'start': line['start'],
-                ''
+            data['functions'][line['index']] = {
+                'start': line['time'],
             }
+        elif line['type'] == 'function end':
+            data['functions'][line['index']].update({
+                'end': line['time'],
+                'count': line['count'],
+                'name': line['name'],
+                'description': line['description'],
+                'table': line['table'],
+            })
 
 
 # {"type": "start report", "time": 1463249183.372906}
