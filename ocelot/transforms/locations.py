@@ -13,13 +13,14 @@ def relabel_global_to_row(data, report):
                     ds['location'] = 'RoW'
                     report.log({
                         'type': 'table element',
-                        'data': key
+                        'data': (key[0], "; ".join(sorted(key[1])))
                     })
                 processed.append(ds)
         else:
             processed.extend(datasets)
     return processed
 
-relabel_global_to_row.__table__ = [
-    ('changed_location', "Location converted to RoW")
-]
+relabel_global_to_row.__table__ = {
+    'title': 'Activities changed from `GLO` to `RoW`',
+    'columns': ["Name", "Product(s)"]
+}
