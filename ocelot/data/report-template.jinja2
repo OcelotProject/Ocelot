@@ -9,9 +9,83 @@
     <link rel="stylesheet" href="assets/css/report.css">
     <script src="assets/js/jquery-1.12.3.min.js"></script>
     <script src="assets/js/footable.min.js"></script>
-    <script src="assets/js/Chart.js"></script>
+    <link rel="stylesheet"
+          href="assets/css/chartist.min.css">
+    <script src="assets/js/chartist.min.js"></script>
+    <script src="assets/js/chartist-plugin-axistitle.min.js"></script>
 </head>
 <body>
-<p>{{ foo }}</p>
+<p>{{ uuid }}</p>
+
+<div id="timingChart"></div>
+<div id="countChart"></div>
+<script type="text/javascript">
+
+new Chartist.Line('#timingChart', {
+  labels: {{ time_labels }},
+  series: [
+    {{ time_data}}
+  ]
+}, {
+  low: 0,
+  showArea: true,
+  lineSmooth: Chartist.Interpolation.none(),
+  plugins: [
+    Chartist.plugins.ctAxisTitle({
+      axisY: {
+        axisTitle: 'Time (seconds)',
+        axisClass: 'ct-axis-title',
+        offset: {
+          x: 0,
+          y: 0
+        },
+        textAnchor: 'middle'
+      },
+      axisX: {
+        axisTitle: 'Transform functions',
+        axisClass: 'ct-axis-title',
+        offset: {
+          x: 0,
+          y: 0
+        },
+        textAnchor: 'middle',
+      }
+    })
+  ]
+});
+
+new Chartist.Line('#countChart', {
+  labels: {{ count_labels }},
+  series: [
+    {{ count_data}}
+  ]
+}, {
+  low: 0,
+  showArea: true,
+  lineSmooth: Chartist.Interpolation.none(),
+  plugins: [
+    Chartist.plugins.ctAxisTitle({
+      axisY: {
+        axisTitle: 'Number of datasets',
+        axisClass: 'ct-axis-title',
+        offset: {
+          x: 0,
+          y: 0
+        },
+        textAnchor: 'middle'
+      },
+      axisX: {
+        axisTitle: 'Transform functions',
+        axisClass: 'ct-axis-title',
+        offset: {
+          x: 0,
+          y: 0
+        },
+        textAnchor: 'middle',
+      }
+    })
+  ]
+});
+</script>
 </body>
 </html>

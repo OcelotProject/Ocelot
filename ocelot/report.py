@@ -19,9 +19,7 @@ class Report(object):
 
     TODO:
 
-    - Add charts: http://www.chartjs.org/docs/
-    - Add media for charts/css
-    - Adapt code from ecoinvent-row-report to create static directory and copy JS/CSS over
+    - Adopt docs for transform functions to new format
     - Adapt table code from http://geography.ecoinvent.org/rows/
     - Adapt template from ocelot.space website
 
@@ -93,6 +91,19 @@ def read_json_log(fp):
             yield json.loads(line)
 
 
+def jsonize(data):
+    """Convert some values to JSON strings"""
+    _ = lambda x: json.dumps(x, ensure_ascii=False)
+    data['count_labels'] = _([x[0] for x in data['counts']])
+    data['count_data'] = _([x[1] for x in data['counts']])
+    data['time_labels'] = _([x[0] for x in data['times']])
+    data['time_data'] = _([x[1] for x in data['times']])
+    for func in data['functions'].values():
+        if hasattr(func, "table data"):
+            func["table data"] = _(func["table data"])
+    return data
+
+
 class HTMLReport(object):
     """Generate an HTML report from a :ref:`report` logfile.
 
@@ -102,15 +113,15 @@ class HTMLReport(object):
         data = self.read_log(fp)
         self.create_assets_directory(base_dir)
         self.write_page(data, base_dir)
-        self.index = 1
-        self.data_holder = []
+        self.index = 0
 
     def read_log(self, fp):
         data = {'functions': {}}
         for line in read_json_log(fp):
             self.handle_line(line, data)
-        data['elapsed'] = "{:.1f}".format(data['end'] - data['start'])
-        return data
+        data['elapsed'] = "{:.1f}".format(data['times'][0][1] - data['times'][-1][1])
+        data['times'] = [(x, y - data['times'][0][1]) for x, y in data['times']]
+        return jsonize(data)
 
     def write_page(self, data, base_dir):
         template_filepath = os.path.join(data_dir, "report-template.jinja2")
@@ -126,31 +137,31 @@ class HTMLReport(object):
     def handle_line(self, line, data):
         if line['type'] == 'report start':
             data.update({
-                'counts': [line['count']],
-                'labels': [],
-                'start': line['time'],
-                'times': [],
+                'counts': [("Start", line['count'])],
+                'times': [("Start", line['time'])],
                 'uuid': line['uuid'],
             })
         elif line['type'] == 'report end':
-            data.update({
-                'end': line['time'],
-            })
+            data['times'].append(('End', line['time']))
         elif line['type'] == 'function start':
-            data['functions'][line['index']] = {
+            self.index = line['index']
+            data['functions'][self.index] = {
                 'start': line['time'],
             }
+            if line['table']:
+                data['functions'][self.index]['table data'] = []
         elif line['type'] == 'function end':
-            data['functions'][line['index']].update({
+            data['counts'].append((line['name'], line['count']))
+            data['times'].append((line['name'], line['time']))
+            data['functions'][self.index].update({
+                'time': line['time'] - data['functions'][self.index]['start'],
                 'end': line['time'],
                 'count': line['count'],
                 'name': line['name'],
+                'id': 'function{}'.format(self.index),
                 'description': line['description'],
                 'table': line['table'],
             })
+        elif line['type'] == 'table element':
+            data['functions'][self.index]['table data'].append(line['data'])
 
-
-# {"type": "start report", "time": 1463249183.372906}
-# {"type": "function start", "count": 11552, "time": 1463249183.373087, "description": "Change ``GLO`` locations to ``RoW`` if there are region-specific datasets in the activity group.", "table": [["changed_location", "Location converted to RoW"]], "name": "relabel_global_to_row"}
-# {"type": "table element", "data": ["market for fluting medium", ["fluting medium"]]}
-# {"type": "table element", "data": ["anti-reflex-coating, etching, solar glass", ["anti-r
