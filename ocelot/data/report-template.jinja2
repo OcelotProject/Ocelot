@@ -15,11 +15,51 @@
     <script src="assets/js/chartist-plugin-axistitle.min.js"></script>
 </head>
 <body>
-<p>{{ uuid }}</p>
-
+<h1>Ocelot calculation run report</h1>
+<ul>
+    <li>Calculation id: {{ uuid }}</li>
+    <li>Number of input datasets: {{ counts.0.1 }}</li>
+    <li>Total time: {{ elapsed }} seconds</li>
+</ul>
+<h1>Timing chart</h1>
 <div id="timingChart"></div>
+<h1>Dataset count chart</h1>
 <div id="countChart"></div>
+<h1>Transform functions</h1>
+{% for func in functions %}
+<h2 id="{{ func.id }}">{{ func.name}}</h2>
+<ul>
+    <li>Total time: {{ func.time|int }} seconds</li>
+    <li>Number of datasets after application: {{ func.count }}</li>
+</ul>
+<h3>Description</h3>
+<p>{{ func.description }}</p>
+{% if func.table %}
+<h3>{{ func.table.title }}</h3>
+<table class="table" data-paging="true" data-filtering="true" data-sorting="true">
+    <thead>
+        <tr>
+            {% for col in func.table.columns %}
+            <th data-breakpoints="xs">{{ col }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in func.tabledata %}
+        <tr>
+            {% for elem in row %}<td>{{ elem }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endfor %}
+
 <script type="text/javascript">
+jQuery(function($){
+    $('.table').footable();
+});
 
 new Chartist.Line('#timingChart', {
   labels: {{ time_labels }},

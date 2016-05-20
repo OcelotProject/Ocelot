@@ -17,9 +17,10 @@ If it is more convenient to provide logging data in tabular form in the Ocelot m
     def foo(data):
         return data
 
-    foo.__table__ = [("column-data-name", "column-label")]
-
-Each element in ``__table__`` should be a pair of strings, one of which defines the name of the column in the logs, and the other the label of this column when displayed on the report web page.
+    foo.__table__ = {
+        'title': 'Name of title to put in report',
+        'columns': ["names", "of", "columns"]
+    }
 
 .. _configuration:
 

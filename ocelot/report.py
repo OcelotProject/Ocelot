@@ -19,7 +19,6 @@ class Report(object):
 
     TODO:
 
-    - Adopt docs for transform functions to new format
     - Adapt table code from http://geography.ecoinvent.org/rows/
     - Adapt template from ocelot.space website
 
@@ -92,15 +91,19 @@ def read_json_log(fp):
 
 
 def jsonize(data):
-    """Convert some values to JSON strings"""
+    """Convert some values to JSON strings and do a few other manipulations"""
     _ = lambda x: json.dumps(x, ensure_ascii=False)
     data['count_labels'] = _([x[0] for x in data['counts']])
     data['count_data'] = _([x[1] for x in data['counts']])
     data['time_labels'] = _([x[0] for x in data['times']])
     data['time_data'] = _([x[1] for x in data['times']])
-    for func in data['functions'].values():
-        if hasattr(func, "table data"):
-            func["table data"] = _(func["table data"])
+    for k, v in data['functions'].items():
+        if hasattr(v, "tabledata"):
+            v["tabledata"] = _(sorted(v["tabledata"]))
+            v['table']['columns'] = _(v['table']['columns'])
+        v['index'] = k
+    data['functions'] = list(data['functions'].values())
+    data['functions'].sort(key=lambda x: x['index'])
     return data
 
 
@@ -119,7 +122,7 @@ class HTMLReport(object):
         data = {'functions': {}}
         for line in read_json_log(fp):
             self.handle_line(line, data)
-        data['elapsed'] = "{:.1f}".format(data['times'][0][1] - data['times'][-1][1])
+        data['elapsed'] = "{:.1f}".format(data['times'][-1][1] - data['times'][0][1])
         data['times'] = [(x, y - data['times'][0][1]) for x, y in data['times']]
         return jsonize(data)
 
@@ -149,7 +152,7 @@ class HTMLReport(object):
                 'start': line['time'],
             }
             if line['table']:
-                data['functions'][self.index]['table data'] = []
+                data['functions'][self.index]['tabledata'] = []
         elif line['type'] == 'function end':
             data['counts'].append((line['name'], line['count']))
             data['times'].append((line['name'], line['time']))
@@ -163,5 +166,5 @@ class HTMLReport(object):
                 'table': line['table'],
             })
         elif line['type'] == 'table element':
-            data['functions'][self.index]['table data'].append(line['data'])
+            data['functions'][self.index]['tabledata'].append(line['data'])
 
