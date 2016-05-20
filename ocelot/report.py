@@ -5,8 +5,10 @@ from time import time
 import jinja2
 import json
 import os
+import pathlib
 import shutil
 import uuid
+import webbrowser
 
 
 class Report(object):
@@ -18,8 +20,6 @@ class Report(object):
     * Bar
 
     TODO:
-
-    - Adapt table code from http://geography.ecoinvent.org/rows/
     - Adapt template from ocelot.space website
 
     """
@@ -71,16 +71,18 @@ class Report(object):
         log_data.update(metadata)
         self.log(log_data)
 
-    def finish(self):
+    def finish(self, show=False):
         self.log({
             'type': 'report end',
             'time': time()
         })
         self.logfile.close()
         self.write_report()
+        if show:
+            self.html.show_in_webbrowser()
 
     def write_report(self):
-        html = HTMLReport(self.fp)
+        self.html = HTMLReport(self.fp)
         print("Generated report at: {}".format(self.fp))
 
 
@@ -118,6 +120,11 @@ class HTMLReport(object):
         self.write_page(data, base_dir)
         self.index = 0
 
+    def show_in_webbrowser(self):
+        webbrowser.open_new_tab(
+            pathlib.Path(self.report_fp).as_uri()
+        )
+
     def read_log(self, fp):
         data = {'functions': {}}
         for line in read_json_log(fp):
@@ -129,7 +136,8 @@ class HTMLReport(object):
     def write_page(self, data, base_dir):
         template_filepath = os.path.join(data_dir, "report-template.jinja2")
         template = jinja2.Template(open(template_filepath).read())
-        with open(os.path.join(base_dir, "report.html"), "w") as f:
+        self.report_fp = os.path.join(base_dir, "report.html")
+        with open(self.report_fp, "w") as f:
             f.write(template.render(**data))
 
     def create_assets_directory(self, base_dir):

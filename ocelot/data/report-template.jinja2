@@ -57,10 +57,6 @@
 {% endfor %}
 
 <script type="text/javascript">
-jQuery(function($){
-    $('.table').footable();
-});
-
 new Chartist.Line('#timingChart', {
   labels: {{ time_labels }},
   series: [
@@ -125,6 +121,10 @@ new Chartist.Line('#countChart', {
       }
     })
   ]
+});
+
+jQuery(function($){
+    $('.table').footable();
 });
 </script>
 </body>

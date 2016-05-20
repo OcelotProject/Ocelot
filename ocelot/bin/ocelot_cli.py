@@ -3,8 +3,8 @@
 """Ocelot command line interface. See https://ocelot.space/ for more info.
 
 Usage:
-  ocelot-cli run <dirpath>
-  ocelot-cli run <dirpath> <config>
+  ocelot-cli run <dirpath> [--noshow]
+  ocelot-cli run <dirpath> <config> [--noshow]
   ocelot-cli fix <dirpath>
   ocelot-cli validate <dirpath> <schema>
   ocelot-cli validate <dirpath>
@@ -14,6 +14,7 @@ Usage:
 
 Options:
   --list        List the updates needed, but don't do anything
+  --noshow      Don't open HTML report in new web browser tab
   -h --help     Show this screen.
   --version     Show version.
 
@@ -38,7 +39,7 @@ def main():
           args['<schema>'] or os.path.join(data_dir, 'EcoSpold02.xsd')
         )
     elif args['run']:
-        SystemModel(args["<dirpath>"], args['<config>'])
+        SystemModel(args["<dirpath>"], args['<config>'], show=not args['--noshow'])
     else:
         raise ValueError
 
