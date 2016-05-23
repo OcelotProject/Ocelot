@@ -7,4 +7,5 @@ psutil
 pyprind
 pyrsistent
 pytest
+pytest-cov
 toolz
