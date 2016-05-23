@@ -10,3 +10,4 @@ MANIFEST
 notebooks/.ipynb_checkpoints
 *.pickle
 .cache
+.coverage
