@@ -143,6 +143,8 @@ class HTMLReport(object):
     def create_assets_directory(self, base_dir):
         assets_from_dir = os.path.join(data_dir, "assets")
         assets_to_dir = os.path.join(base_dir, "assets")
+        if os.path.exists(assets_to_dir):
+            shutil.rmtree(assets_to_dir)
         shutil.copytree(assets_from_dir, assets_to_dir)
 
     def handle_line(self, line, data):
