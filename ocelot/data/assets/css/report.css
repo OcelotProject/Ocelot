@@ -13,6 +13,10 @@ a:focus {
     text-decoration: underline;
 }
 
+a.sidebar-link {
+    color: #ddd;
+}
+
 h3 {
     font-weight: 100;
 }
@@ -49,6 +53,8 @@ h3 {
 .brand-tagline {
     font-weight: 300;
     color: #ddd;
+    font-size: 120%;
+    margin-top: 0.5em;
 }
 
 .nav-list {
