@@ -8,7 +8,7 @@ environment:
 install:
   # FIXME: updating pip fails with PermissionError
   # - "%PYTHON%/python.exe -c \"import pip; print(pip.pep425tags.get_supported())\""
-  - "%PYTHON%/Scripts/pip.exe install -U pip setuptools wheel"
+  # - "%PYTHON%/Scripts/pip.exe install -U pip setuptools wheel"
   - "%PYTHON%/Scripts/pip.exe install -r requirements-appveyor.txt"
 
 test_script:
