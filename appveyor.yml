@@ -1,0 +1,20 @@
+# Modified from https://ci.appveyor.com/project/jkbrzt/httpie
+build: false
+
+environment:
+  matrix:
+    - PYTHON: "C:/Python35"
+
+# init:
+#   - "ECHO %PYTHON%"
+  - ps: "ls %PYTHON%/Scripts/"
+
+install:
+  # FIXME: updating pip fails with PermissionError
+  # - "%PYTHON%/Scripts/pip.exe install -U pip setuptools"
+  - "%PYTHON%/Scripts/pip.exe install -r requirements.txt"
+
+test_script:
+  - "%PYTHON%/Scripts/py.test.exe"
+  # - "%PYTHON%/Scripts/http.exe --debug"
+  # - "%PYTHON%/python.exe setup.py test"
