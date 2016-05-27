@@ -6,3 +6,6 @@ script:
   - py.test --cov=ocelot
 after_success:
   - coveralls
+os:
+  - linux
+  - osx
