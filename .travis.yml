@@ -8,4 +8,6 @@ after_success:
   - coveralls
 os:
   - linux
-  - osx
+  # Nevermind: https://github.com/travis-ci/travis-ci/issues/2312
+  # More trouble than it is worth
+  # - osx
