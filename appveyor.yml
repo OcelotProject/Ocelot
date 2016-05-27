@@ -5,9 +5,9 @@ environment:
   matrix:
     - PYTHON: "C:/Python35"
 
-init:
-#   - "ECHO %PYTHON%"
-  - ps: "ls %PYTHON%/Scripts/"
+# init:
+# #   - "ECHO %PYTHON%"
+#   - ps: "ls %PYTHON%/Scripts/"
 
 install:
   # FIXME: updating pip fails with PermissionError
