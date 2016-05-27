@@ -5,7 +5,7 @@ environment:
   matrix:
     - PYTHON: "C:/Python35"
 
-# init:
+init:
 #   - "ECHO %PYTHON%"
   - ps: "ls %PYTHON%/Scripts/"
 
