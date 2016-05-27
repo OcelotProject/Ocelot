@@ -12,6 +12,7 @@ environment:
 install:
   # FIXME: updating pip fails with PermissionError
   # - "%PYTHON%/Scripts/pip.exe install -U pip setuptools"
+  - "%PYTHON%/python.exe -c "import distutils.util; print(distutils.util.get_platform())"
   - "%PYTHON%/Scripts/pip.exe install -r requirements-win.txt"
 
 test_script:
