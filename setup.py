@@ -40,6 +40,7 @@ setup(
         'psutil',
         'pyprind',
         'pyrsistent',
+        'pytest',
         'toolz',
     ],
     url="https://ocelot.space/",

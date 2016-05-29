@@ -25,15 +25,7 @@ class Report(object):
     """
     def __init__(self, data):
         report_id = uuid.uuid4().hex
-        self.directory = os.path.join(get_base_output_directory(), report_id)
-        try:
-            create_dir(self.directory)
-            assert check_dir(self.directory)
-        except:
-            raise OutputDirectoryError(
-                "Can't find or write to output directory:\n\t{}".format(
-                self.directory)
-            )
+        self.directory = self.create_output_directory(report_id)
         self.fp = os.path.join(self.directory, "report.log.json")
         print("Opening log file at: {}".format(self.fp))
         self.logfile = open(self.fp, "w", encoding='utf-8')
@@ -44,6 +36,18 @@ class Report(object):
             'uuid': report_id,
         })
         self.index = 1
+
+    def create_output_directory(self, report_id):
+        directory = os.path.join(get_base_output_directory(), report_id)
+        try:
+            create_dir(directory)
+            assert check_dir(directory)
+        except:
+            raise OutputDirectoryError(
+                "Can't find or write to output directory:\n\t{}".format(
+                directory)
+            )
+        return directory
 
     def set_index(self, index):
         self.index = index + 1
