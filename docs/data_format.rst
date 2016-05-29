@@ -12,6 +12,7 @@ Here is the Python data format for a single dataset:
 
     {
         'name': str,
+        'filepath': str,
         'location': str,
         'technology level': str,
         'economic': str,
@@ -33,7 +34,10 @@ Here is the Python data format for a single dataset:
                     'type': str,
                 }
             },
-            # XML tag name for this exchange
+            'formula': str, optional. Only for multioutput datasets,
+            'variable': str, optional. Only for multioutput datasets,
+            # XML tag name for this exchange;
+            # either 'intermediateExchange' or 'elementaryExchange'
             'tag': str,
             'type': str,
             'unit': str

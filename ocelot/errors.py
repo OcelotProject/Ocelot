@@ -3,3 +3,7 @@
 
 class OutputDirectoryError(Exception):
     pass
+
+
+class ParameterizationError(Exception):
+    pass

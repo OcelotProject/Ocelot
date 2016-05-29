@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from .transformations import (
-    relabel_global_to_row,
     dummy_transformation,
+    parameterization_validity_checks,
+    relabel_global_to_row,
 )
 
 
@@ -16,6 +17,7 @@ class Configuration(object):
 
 # Default config for now is 3.2 cutoff
 default_configuration = [
+    parameterization_validity_checks,
     relabel_global_to_row,
     dummy_transformation,
 ]

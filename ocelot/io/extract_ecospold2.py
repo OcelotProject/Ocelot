@@ -107,6 +107,12 @@ def extract_minimal_exchange(exc):
                  else OUTPUT_GROUPS[exc.outputGroup.text]),
     }
 
+    # Variable and formula will be deleted if dataset is not multioutput
+    if exc.get("variableName"):
+        data['variable'] = exc.get("variableName")
+    if exc.get("mathematicalRelation"):
+        data['formula'] = exc.get("mathematicalRelation")
+
     # Biosphere compartments
     compartments = extract_compartments(exc)
     if compartments:
@@ -124,8 +130,9 @@ def extract_minimal_exchange(exc):
     return data
 
 
-def extract_minimal_ecospold2_info(elem):
+def extract_minimal_ecospold2_info(elem, filepath):
     data = {
+        'filepath': filepath,
         'name': elem.activityDescription.activity.activityName.text,
         'location': elem.activityDescription.geography.shortname.text,
         'type': SPECIAL_ACTIVITY_TYPE[elem.activityDescription.activity.get('specialActivityType')],
@@ -144,6 +151,11 @@ def extract_minimal_ecospold2_info(elem):
          # and mathematicalRelation are necessary
         data['combined production'] = True
         parameterize(elem, data)
+    else:
+        # Don't need parameter data because no allocation
+        for exc in data['exchanges']:
+            if 'formula' in exc:
+                del exc['formula']
     return data
 
 
@@ -151,7 +163,7 @@ def generic_extractor(filepath):
     with open(filepath, encoding='utf8') as f:
         try:
             root = objectify.parse(f).getroot()
-            data = [extract_minimal_ecospold2_info(child)
+            data = [extract_minimal_ecospold2_info(child, filepath)
                     for child in root.iterchildren()]
         except:
             print(filepath)
