@@ -30,7 +30,7 @@
         </property>
         <inputGroup>5</inputGroup>
       </intermediateExchange>
-      <elementaryExchange id="fd251456-233f-4425-aba8-38ca43bf8095" variableName="water_to_air_unspecified" amount="0.1">
+      <elementaryExchange id="fd251456-233f-4425-aba8-38ca43bf8095" amount="0.1">
         <name>Water</name>
         <unitName>m3</unitName>
         <uncertainty>

@@ -67,7 +67,7 @@ PROD_VOLUME_REFERENCE = [{
         },
         'tag': 'intermediateExchange',
         'type': 'reference product',
-        'unit': 'kWh'
+        'unit': 'kWh',
     }, {
         'amount': -1.8,
         'id': 'e1c9f077-547d-4c10-81c1-148e4a7e0df0',
@@ -86,7 +86,8 @@ PROD_VOLUME_REFERENCE = [{
             'variance': 3.0,
             'varianceWithPedigreeUncertainty': 4.0
         },
-        'unit': 'kg'
+        'unit': 'kg',
+        'variable': 'fly_ash',
     }],
     'location': 'TW',
     'name': 'Jagger Lakin',
@@ -98,9 +99,11 @@ PROD_VOLUME_REFERENCE = [{
 
 def test_basic_extraction():
     fp = os.path.join(test_data_dir, "basic.xml")
+    BASIC_REFERENCE[0]['filepath'] = fp
     assert generic_extractor(fp) == BASIC_REFERENCE
 
 
 def test_production_volume_extraction():
     fp = os.path.join(test_data_dir, "prod_volume.xml")
+    PROD_VOLUME_REFERENCE[0]['filepath'] = fp
     assert generic_extractor(fp) == PROD_VOLUME_REFERENCE
