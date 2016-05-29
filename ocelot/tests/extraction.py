@@ -2,6 +2,8 @@ from . import test_data_dir
 from ..io.extract_ecospold2 import generic_extractor
 import os
 
+# Tests for ecospold2 extraction
+
 
 BASIC_REFERENCE = [{
     'economic': 'Business-as-Usual',

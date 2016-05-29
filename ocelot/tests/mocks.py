@@ -33,9 +33,11 @@ def fake_report(monkeypatch):
         passthrough
     )
 
+# Test to make sure above fixture correctly monkey-patches stuff
 
 def test_report_and_extract_directory_mock(fake_report):
-    report = SystemModel([])
+    report, data = SystemModel([])
+    assert data == []
     # Directory not in usual place
     assert "Ocelot" not in report.directory
     # Tempdir is cleaned up

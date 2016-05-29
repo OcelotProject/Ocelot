@@ -4,9 +4,33 @@ from .filesystem import safe_filename
 from .io import extract_directory
 from .report import Report
 from .utils import get_function_meta
+from collections.abc import Iterable
 from time import time
+import itertools
 import os
 import pickle
+
+
+def apply_transform(function, counter, report, data):
+    if isinstance(function, Iterable):
+        for obj in function:
+            data = apply_transform(obj, counter, report, data)
+        return data
+    else:
+        metadata = get_function_meta(function)
+        index = next(counter)
+        report.set_index(index)
+        report.start_function(metadata, data)
+        print("Applying transform {}".format(metadata['name']))
+        data = function(data, report)
+        dump_fp = os.path.join(
+            report.directory,
+            "{}.".format(index) + safe_filename(metadata['name']) + ".pickle"
+        )
+        with open(dump_fp, "wb") as f:
+            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+        report.end_function(metadata, data)
+        return data
 
 
 def SystemModel(data_path, config=None, show=False):
@@ -28,17 +52,8 @@ def SystemModel(data_path, config=None, show=False):
     data = extract_directory(data_path)
     report = Report(data)
 
-    for index, function in enumerate(config):
-        metadata = get_function_meta(function)
-        report.set_index(index)
-        report.start_function(metadata, data)
-        print("Applying transform {}".format(metadata['name']))
-        data = function(data, report)
-        dump_fp = os.path.join(
-            report.directory,
-            "{}.".format(index) + safe_filename(metadata['name']) + ".pickle"
-        )
-        with open(dump_fp, "wb") as f:
-            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
-        report.end_function(metadata, data)
+    for obj in config:
+        data = apply_transform(obj, itertools.count(), report, data)
+
     report.finish(show=show)
+    return report, data
