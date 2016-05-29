@@ -7,4 +7,6 @@ psutil
 pyprind
 pyrsistent
 pytest
+pytest-cov
+python-coveralls
 toolz
