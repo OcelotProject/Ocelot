@@ -32,14 +32,16 @@ def jsonize(data):
 
 
 class HTMLReport(object):
-    """Generate an HTML report from a :ref:`report` logfile.
+    """Generate an HTML report from a :ref:`logger` logfile.
 
     Reports are generated in the same directory as the logfile.
 
+    Takes the log filepath as input variable ``filepath``. A second optional input, ``show``, will open the generated report in a new webbrowser tab if ``True``.
+
     """
-    def __init__(self, fp, show=False):
-        base_dir = os.path.abspath(os.path.dirname(fp))
-        data = self.read_log(fp)
+    def __init__(self, filepath, show=False):
+        base_dir = os.path.abspath(os.path.dirname(filepath))
+        data = self.read_log(filepath)
         self.create_assets_directory(base_dir)
         self.write_page(data, base_dir)
         self.index = 0

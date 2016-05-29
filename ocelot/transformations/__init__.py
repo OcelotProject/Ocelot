@@ -2,7 +2,7 @@
 from .locations import relabel_global_to_row
 
 
-def dummy_transformation(data, report):
+def dummy_transformation(data, logger):
     """This is a dummy transformation that doesn't do anything.
 
     Used primarily for testing."""

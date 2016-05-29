@@ -3,7 +3,7 @@ from .. import toolz
 from ..utils import activity_grouper
 
 
-def relabel_global_to_row(data, report):
+def relabel_global_to_row(data, logger):
     """Change ``GLO`` locations to ``RoW`` if there are region-specific datasets in the activity group."""
     processed = []
     for key, datasets in toolz.groupby(activity_grouper, data).items():
@@ -11,7 +11,7 @@ def relabel_global_to_row(data, report):
             for ds in datasets:
                 if ds['location'] == 'GLO':
                     ds['location'] = 'RoW'
-                    report.log({
+                    logger.log({
                         'type': 'table element',
                         'data': (key[0], "; ".join(sorted(key[1])))
                     })
