@@ -2,8 +2,8 @@
 from .locations import relabel_global_to_row
 
 
-def dummy_transform(data, report):
-    """This is a dummy transform that doesn't do anything.
+def dummy_transformation(data, report):
+    """This is a dummy transformation that doesn't do anything.
 
     Used primarily for testing."""
     return data

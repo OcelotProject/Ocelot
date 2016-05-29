@@ -11,7 +11,7 @@ import os
 import pickle
 
 
-def apply_transform(function, counter, report, data):
+def apply_transformation(function, counter, report, data):
     if isinstance(function, Iterable):
         for obj in function:
             data = apply_transform(obj, counter, report, data)
@@ -21,7 +21,7 @@ def apply_transform(function, counter, report, data):
         index = next(counter)
         report.set_index(index)
         report.start_function(metadata, data)
-        print("Applying transform {}".format(metadata['name']))
+        print("Applying transformation {}".format(metadata['name']))
         data = function(data, report)
         dump_fp = os.path.join(
             report.directory,
@@ -40,11 +40,11 @@ def system_model(data_path, config=None, show=False):
 
     * Extract data from the input data sources
     * Initialize a :ref:`report` object
-    * Then, for each transforming function in the provided configuration:
-        * Log the transforming function start
-        * Apply the transforming function
+    * Then, for each transformation function in the provided configuration:
+        * Log the transformation function start
+        * Apply the transformation function
         * Save the intermediate data state
-        * Log the transforming function end
+        * Log the transformation function end
     * Finally, write a report.
 
     """
@@ -53,7 +53,7 @@ def system_model(data_path, config=None, show=False):
     report = Report(data)
 
     for obj in config:
-        data = apply_transform(obj, itertools.count(), report, data)
+        data = apply_transformation(obj, itertools.count(), report, data)
 
     report.finish(show=show)
     return report, data
