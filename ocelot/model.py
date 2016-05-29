@@ -36,7 +36,7 @@ def apply_transformation(function, counter, report, data):
 def system_model(data_path, config=None, show=False):
     """A system model is a set of assumptions and modeling choices that define how to take a list of unlinked and unallocated datasets, and transform these datasets into a new list of datasets which are linked and each have a single reference product.
 
-    The system model in code is a list of functions. The definition of this list - which functions are included, and in which order - is defined by the :ref:`configuration` object. The input parameter ``config`` can also be an iterable of functions to be applied. The ``system_model`` does the following:
+    The system model itself is a list of functions. The definition of this list - which functions are included, and in which order - is defined by the input parameter ``config``, which can be a list of functions or a :ref:`configuration` object. The ``system_model`` does the following:
 
     * Extract data from the input data sources
     * Initialize a :ref:`report` object

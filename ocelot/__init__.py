@@ -24,6 +24,7 @@ except ImportError:
     warnings.warn(CYTOOLZ)
 
 from .data import data_dir
+from .collection import Collection
 from .io import *
 from .configuration import Configuration, default_configuration
 from .model import system_model

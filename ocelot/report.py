@@ -12,18 +12,13 @@ import webbrowser
 
 
 class Report(object):
-    """A class that provides a JSON logger during a model run, and formats a nice report afterwards.
+    """The ``Report`` class provides a JSON logger for use during a model run, and formats a nice report afterwards.
 
-    Logs messages are a dictionary with at a minimum the key ``type``. The following types of log messages are understand by the ``Report`` object:
-
-    * Foo
-    * Bar
-
-    TODO:
-    - Adapt template from ocelot.space website
+    ``Report`` provides methods for several types of log messages.
 
     """
     def __init__(self, data):
+        """Initialize the Report with the raw extracted data"""
         report_id = uuid.uuid4().hex
         self.directory = self.create_output_directory(report_id)
         self.fp = os.path.join(self.directory, "report.log.json")
@@ -116,7 +111,9 @@ def jsonize(data):
 class HTMLReport(object):
     """Generate an HTML report from a :ref:`report` logfile.
 
-    Reports are generated in the same directory as the logfile."""
+    Reports are generated in the same directory as the logfile.
+
+    """
     def __init__(self, fp):
         base_dir = os.path.abspath(os.path.dirname(fp))
         data = self.read_log(fp)
