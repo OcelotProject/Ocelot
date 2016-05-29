@@ -5,6 +5,7 @@
 Usage:
   ocelot-cli run <dirpath> [--noshow]
   ocelot-cli run <dirpath> <config> [--noshow]
+  ocelot-cli cleanup
   ocelot-cli validate <dirpath> <schema>
   ocelot-cli validate <dirpath>
   ocelot-cli -l | --list
@@ -20,6 +21,7 @@ Options:
 """
 from docopt import docopt
 from ocelot import (
+    cleanup_data_directory,
     data_dir,
     SystemModel,
     validate_directory,
@@ -34,6 +36,8 @@ def main():
           args['<dirpath>'],
           args['<schema>'] or os.path.join(data_dir, 'EcoSpold02.xsd')
         )
+    elif args['cleanup']:
+        cleanup_data_directory()
     elif args['run']:
         SystemModel(args["<dirpath>"], args['<config>'], show=not args['--noshow'])
     else:
