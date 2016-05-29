@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from .locations import relabel_global_to_row
-from .parameterization import parameterization_validity_checks
+from .parameterization import (
+    parameterization_validity_checks,
+    parameter_names_are_unique,
+)
 
 
 def dummy_transformation(data, logger):
