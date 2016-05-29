@@ -27,5 +27,6 @@ from .data import data_dir
 from .collection import Collection
 from .io import *
 from .configuration import Configuration, default_configuration
+from .logger import Logger
+from .report import HTMLReport
 from .model import system_model
-from .report import Report, HTMLReport

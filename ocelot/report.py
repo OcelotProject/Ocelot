@@ -1,88 +1,11 @@
 # -*- coding: utf-8 -*-
-from . import toolz, data_dir
-from .filesystem import get_base_output_directory, create_dir, check_dir
-from time import time
+from . import data_dir
 import jinja2
 import json
 import os
 import pathlib
 import shutil
-import uuid
 import webbrowser
-
-
-class Report(object):
-    """The ``Report`` class provides a JSON logger for use during a model run, and formats a nice report afterwards.
-
-    ``Report`` provides methods for several types of log messages.
-
-    """
-    def __init__(self, data):
-        """Initialize the Report with the raw extracted data"""
-        report_id = uuid.uuid4().hex
-        self.directory = self.create_output_directory(report_id)
-        self.fp = os.path.join(self.directory, "report.log.json")
-        print("Opening log file at: {}".format(self.fp))
-        self.logfile = open(self.fp, "w", encoding='utf-8')
-        self.log({
-            'count': len(data),
-            'time': time(),
-            'type': 'report start',
-            'uuid': report_id,
-        })
-        self.index = 1
-
-    def create_output_directory(self, report_id):
-        directory = os.path.join(get_base_output_directory(), report_id)
-        try:
-            create_dir(directory)
-            assert check_dir(directory)
-        except:
-            raise OutputDirectoryError(
-                "Can't find or write to output directory:\n\t{}".format(
-                directory)
-            )
-        return directory
-
-    def set_index(self, index):
-        self.index = index + 1
-
-    def log(self, message):
-        self.logfile.write(json.dumps(message) + "\n")
-
-    def start_function(self, metadata, data):
-        log_data = {
-            'type': 'function start',
-            'count': len(data),
-            'time': time(),
-            'index': self.index,
-        }
-        log_data.update(metadata)
-        self.log(log_data)
-
-    def end_function(self, metadata, data):
-        log_data = {
-            'type': 'function end',
-            'count': len(data),
-            'time': time(),
-            'index': self.index,
-        }
-        log_data.update(metadata)
-        self.log(log_data)
-
-    def finish(self, show=False):
-        self.log({
-            'type': 'report end',
-            'time': time()
-        })
-        self.logfile.close()
-        self.write_report()
-        if show:
-            self.html.show_in_webbrowser()
-
-    def write_report(self):
-        self.html = HTMLReport(self.fp)
-        print("Generated report at: {}".format(self.fp))
 
 
 def read_json_log(fp):
@@ -114,12 +37,14 @@ class HTMLReport(object):
     Reports are generated in the same directory as the logfile.
 
     """
-    def __init__(self, fp):
+    def __init__(self, fp, show=False):
         base_dir = os.path.abspath(os.path.dirname(fp))
         data = self.read_log(fp)
         self.create_assets_directory(base_dir)
         self.write_page(data, base_dir)
         self.index = 0
+        if show:
+            self.show_in_webbrowser()
 
     def show_in_webbrowser(self):
         webbrowser.open_new_tab(
