@@ -23,7 +23,7 @@ from docopt import docopt
 from ocelot import (
     cleanup_data_directory,
     data_dir,
-    SystemModel,
+    system_model,
     validate_directory,
 )
 import os
@@ -39,7 +39,7 @@ def main():
     elif args['cleanup']:
         cleanup_data_directory()
     elif args['run']:
-        SystemModel(args["<dirpath>"], args['<config>'], show=not args['--noshow'])
+        system_model(args["<dirpath>"], args['<config>'], show=not args['--noshow'])
     else:
         raise ValueError
 

@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 
 class Collection(Iterable):
-    """A collection of transform functions is correctly unwrapped by a `SystemModel`.
+    """A collection of transform functions is correctly unwrapped by a ``system_model``.
 
     Useful to quickly specify a list of commonly-grouped functions (e.g. ecospold common data cleanup, economic allocation).
 

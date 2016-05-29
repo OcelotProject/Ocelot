@@ -1,5 +1,5 @@
 from ..collection import Collection
-from ..model import SystemModel
+from ..model import system_model
 from .mocks import fake_report
 
 # Tests for `Collection` of functions
@@ -7,18 +7,18 @@ from .mocks import fake_report
 
 def test_empty_collection(fake_report):
     empty_collection = Collection()
-    report, data = SystemModel([1,2,3,4], [empty_collection])
+    report, data = system_model([1,2,3,4], [empty_collection])
     assert data == [1,2,3,4]
 
 def test_can_pass_collection_directly(fake_report):
     """i.e. not in a list"""
     collection = Collection(lambda x, y: x)
-    report, data = SystemModel([1,2,3,4], collection)
+    report, data = system_model([1,2,3,4], collection)
     assert data == [1,2,3,4]
 
 def test_can_nest_collections(fake_report):
     empty_collection = Collection()
-    report, data = SystemModel([1,2,3,4], Collection(empty_collection))
+    report, data = system_model([1,2,3,4], Collection(empty_collection))
     assert data == [1,2,3,4]
 
 def test_empty_collection_is_falsey():
@@ -30,7 +30,7 @@ def test_collection_applied_in_order(fake_report):
         lambda x, y: x + [1],
         lambda x, y: x + [2]
     )
-    report, data = SystemModel([], collection)
+    report, data = system_model([], collection)
     assert data == [1,2]
 
 def test_list_of_functions_also_possible(fake_report):
@@ -38,7 +38,7 @@ def test_list_of_functions_also_possible(fake_report):
         lambda x, y: x + [1],
         lambda x, y: x + [2]
     ]
-    report, data = SystemModel([], list_of_functions)
+    report, data = system_model([], list_of_functions)
     assert data == [1,2]
 
 def test_collection_len():

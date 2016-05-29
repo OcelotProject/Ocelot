@@ -4,7 +4,7 @@ __all__ = (
     "data_dir",
     "HTMLReport",
     "Report",
-    "SystemModel",
+    "system_model",
 )
 
 
@@ -26,5 +26,5 @@ except ImportError:
 from .data import data_dir
 from .io import *
 from .configuration import Configuration, default_configuration
-from .model import SystemModel
+from .model import system_model
 from .report import Report, HTMLReport
