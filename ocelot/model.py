@@ -15,7 +15,7 @@ import pickle
 def apply_transformation(function, counter, logger, data):
     if isinstance(function, Iterable):
         for obj in function:
-            data = apply_transform(obj, counter, logger, data)
+            data = apply_transformation(obj, counter, logger, data)
         return data
     else:
         metadata = get_function_meta(function)
