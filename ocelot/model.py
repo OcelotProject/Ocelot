@@ -52,9 +52,10 @@ def system_model(data_path, config=None, show=False):
     config = config or default_configuration
     data = extract_directory(data_path)
     logger = Logger(data)
+    counter = itertools.count()
 
     for obj in config:
-        data = apply_transformation(obj, itertools.count(), logger, data)
+        data = apply_transformation(obj, counter, logger, data)
 
     logger.finish()
     html = HTMLReport(logger.filepath, show)
