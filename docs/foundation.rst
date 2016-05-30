@@ -16,7 +16,16 @@ Running Ocelot usually involves the following steps:
 Configuration & ``system_model``
 ================================
 
-An Ocelot configuration is just a list of transformation functions which, when applied in order, produce a realization of a linked database. Configurations are currently specified in Python code, but in the future will also be able to be defined in other formats such as Excel.
+An Ocelot system model configuration is essentially just a list of transformation functions which, when applied in order, produce a realization of a linked database. Configurations are currently specified in Python code, but in the future will also be able to be defined in other formats such as Excel.
+
+We are actively exploring various ways of defining these configurations. The built-in configurations will be provided as a list of transformation functions already in Ocelot, perhaps wrapped in a configuration object. Another simple configuration format would be a text file, where each line was the name of a transformation function that could be imported from ``ocelot.transformations``. However, this doesn't work well for user-defined functions, nor if you need to prepare functions by e.g. `currying <https://en.wikipedia.org/wiki/Currying>`__ them. We are also looking at several configuration libraries, but haven't found anything that seems to fit our mental models or use cases well:
+
+* `ConfigParser <https://docs.python.org/3/library/configparser.html>`__ (In Python standard library)
+* `configure <http://configure.readthedocs.io/en/latest/>`__
+* `PyStaticConfiguration <https://github.com/dnephin/PyStaticConfiguration>`__
+* `pymlconf <https://pythonhosted.org/pymlconf/>`__
+
+So far no final decisions have been made, and things here will evolve along with the Ocelot codebase.
 
 Running Ocelot without specifying a configuration will use the default configuration, which is the cutoff system model.
 
