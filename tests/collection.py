@@ -1,5 +1,5 @@
-from ..collection import Collection
-from ..model import system_model
+from ocelot.collection import Collection
+from ocelot.model import system_model
 from .mocks import fake_report
 
 # Tests for `Collection` of functions

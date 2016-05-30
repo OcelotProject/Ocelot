@@ -1,6 +1,6 @@
 recursive-include *.py
 recursive-include ocelot/data/*.*
-recursive-include ocelot/tests/data/*.*
+recursive-include tests/*.*
 include pytest.ini
 include *.txt
 include *.md

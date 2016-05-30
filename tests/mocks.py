@@ -1,5 +1,5 @@
-from ..model import system_model
-from ..logger import Logger
+from ocelot.model import system_model
+from ocelot.logger import Logger
 from unittest import mock
 import os
 import pytest

@@ -1,5 +1,5 @@
 from . import test_data_dir
-from ..io.extract_ecospold2 import generic_extractor
+from ocelot.io.extract_ecospold2 import generic_extractor
 import os
 
 # Tests for ecospold2 extraction
