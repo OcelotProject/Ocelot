@@ -27,21 +27,26 @@ from ocelot import (
     validate_directory,
 )
 import os
+import sys
 
 
 def main():
-    args = docopt(__doc__, version='Ocelot LCI 0.1')
-    if args['validate']:
-        validate_directory(
-          args['<dirpath>'],
-          args['<schema>'] or os.path.join(data_dir, 'EcoSpold02.xsd')
-        )
-    elif args['cleanup']:
-        cleanup_data_directory()
-    elif args['run']:
-        system_model(args["<dirpath>"], args['<config>'], show=not args['--noshow'])
-    else:
-        raise ValueError
+    try:
+        args = docopt(__doc__, version='Ocelot LCI 0.1')
+        if args['validate']:
+            validate_directory(
+              args['<dirpath>'],
+              args['<schema>'] or os.path.join(data_dir, 'EcoSpold02.xsd')
+            )
+        elif args['cleanup']:
+            cleanup_data_directory()
+        elif args['run']:
+            system_model(args["<dirpath>"], args['<config>'], show=not args['--noshow'])
+        else:
+            raise ValueError
+    except KeyboardInterrupt:
+        print("Terminating Ocelot CLI")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

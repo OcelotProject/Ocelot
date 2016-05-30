@@ -6,6 +6,7 @@ import multiprocessing
 import os
 import pprint
 import pyprind
+import signal
 
 
 def _(string):
@@ -208,8 +209,17 @@ def extract_directory(dirpath, use_mp=True):
 
     if use_mp:
         start = time()
-        with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-            data = pool.map(generic_extractor, filelist)
+        # With code from
+        # http://jtushman.github.io/blog/2014/01/14/python-%7C-multiprocessing-and-interrupts/
+        with multiprocessing.Pool(
+                processes=multiprocessing.cpu_count(),
+                initializer=lambda : signal.signal(signal.SIGINT, signal.SIG_IGN)
+            ) as pool:
+            try:
+                data = pool.map(generic_extractor, filelist)
+            except KeyboardInterrupt:
+                pool.terminate()
+                raise KeyboardInterrupt
         print("Extracted {} undefined datasets in {:.1f} seconds".format(len(data), time() - start))
     else:
         data = [generic_extractor(fp)

@@ -10,6 +10,8 @@ from time import time
 import itertools
 import os
 import pickle
+import shutil
+import sys
 
 
 def apply_transformation(function, counter, logger, data):
@@ -52,12 +54,19 @@ def system_model(data_path, config=None, show=False):
     config = config or default_configuration
     data = extract_directory(data_path)
     logger = Logger(data)
-    counter = itertools.count()
+    print("Starting Ocelot model run")
+    try:
+        counter = itertools.count()
 
-    for obj in config:
-        data = apply_transformation(obj, counter, logger, data)
+        for obj in config:
+            data = apply_transformation(obj, counter, logger, data)
 
-    logger.finish()
-    html = HTMLReport(logger.filepath, show)
+        logger.finish()
+        html = HTMLReport(logger.filepath, show)
 
-    return logger, data
+        return logger, data
+    except KeyboardInterrupt:
+        print("Terminating Ocelot model run")
+        print("Deleting output directory:\n{}".format(logger.directory))
+        shutil.rmtree(logger.directory)
+        sys.exit(1)
