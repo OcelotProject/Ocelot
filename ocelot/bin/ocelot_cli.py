@@ -32,7 +32,7 @@ import sys
 
 def main():
     try:
-        args = docopt(__doc__, version='Ocelot LCI 0.1')
+        args = docopt(__doc__, version='Ocelot open source linker CLI 0.1')
         if args['validate']:
             validate_directory(
               args['<dirpath>'],
