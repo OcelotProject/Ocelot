@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from ocelot.model import system_model
 from ocelot.logger import Logger
 from unittest import mock

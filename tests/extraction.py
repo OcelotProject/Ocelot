@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from . import test_data_dir
 from ocelot.io.extract_ecospold2 import generic_extractor
 import os

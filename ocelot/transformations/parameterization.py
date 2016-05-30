@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from ..collection import Collection
 from ..errors import ParameterizationError
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from ..filesystem import get_base_output_directory
 import os
 import shutil

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from ocelot.transformations import parameter_names_are_unique
 from ocelot.errors import ParameterizationError
 import pytest
