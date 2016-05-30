@@ -94,6 +94,21 @@ def extract_production_volume(exc):
     return data
 
 
+def extract_property(prop):
+    data = {
+        'id': prop.get('propertyId'),
+        'amount': float(prop.get('amount')),
+        'name': prop.name.text,
+    }
+    if hasattr(prop, "uncertainty"):
+        data['uncertainty'] = extract_uncertainty(prop.uncertainty)
+    if prop.get("variableName"):
+        data['variable'] = prop.get("variableName")
+    if prop.get("mathematicalRelation"):
+        data['formula'] = prop.get("mathematicalRelation")
+    return data
+
+
 def extract_minimal_exchange(exc):
     # Basic data
     data = {
@@ -112,6 +127,12 @@ def extract_minimal_exchange(exc):
         data['variable'] = exc.get("variableName")
     if exc.get("mathematicalRelation"):
         data['formula'] = exc.get("mathematicalRelation")
+
+    properties = [extract_property(obj)
+                  for obj in exc.iterchildren()
+                  if _(obj.tag) == 'property']
+    if properties:
+        data['properties'] = properties
 
     # Biosphere compartments
     compartments = extract_compartments(exc)
@@ -152,10 +173,12 @@ def extract_minimal_ecospold2_info(elem, filepath):
         data['combined production'] = True
         parameterize(elem, data)
     else:
-        # Don't need parameter data because no allocation
+        # Don't need parameter or property data because no allocation
         for exc in data['exchanges']:
             if 'formula' in exc:
                 del exc['formula']
+            if 'properties' in exc:
+                del exc['properties']
     return data
 
 

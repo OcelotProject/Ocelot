@@ -96,6 +96,81 @@ PROD_VOLUME_REFERENCE = [{
     'type': 'transforming activity'
 }]
 
+MULTIOUTPUT_REFERENCE = [{
+    'combined production': True,
+    'economic': 'Business-as-Usual',
+    'exchanges': [{'amount': 200.0,
+        'formula': 'carmel_reynolds + 32',
+        'id': 'eae837b7-7775-4b3a-a5cd-c4c38b63dbea',
+        'name': 'Dr. Jeana Considine MD',
+        'production volume': {'amount': 318.0},
+        'properties': [{
+            'amount': 168.0,
+            'id': '0ae5715b-3b9d-455e-a757-107c3ed8d6a3',
+            'name': 'price',
+            'variable': 'carmel_reynolds'
+        }, {
+            'amount': 0.6,
+            'formula': 'miss_bette_kirlin',
+            'id': 'a9358458-9724-4f03-b622-106eda248916',
+            'name': 'water content',
+            'uncertainty': {
+                'mean': 1.0,
+                'mu': 2.0,
+                'pedigree matrix': (1, 2, 3, 4, 5),
+                'type': 'lognormal',
+                'variance': 3.0,
+                'varianceWithPedigreeUncertainty': 4.0
+            }
+        }],
+        'tag': 'intermediateExchange',
+        'type': 'reference product',
+        'unit': 'm3',
+        'variable': 'pulpwood'
+    }, {
+        'amount': 34.0,
+        'formula': 'raiden_thompson',
+        'id': '667e76dc-d54f-4062-a75c-01932128f788',
+        'name': 'Mr. Perley Hessel II',
+        'production volume': {
+            'amount': 19.0,
+            'uncertainty': {
+                'mean': 19.0,
+                  'mu': 2.0,
+                  'pedigree matrix': (1, 2, 3, 4, 5),
+                  'type': 'lognormal',
+                  'variance': 3.0,
+                  'varianceWithPedigreeUncertainty': 4.0
+            }
+        },
+        'tag': 'intermediateExchange',
+        'type': 'reference product',
+        'unit': 'kg',
+        'variable': 'greenholt'}
+    ],
+    'location': 'GLO',
+    'name': 'Aliana Price',
+    'parameters': [{
+        'formula': 'alia_botsford * 42',
+        'name': 'Raiden Thompson IV',
+        'variable': 'raiden_thompson'
+    }, {
+        'name': 'Mrs. Alia Botsford',
+        'uncertainty': {
+            'mean': 1.0,
+            'mu': 2.0,
+            'pedigree matrix': (1, 2, 3, 4, 5),
+            'type': 'lognormal',
+            'variance': 3.0,
+            'varianceWithPedigreeUncertainty': 4.0
+        },
+        'variable': ' alia_botsford'
+    }],
+    'technology level': 'current',
+    'temporal': ('2010-01-01', '2015-12-31'),
+    'type': 'transforming activity'
+}]
+
 
 def test_basic_extraction():
     fp = os.path.join(test_data_dir, "basic.xml")
@@ -107,3 +182,9 @@ def test_production_volume_extraction():
     fp = os.path.join(test_data_dir, "prod_volume.xml")
     PROD_VOLUME_REFERENCE[0]['filepath'] = fp
     assert generic_extractor(fp) == PROD_VOLUME_REFERENCE
+
+
+def test_multioutput_extraction():
+    fp = os.path.join(test_data_dir, "parameterized_multioutput.xml")
+    MULTIOUTPUT_REFERENCE[0]['filepath'] = fp
+    assert generic_extractor(fp) == MULTIOUTPUT_REFERENCE

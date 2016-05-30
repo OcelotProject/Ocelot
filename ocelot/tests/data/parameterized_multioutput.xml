@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold02">
+  <activityDataset>
+    <activityDescription>
+      <activity id="" specialActivityType="0">
+        <activityName>Aliana Price</activityName>
+      </activity>
+      <geography>
+        <shortname>GLO</shortname>
+      </geography>
+      <technology technologyLevel="3">
+      </technology>
+      <timePeriod startDate="2010-01-01" endDate="2015-12-31" />
+      <macroEconomicScenario>
+        <name>Business-as-Usual</name>
+      </macroEconomicScenario>
+    </activityDescription>
+    <flowData>
+      <intermediateExchange id="eae837b7-7775-4b3a-a5cd-c4c38b63dbea" variableName="pulpwood" amount="200" mathematicalRelation="carmel_reynolds + 32" productionVolumeAmount="318">
+        <name>Dr. Jeana Considine MD</name>
+        <unitName>m3</unitName>
+        <property propertyId="0ae5715b-3b9d-455e-a757-107c3ed8d6a3" variableName="carmel_reynolds" amount="168">
+          <name>price</name>
+        </property>
+        <property propertyId="a9358458-9724-4f03-b622-106eda248916" amount="0.6" mathematicalRelation="miss_bette_kirlin">
+          <name>water content</name>
+          <uncertainty>
+            <lognormal meanValue="1" mu="2" variance="3" varianceWithPedigreeUncertainty="4" />
+            <pedigreeMatrix reliability="1" completeness="2" temporalCorrelation="3" geographicalCorrelation="4" furtherTechnologyCorrelation="5" />
+          </uncertainty>
+        </property>
+        <outputGroup>0</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="667e76dc-d54f-4062-a75c-01932128f788" variableName="greenholt" amount="34" mathematicalRelation="raiden_thompson" productionVolumeAmount="19">
+        <name>Mr. Perley Hessel II</name>
+        <unitName>kg</unitName>
+        <productionVolumeUncertainty>
+          <lognormal meanValue="19" mu="2" variance="3" varianceWithPedigreeUncertainty="4" />
+          <pedigreeMatrix reliability="1" completeness="2" temporalCorrelation="3" geographicalCorrelation="4" furtherTechnologyCorrelation="5" />
+        </productionVolumeUncertainty>
+        <outputGroup>0</outputGroup>
+      </intermediateExchange>
+      <parameter parameterId="853ea3a0-88e5-48ea-a933-74ad36dc26e6" variableName="raiden_thompson" mathematicalRelation="alia_botsford * 42" amount="42">
+        <name>Raiden Thompson IV</name>
+      </parameter>
+      <parameter parameterId="dd63d46a-c8ed-4e41-9625-edcdb736643a" variableName=" alia_botsford" amount="1">
+        <name>Mrs. Alia Botsford</name>
+        <uncertainty>
+          <lognormal meanValue="1" mu="2" variance="3" varianceWithPedigreeUncertainty="4" />
+          <pedigreeMatrix reliability="1" completeness="2" temporalCorrelation="3" geographicalCorrelation="4" furtherTechnologyCorrelation="5" />
+          <comment></comment>
+        </uncertainty>
+      </parameter>
+    </flowData>
+  </activityDataset>
+</ecoSpold>
