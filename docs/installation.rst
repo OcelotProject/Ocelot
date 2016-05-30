@@ -34,6 +34,8 @@ Otherwise, do:
     source activate ocelot
     pip install --no-cache-dir git+https://github.com/OcelotProject/Ocelot.git#egg=ocelot
 
+.. note:: If you install from pypi, you will have to install the ``ocelot-lca`` package - someone pipped us during development!
+
 If Ocelot is correctly installed, you should be able to run the command line application:
 
 .. code-block:: bash

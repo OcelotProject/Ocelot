@@ -15,7 +15,7 @@ for dirpath, dirnames, filenames in os.walk('ocelot'):
         packages.append(pkg)
 
 setup(
-    name='ocelot',
+    name='ocelot-lca',
     version="0.1",
     packages=packages,
     author="Chris Mutel",
