@@ -6,6 +6,7 @@ __all__ = (
     "system_model",
 )
 
+__version__ = (0, 1)
 
 CYTOOLZ = """Functional programming library cytoolz not found.
 
