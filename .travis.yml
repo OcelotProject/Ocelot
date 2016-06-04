@@ -9,19 +9,21 @@ matrix:
 python:
   - "3.5"
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then git clone https://github.com/gappleto97/terryfy; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source terryfy/travis_tools.sh; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then get_python_environment $pydist $pyver; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then $PIP_CMD install virtualenv; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then virtualenv -p $PYTHON_EXE venv; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source venv/bin/activate; fi
+  - echo $TRAVIS_OS_NAME
+  - if [ $TRAVIS_OS_NAME == "osx" ]; then echo "Running on OS X"; else echo "Running on Linux"; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then git clone https://github.com/gappleto97/terryfy; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then source terryfy/travis_tools.sh; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then get_python_environment $pydist $pyver; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then $PIP_CMD install virtualenv; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then virtualenv -p $PYTHON_EXE venv; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then source venv/bin/activate; fi
   - echo $(python --version)
 install: "pip install -r requirements-travis.txt"
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then py.test --cov=ocelot; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then py.test; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then py.test --cov=ocelot; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then py.test; fi
 after_success:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then coveralls; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then coveralls; fi
 os:
   - linux
   - osx
