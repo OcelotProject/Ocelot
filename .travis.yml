@@ -1,7 +1,6 @@
 language: python
 matrix:
   include:
-    # - os: linux
     - language: generic-covered
       python: 3.5
       os: osx
@@ -23,6 +22,3 @@ script:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then py.test; fi
 after_success:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then coveralls; fi
-# os:
-#   - linux
-#   - osx
