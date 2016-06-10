@@ -43,7 +43,7 @@ setup(
         'toolz',
     ],
     url="https://ocelot.space/",
-    long_description=open('README.md').read(),
+    long_description=open('README.rst').read(),
     description='Open source linking for life cycle assessment',
     classifiers=[
         'Intended Audience :: End Users/Desktop',
