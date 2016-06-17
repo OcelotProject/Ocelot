@@ -69,6 +69,35 @@ Functions take two input arguments: The input ``data``, and the ``logger``. Func
 
 If you need to initialize functions using `functools.partial <https://docs.python.org/3.5/library/functools.html#functools.partial>`__, the report generator will still get the correct function metadata. Other forms of currying are not supported.
 
+Parallel transformations
+------------------------
+
+Transformation functions that only effect a single dataset at a time, or a group of datasets, can be run in parallel. To run a transformation function in parallel over each dataset, set the ``__parallel__`` attribtue to ``True``:
+
+.. code-block:: python
+
+    def some_transformation(data):
+        return data
+
+    some_transformation.__parallel__ = True
+
+If you need to group datasets before running the transformation, then set the ``__parallel__`` attribute to the grouping function:
+
+.. code-block:: python
+
+    import toolz
+    import functools
+
+    def some_transformation(data):
+        return data
+
+    grouping_function = functools.partial(
+        toolz.groupby,
+        key=lambda x: (x['name'], x['location'])
+    )
+
+    some_transformation.__parallel__ = grouping_function
+
 .. _logger:
 
 Logger
