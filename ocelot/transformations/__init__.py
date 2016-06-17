@@ -6,7 +6,7 @@ from .parameterization import (
 )
 
 
-def dummy_transformation(data, logger):
+def dummy_transformation(data):
     """This is a dummy transformation that doesn't do anything.
 
     Used primarily for testing."""

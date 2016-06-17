@@ -32,7 +32,7 @@ def jsonize(data):
 
 
 class HTMLReport(object):
-    """Generate an HTML report from a :ref:`logger` logfile.
+    """Generate an HTML report from a logfile.
 
     Reports are generated in the same directory as the logfile.
 

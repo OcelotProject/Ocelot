@@ -14,7 +14,7 @@ def test_parameter_names_are_unique():
             'variable': 'baz'
         }
     ]}]
-    assert parameter_names_are_unique(data, None)
+    assert parameter_names_are_unique(data)
 
 
 def test_parameter_names_are_unique_error():
@@ -26,4 +26,4 @@ def test_parameter_names_are_unique_error():
         }
     ]}]
     with pytest.raises(ParameterizationError):
-        parameter_names_are_unique(data, None)
+        parameter_names_are_unique(data)

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from ..collection import Collection
 from ..errors import ParameterizationError
+import logging
 
 
-def every_exchange_with_formula_has_a_variable_name(data, logger):
+def every_exchange_with_formula_has_a_variable_name(data):
     """Data validity check."""
     for ds in data:
         for exc in ds['exchanges']:
@@ -12,7 +13,7 @@ def every_exchange_with_formula_has_a_variable_name(data, logger):
     return data
 
 
-def parameter_names_are_unique(data, logger):
+def parameter_names_are_unique(data):
     """Data validity check."""
     for ds in data:
         if not ds.get('parameters'):
