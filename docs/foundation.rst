@@ -71,12 +71,21 @@ If you need to initialize functions using `functools.partial <https://docs.pytho
 
 .. _logger:
 
-Logger
-======
+Logging
+=======
 
-Ocelot uses a very simple ``Logger`` class that writes messages in JSON. Log messages are written when a run is started or finished, when transformation functions are started or finished, and whenever the transformation function wants to log something. The log message format is documented in :ref:`logging-format`.
+Ocelot uses standard `python logging <https://docs.python.org/3/library/logging.html>`_, with a custom formatter that encodes log messages to JSON dictionaries. Therefore, log messages must be **dictionaries**:
 
-.. autoclass:: ocelot.Logger
+.. code-block:: python
+
+    import logging
+
+    def my_transformation(data):
+        logging.info({"message": "something", "count": len(data)})
+
+Log messages are written when a run is started or finished, when transformation functions are started or finished, and whenever the transformation function wants to log something. The log message format is documented in :ref:`logging-format`.
+
+.. note:: ``time`` is added automatically to each log message.
 
 .. _report:
 

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+import appdirs
 import hashlib
 import os
 import re
 import unicodedata
-import appdirs
+import uuid
 
 re_slugify = re.compile('[^\w\s-]', re.UNICODE)
 
@@ -49,3 +50,21 @@ def get_base_output_directory():
         return create_dir(os.environ['OCELOT_OUTPUT'])
     except KeyError:
         return create_dir(appdirs.user_data_dir("Ocelot", "ocelot_runs"))
+
+
+class OutputDir(object):
+    """OutputDir is responsible for creating and managing a model run output directory."""
+    def __init__(self, dir_path=None):
+        """Create the job id and output directory"""
+        self.report_id = uuid.uuid4().hex
+        if dir_path is None:
+            dir_path = get_base_output_directory()
+        self.directory = os.path.join(dir_path, self.report_id)
+        try:
+            create_dir(self.directory)
+            assert check_dir(self.directory)
+        except:
+            raise OutputDirectoryError(
+                "Can't find or write to output directory:\n\t{}".format(
+                self.directory)
+            )

@@ -1,38 +1,49 @@
 # -*- coding: utf-8 -*-
 from .configuration import default_configuration
-from .filesystem import safe_filename
+from .filesystem import safe_filename, OutputDir
 from .io import extract_directory
-from .logger import Logger
+from .logger import create_log
 from .report import HTMLReport
 from .utils import get_function_meta
 from collections.abc import Iterable
 from time import time
 import itertools
+import logging
 import os
 import pickle
 import shutil
 import sys
 
 
-def apply_transformation(function, counter, logger, data):
+def apply_transformation(function, counter, data, output_dir):
+    # A `function` can be a list of functions
     if isinstance(function, Iterable):
         for obj in function:
-            data = apply_transformation(obj, counter, logger, data)
+            data = apply_transformation(obj, counter, data, output_dir)
         return data
     else:
         metadata = get_function_meta(function)
         index = next(counter)
-        logger.set_index(index)
-        logger.start_function(metadata, data)
+        metadata.update(
+            index=index,
+            type="function start",
+            count=len(data),
+        )
+        logging.info(metadata)
+
         print("Applying transformation {}".format(metadata['name']))
-        data = function(data, logger)
+        data = function(data)
         dump_fp = os.path.join(
-            logger.directory,
+            output_dir,
             "{}.".format(index) + safe_filename(metadata['name']) + ".pickle"
         )
         with open(dump_fp, "wb") as f:
             pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
-        logger.end_function(metadata, data)
+        metadata.update(
+            type="function end",
+            count=len(data)
+        )
+        logging.info(metadata)
         return data
 
 
@@ -51,22 +62,32 @@ def system_model(data_path, config=None, show=False):
     * Finally, write a report.
 
     """
-    config = config or default_configuration
-    data = extract_directory(data_path)
-    logger = Logger(data)
     print("Starting Ocelot model run")
     try:
+        config = config or default_configuration
+        data = extract_directory(data_path)
+        output_manager = OutputDir()
         counter = itertools.count()
+        logfile_path = create_log(output_manager.directory)
+        print("Opening log file at: {}".format(logfile_path))
+
+        logging.info({
+            'type': 'report start',
+            'uuid': output_manager.report_id,
+            'count': len(data),
+        })
 
         for obj in config:
-            data = apply_transformation(obj, counter, logger, data)
+            data = apply_transformation(obj, counter, data,
+                                        output_manager.directory)
 
-        logger.finish()
-        html = HTMLReport(logger.filepath, show)
+        logging.info({'type': 'report end'})
 
-        return logger, data
+        html = HTMLReport(logfile_path, show)
+
+        return output_manager, data
     except KeyboardInterrupt:
         print("Terminating Ocelot model run")
-        print("Deleting output directory:\n{}".format(logger.directory))
-        shutil.rmtree(logger.directory)
+        print("Deleting output directory:\n{}".format(output_manager.directory))
+        shutil.rmtree(output_manager.directory)
         sys.exit(1)

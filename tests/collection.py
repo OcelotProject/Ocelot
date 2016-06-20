@@ -13,7 +13,7 @@ def test_empty_collection(fake_report):
 
 def test_can_pass_collection_directly(fake_report):
     """i.e. not in a list"""
-    collection = Collection(lambda x, y: x)
+    collection = Collection(lambda x: x)
     report, data = system_model([1,2,3,4], collection)
     assert data == [1,2,3,4]
 
@@ -28,16 +28,16 @@ def test_empty_collection_is_falsey():
 
 def test_collection_applied_in_order(fake_report):
     collection = Collection(
-        lambda x, y: x + [1],
-        lambda x, y: x + [2]
+        lambda x: x + [1],
+        lambda x: x + [2]
     )
     report, data = system_model([], collection)
     assert data == [1,2]
 
 def test_list_of_functions_also_possible(fake_report):
     list_of_functions = [
-        lambda x, y: x + [1],
-        lambda x, y: x + [2]
+        lambda x: x + [1],
+        lambda x: x + [2]
     ]
     report, data = system_model([], list_of_functions)
     assert data == [1,2]
