@@ -54,3 +54,16 @@ UNCERTAINTY_MAPPING = {
     'minValue': 'minimum',
     'mostLikelyValue': 'mode',
 }
+
+ACCESS_RESTRICTED = {
+'0': 'publid', 
+'1': 'licensees', 
+'2': 'results only', 
+'3': 'restricted'
+}
+
+BYPRODUCT_CLASSIFICATION = {
+'allocatable product': 'allocatable', 
+'Waste': 'waste', 
+'Recyclable': 'recyclable'
+}

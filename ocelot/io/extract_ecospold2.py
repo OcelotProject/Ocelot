@@ -39,7 +39,7 @@ def parameterize(elem, data):
             obj['uncertainty'] = extract_uncertainty(param.uncertainty)
         formula = param.get('mathematicalRelation')
         if formula:
-            obj['formula'] = formula
+            obj['mathematical relation'] = formula
         data['parameters'].append(obj)
 
 
@@ -88,26 +88,29 @@ def extract_production_volume(exc):
         data['uncertainty'] = extract_uncertainty(exc.productionVolumeUncertainty)
     formula = exc.get('productionVolumeMathematicalRelation')
     if formula:
-        data['formula'] = formula
+        data['mathematical relation'] = formula
     variable = exc.get('productionVolumeVariableName')
     if variable:
         data['variable'] = variable
     return data
 
 
-def extract_property(prop):
-    data = {
-        'id': prop.get('propertyId'),
-        'amount': float(prop.get('amount')),
-        'name': prop.name.text,
-    }
-    if hasattr(prop, "uncertainty"):
-        data['uncertainty'] = extract_uncertainty(prop.uncertainty)
-    if prop.get("variableName"):
-        data['variable'] = prop.get("variableName")
-    if prop.get("mathematicalRelation"):
-        data['formula'] = prop.get("mathematicalRelation")
-    return data
+def extract_property(exc):
+    properties = {}
+    for prop in exc.iterchildren():
+        if _(prop.tag) == 'property':
+            properties[prop.name.text] = {
+                'id': prop.get('propertyId'),
+                'amount': float(prop.get('amount')),
+                'unit': prop.unitName.text
+                }
+            if hasattr(prop, "uncertainty"):
+                properties[prop.name.text]['uncertainty'] = extract_uncertainty(prop.uncertainty)
+            if prop.get("variableName"):
+                properties[prop.name.text]['variable'] = prop.get("variableName")
+            if prop.get("mathematicalRelation"):
+                properties[prop.name.text]['mathematical relation'] = prop.get("mathematicalRelation")
+    return properties
 
 
 def extract_minimal_exchange(exc):
@@ -122,17 +125,25 @@ def extract_minimal_exchange(exc):
                  if hasattr(exc, "inputGroup")
                  else OUTPUT_GROUPS[exc.outputGroup.text]),
     }
-
-    # Variable and formula will be deleted if dataset is not multioutput
+    
+    # Activity link, optional field
+    if exc.get('activityLinkId'):
+        data['activity link'] = exc.get("activityLinkId")
+    
+    # Byproduct classification, optional field
+    for obj in exc.iterchildren():
+        if _(obj.tag) == 'classification':
+            if obj.classificationSystem.text == 'By-product classification':
+                data['byproduct classification'] = obj.classificationValue.text
+                break
+    
     if exc.get("variableName"):
         data['variable'] = exc.get("variableName")
     if exc.get("mathematicalRelation"):
-        data['formula'] = exc.get("mathematicalRelation")
-
-    properties = [extract_property(obj)
-                  for obj in exc.iterchildren()
-                  if _(obj.tag) == 'property']
-    if properties:
+        data['mathematical relation'] = exc.get("mathematicalRelation")
+    
+    properties = extract_property(exc)
+    if len(properties) > 0:
         data['properties'] = properties
 
     # Biosphere compartments
@@ -155,6 +166,7 @@ def extract_minimal_exchange(exc):
 def extract_minimal_ecospold2_info(elem, filepath):
     data = {
         'filepath': filepath,
+        'id': elem.activityDescription.activity.get('id'), 
         'name': elem.activityDescription.activity.activityName.text,
         'location': elem.activityDescription.geography.shortname.text,
         'type': SPECIAL_ACTIVITY_TYPE[elem.activityDescription.activity.get('specialActivityType')],
@@ -166,20 +178,12 @@ def extract_minimal_ecospold2_info(elem, filepath):
         'economic': elem.activityDescription.macroEconomicScenario.name.text,
         'exchanges': [extract_minimal_exchange(exc)
                       for exc in elem.flowData.iterchildren()
-                      if 'Exchange' in exc.tag]
+                      if 'Exchange' in exc.tag], 
+        'access restricted': ACCESS_RESTRICTED[elem.administrativeInformation.dataGeneratorAndPublication.get(
+                            'accessRestrictedTo')], 
+        'last operation': 'extract_minimal_ecospold2_info'
     }
-    if is_combined_production(data):
-         # Dataset will require recalculation, so variableName
-         # and mathematicalRelation are necessary
-        data['combined production'] = True
-        parameterize(elem, data)
-    else:
-        # Don't need parameter or property data because no allocation
-        for exc in data['exchanges']:
-            if 'formula' in exc:
-                del exc['formula']
-            if 'properties' in exc:
-                del exc['properties']
+    
     return data
 
 
