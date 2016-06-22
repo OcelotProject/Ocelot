@@ -59,11 +59,11 @@ def get_reference_product(ds):
 
 def uncertainty_to_df(u, data_format):
     """used by the function internal_to_df"""
-    
+
     to_add = {}
     for field in u:
         to_add[data_format.loc[('uncertainty', field), 'in dataframe']] = u[field]
-    
+
     return to_add
 
 
@@ -104,7 +104,7 @@ def add_Ref(to_add):
     else:
         1/0
     return to_add
-   
+
 
 def internal_to_df(dataset_internal, data_format):
     """Takes a dataset and change its representation to a convenient dataframe format"""
@@ -115,7 +115,7 @@ def internal_to_df(dataset_internal, data_format):
             df = add_line_to_df(df, data_format, parent[:-1], dataset_internal[parent])
     df = pd.DataFrame(df).transpose()
     del df['id']
-    
+
     return df
 
 
@@ -131,28 +131,25 @@ def df_to_internal(df, dataset_internal):
                     to_add[field] = s[field]
                 elif field == 'Ref':
                     to_add['id'] = s[field].replace('Ref(', '').replace('(', '')
-                    
+
             dataset_internal['parameters'].append(copy(to_add))
 
 
 def read_format_definition():
-    path = r'C:\ocelot\docs' #fix me: relative path
-    filename = 'format.xlsx'
-    df = pd.read_excel(os.path.join(path, filename))
-    return df
+    return pd.read_excel(os.path.join(os.path.dirname(__file__), "data", "format.xlsx"))
 
 
 def save_file(obj, folder, filename):
     f = open(os.path.join(folder, filename) + '.pkl', mode = 'wb')
     dump(obj, f, protocol = -1)
     f.close()
-    
-    
+
+
 def open_file(folder, filename):
     f = open(os.path.join(folder, filename) + '.pkl', mode = 'rb')
     obj = load(f)
     return obj
-    
-    
+
+
 def print_dataset_to_excel(dataset, folder):
     return ''

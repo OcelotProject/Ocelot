@@ -6,31 +6,33 @@ import os
 import ocelot.utils
 imp.reload(ocelot.utils)
 
-def activity_overview(datasets, support_excel_folder, support_pkl_folder, 
+f = lambda x: None
+
+def activity_overview(datasets, support_excel_folder, support_pkl_folder,
         data_format):
     """creates a spreadsheet with a line for each output to technosphere"""
     data_format = data_format.set_index(['parent', 'field']).sortlevel(level=0)
     df = {}
     dataset_fields_to_keep = [
-        'id', 
-        'name', 
-        'filepath', 
-        'location', 
-        'technology level', 
-        'type', 
-        'access restricted', 
-        'allocation method', 
-        'start date', 
+        'id',
+        'name',
+        'filepath',
+        'location',
+        'technology level',
+        'type',
+        'access restricted',
+        'allocation method',
+        'start date',
         'end date'
         ]
     exchange_fields_to_keep = [
-        'type', 
-        'name', 
-        'amount', 
-        'unit', 
+        'type',
+        'name',
+        'amount',
+        'unit',
         'byproduct classification'
         ]
-    
+
     for dataset in datasets:
         baseline = {}
         for field in dataset_fields_to_keep:
@@ -49,12 +51,12 @@ def activity_overview(datasets, support_excel_folder, support_pkl_folder,
     df = df.sort_values(by = 'activity name')
     filename = 'activity_overview.xlsx'
     writer = pd.ExcelWriter(os.path.join(support_excel_folder, filename))
-    cols = ['filepath', 'activity id', 'activity name', 'location', 'activity type', 
-            'technology level', 'access restricted', 'allocation method', 
-            'exchange type', 'exchange name', 'amount', 'production volume', 'unit', 
+    cols = ['filepath', 'activity id', 'activity name', 'location', 'activity type',
+            'technology level', 'access restricted', 'allocation method',
+            'exchange type', 'exchange name', 'amount', 'production volume', 'unit',
             'byproduct classification']
     df.to_excel(writer, columns = cols, index = False, merge_cells = False)
     filename = 'activity_overview'
     ocelot.utils.save_file(df, support_pkl_folder, filename)
-    
+
     return df
