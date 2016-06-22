@@ -4,7 +4,8 @@ from .parameterization import (
     parameterization_validity_checks,
     parameter_names_are_unique,
 )
-
+from .activity_overview import f
+from .allocation_method import f
 
 def dummy_transformation(data):
     """This is a dummy transformation that doesn't do anything.

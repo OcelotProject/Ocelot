@@ -4,14 +4,15 @@ Dataset:
     'filepath': str, 
     'location': str, #field 410: shortname
     'technology level': str, #field 500: technologyLevel.  either undefined, new, modern, current, old or outdated
-    'economic': str, #field 700: macroEconomicScenarioId
+    'economic scenario': str, #field 700: macroEconomicScenarioId
     'exchanges': [{
         'amount': float, #field 1020: amount
         'id': str, #uuid as hex-encoded string, #field 1005: id
 		'mathematical relation': str, #optional, field 1060: mathematicalRelation
 		'variable': str, #optional, field 1040: variableName
         'name': str, # field 1000: name
-		'compartments': tuple, #compartment and subcompartment, only for exchanges with type 'from environment' or 'to environment'
+		'compartment': str, 
+		'subcompartment': str, 
         # The following only applies to exchanges whose "type" is "reference product" and "byproduct"
         'production volume': {
             'amount': float, #field 1530: productionVolumeAmount
@@ -54,7 +55,8 @@ Dataset:
 				}
 			}}
     }],
-    'temporal': (str, str),# Starting and ending dates for dataset validity, in format '2015-12-31'
+    'start date': str,
+	'end date': str, # Starting and ending dates for dataset validity, in format '2015-12-31'
     'type': str, #field 115: specialActivityType.  Either 'transforming activity', 'market activity', 'market group'
 	'parameters': [{
         'amount': float, #field 1710: amount

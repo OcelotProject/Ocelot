@@ -4,6 +4,7 @@ import functools
 import pandas as pd
 from copy import copy
 import numpy as np
+from pickle import dump, load
 
 def extract_products_as_tuple(dataset):
     return tuple(sorted([exc['name']
@@ -56,68 +57,62 @@ def get_reference_product(ds):
             break
     return exc
 
-def uncertainty_to_df(u):
+def uncertainty_to_df(u, data_format):
     """used by the function internal_to_df"""
     
     to_add = {}
     for field in u:
-        if field == 'pedigree matrix':
-            to_add.update(dict(zip(PEDIGREE_LABELS, u['pedigree matrix'])))
-        elif field == 'type':
-            to_add['uncertainty type'] = u['type']
-        else:
-            to_add[field] = u[field]
+        to_add[data_format.loc[('uncertainty', field), 'in dataframe']] = u[field]
     
     return to_add
-    
+
+
+def is_empty(e):
+    return type(e) in ['', None, np.nan, np.NaN, np.nan, []]
+
 
 def uncertainty_to_internal(s):
-    u = ''
-    return u
+    if 'uncertainty type' in s and not is_empty(s['uncertainty type']):
+        pass
+    return ''
 
 
-def internal_to_df(dataset_internal):
+def add_line_to_df(df, data_format, parent, element):
+    to_add = {'data type': parent}
+    for field in element:
+        if field in ['production volume', 'property']:
+            df = add_line_to_df(df, data_format, field, element[field])
+        elif field == 'uncertainty':
+            for field2 in element[field]:
+                to_add[data_format.loc[(field, field2), 'in dataframe']] = element[field][field2]
+        else:
+            to_add[data_format.loc[(parent, field), 'in dataframe']] = element[field]
+    to_add = add_Ref(to_add)
+    df[len(df)] = copy(to_add)
+    return df
+
+
+def add_Ref(to_add):
+    if to_add['data type'] == 'exchange':
+        to_add['Ref'] = "Ref('{}')".format(to_add['exchange id'])
+    elif to_add['data type'] == 'production volume':
+        to_add['Ref'] = "Ref('{}', 'ProductionVolume')".format(to_add['exchange id'])
+    elif to_add['data type'] == 'parameter':
+        to_add['Ref'] = "Ref('{}')".format(to_add['id'])
+    elif to_add['data type'] == 'property':
+        to_add['Ref'] = "Ref('{}', '{}')".format(to_add['exchange id'], to_add['property id'])
+    else:
+        1/0
+    return to_add
+   
+
+def internal_to_df(dataset_internal, data_format):
     """Takes a dataset and change its representation to a convenient dataframe format"""
-    
+    data_format = data_format.set_index(['parent', 'field']).sortlevel(level=0)
     df = {}
-    for exc in dataset_internal['exchanges']:
-        to_add = {'data type': 'exchange'}
-        for field in exc:
-            if field == 'uncertainty':
-                to_add.update(uncertainty_to_df(exc['uncertainty']))
-            elif field not in ['production volume', 'properties']:
-                to_add[field] = exc[field]
-        to_add['Ref'] = 'Ref({})'.format(exc['id'])
-        df[len(df)] = copy(to_add)
-        if 'production volume' in exc:
-            to_add = {'data type': 'production volume'}
-            for field in exc['production volume']:
-                if field == 'uncertainty':
-                    to_add.update(uncertainty_to_df(exc['production volume']['uncertainty']))
-                else:
-                    to_add[field] = exc['production volume'][field]
-            to_add['Ref'] = "Ref({}, 'ProductionVolume')".format(exc['id'])
-            df[len(df)] = copy(to_add)
-        if 'properties' in exc:
-            to_add = {'data type': 'property'}
-            for field in exc['property']:
-                if field == 'uncertainty':
-                    to_add.update(uncertainty_to_df(exc['property']['uncertainty']))
-                else:
-                    to_add[field] = exc['property'][field]
-            to_add['Ref'] = "Ref({}, {})".format(exc['id'], exc['property']['id'])
-            df[len(df)] = copy(to_add)
-    
-    if 'parameters' in dataset_internal:
-        for p in dataset_internal['parameters']:
-            to_add = {'data type': 'parameter'}
-            for field in p:
-                if field == 'uncertainty':
-                    to_add.update(uncertainty_to_df(p['uncertainty']))
-                else:
-                    to_add[field] = p[field]
-            to_add['Ref'] = 'Ref({})'.format(exc['id'])
-            df[len(df)] = copy(to_add)
+    for parent in ['exchanges', 'parameters']:
+        if parent in dataset_internal:
+            df = add_line_to_df(df, data_format, parent[:-1], dataset_internal[parent])
     df = pd.DataFrame(df).transpose()
     del df['id']
     
@@ -129,5 +124,35 @@ def df_to_internal(df, dataset_internal):
     if len(parameters) > 0:
         dataset_internal['parameters'] = []
         for index in parameters.index:
+            s = parameters.loc[index]
             to_add = {}
-            parameters.loc[index]
+            for field in parameters:
+                if not is_empty(s[field]) and field != 'Ref':
+                    to_add[field] = s[field]
+                elif field == 'Ref':
+                    to_add['id'] = s[field].replace('Ref(', '').replace('(', '')
+                    
+            dataset_internal['parameters'].append(copy(to_add))
+
+
+def read_format_definition():
+    path = r'C:\ocelot\docs' #fix me: relative path
+    filename = 'format.xlsx'
+    df = pd.read_excel(os.path.join(path, filename))
+    return df
+
+
+def save_file(obj, folder, filename):
+    f = open(os.path.join(folder, filename) + '.pkl', mode = 'wb')
+    dump(obj, f, protocol = -1)
+    f.close()
+    
+    
+def open_file(folder, filename):
+    f = open(os.path.join(folder, filename) + '.pkl', mode = 'rb')
+    obj = load(f)
+    return obj
+    
+    
+def print_dataset_to_excel(dataset, folder):
+    return ''

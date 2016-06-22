@@ -39,13 +39,13 @@ OUTPUT_GROUPS = {
     "5": "stock addition"
 }
 
-PEDIGREE_LABELS = [
-    "reliability",
-    "completeness",
-    "temporalCorrelation",
-    "geographicalCorrelation",
-    "furtherTechnologyCorrelation"
-]
+PEDIGREE_LABELS = {
+    "reliability": 'reliability',
+    "completeness": 'completeness',
+    "temporalCorrelation": 'temporal correlation',
+    "geographicalCorrelation": 'geographical correlation',
+    "furtherTechnologyCorrelation": 'further technology correlation'
+}
 
 UNCERTAINTY_MAPPING = {
     # Translate some ecoinvent terms to their actual names
@@ -56,14 +56,14 @@ UNCERTAINTY_MAPPING = {
 }
 
 ACCESS_RESTRICTED = {
-'0': 'publid', 
-'1': 'licensees', 
-'2': 'results only', 
-'3': 'restricted'
+    '0': 'publid', 
+    '1': 'licensees', 
+    '2': 'results only', 
+    '3': 'restricted'
 }
 
 BYPRODUCT_CLASSIFICATION = {
-'allocatable product': 'allocatable', 
-'Waste': 'waste', 
-'Recyclable': 'recyclable'
+    'allocatable product': 'allocatable', 
+    'Waste': 'waste', 
+    'Recyclable': 'recyclable'
 }
