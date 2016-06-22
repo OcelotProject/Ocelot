@@ -2,7 +2,7 @@
 from .configuration import default_configuration
 from .filesystem import safe_filename, OutputDir
 from .io import extract_directory
-from .logger import create_log
+from .logger import create_log, queued_log, worker_init
 from .report import HTMLReport
 from .utils import get_function_meta
 from collections.abc import Iterable
@@ -68,7 +68,7 @@ def system_model(data_path, config=None, show=False):
         data = extract_directory(data_path)
         output_manager = OutputDir()
         counter = itertools.count()
-        logfile_path = create_log(output_manager.directory)
+        logfile_path, handler = create_log(output_manager.directory)
         print("Opening log file at: {}".format(logfile_path))
 
         logging.info({

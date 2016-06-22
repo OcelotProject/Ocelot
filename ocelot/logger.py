@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
-
-# Uses a great deal of code from
-# https://gist.github.com/schlamar/7003737
-
+from logging.handlers import QueueHandler, QueueListener
 import contextlib
 import json
 import logging
 import multiprocessing
 import os
-import threading
 import time
 
 
 class JsonFormatter(logging.Formatter):
-    """Uses code from https://github.com/madzak/python-json-logger/ under BSD license"""
+    """Add ``time`` field, and dump to JSON.
+
+    Uses code from https://github.com/madzak/python-json-logger/ under BSD license."""
     def format(self, record):
+        if not isinstance(record.msg, dict):
+            # Messages from child processes are strings
+            record.msg = eval(record.msg)
         assert isinstance(record.msg, dict)
         message_dict = record.msg
         message_dict['time'] = time.time()
@@ -22,85 +23,64 @@ class JsonFormatter(logging.Formatter):
 
 
 def create_log(output_dir):
-    logger = logging.getLogger('ocelot')
+    """Create a JSON log file in ``output_dir``.
+
+    Returns filepath of created log file and log handler."""
     formatter = JsonFormatter()
     filepath = os.path.join(output_dir, "report.log.json")
     handler = logging.FileHandler(filepath, encoding='utf-8')
     handler.setFormatter(formatter)
+
+    logger = logging.getLogger()
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
-    return filepath, logger
-
-
-def daemon(log_queue, logger):
-    """Daemon process that listens to the log queue and write messages to the log file"""
-    while True:
-        try:
-            record_data = log_queue.get()
-            if record_data is None:
-                # Send None to kill daemon process
-                break
-            record = logging.makeLogRecord(record_data)
-            print("Received log message: ", record)
-            print("Logger:", logger)
-            logger.handle(record)
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except EOFError:
-            break
-        except:
-            logging.exception('Error in log handler.')
+    return filepath, handler
 
 
 @contextlib.contextmanager
-def open_queue(logger):
-    # Queue for log messages that is written to by child processes
-    # Have to use a manager to share among processes
-    manager = multiprocessing.Manager()
-    log_queue = manager.Queue()
-    # New thread that handles the messages in order to avoid multiple
-    # writers causing log corruption
-    daemon_thread = threading.Thread(target=daemon, args=(log_queue, logger))
-    daemon_thread.start()
-    yield log_queue
-    # Sending None kills the daemon thread
-    log_queue.put(None)
+def queued_log(handler):
+    """Start a logging queue for multiprocessing workers.
+
+    Uses the handler created by ``create_log``.
+
+    As a context manager, this function will start and stop the queue listener automatically.
+
+    Usage:
+
+    ..code-block:: python
+
+        _, handler = create_log("some directory")
+        with queued_log(handler) as queue:
+            with multiprocessing.Pool(
+                        initializer=worker_init,
+                        initargs=[queue]
+                    ) as pool:
+                do_something()
+
+    Adapted from http://stackoverflow.com/a/34964369/164864."""
+    logging_queue = multiprocessing.Queue()
+    queue_listener = QueueListener(logging_queue, handler)
+    queue_listener.start()
+    yield logging_queue
+    queue_listener.stop()
 
 
-class MPLogger(logging.Logger):
-    log_queue = None
+def worker_init(logging_queue):
+    """Change the default handler to send logging messages to a multiprocessing queue.
 
-    def isEnabledFor(self, level):
-        return True
+    This needs to be run in each child process, because of the way multiprocessing works in Windows. There
+    is no `fork`, so each child process starts in a "clean" environment.
 
-    def handle(self, record):
-        # Special handling for exceptions because we will put them on the Queue
-        # But exceptions can't be pickled. We have to format them in advance.
-        print("Received message in `MPLogger.handle`:", record)
-        ei = record.exc_info
-        if ei:
-            # to get traceback text into record.exc_text
-            logging._defaultFormatter.format(record)
-            record.exc_info = None  # not needed any more
-        d = dict(record.__dict__)
-        d['msg'] = record.getMessage()
-        d['args'] = None
-        self.log_queue.put(d)
+    This is only run after the logging queue has been initialized and a suitable listener constructed.
 
+    In the main process, just call this function once to change the default logger. In a multiprocessing pool, call
 
-def logged_call(log_queue, function, *args, **kwargs):
-    MPLogger.log_queue = log_queue
-    logging.setLoggerClass(MPLogger)
-    # Monkey patch root logger and already defined loggers
-    # to send all messags to `log_queue`
-    logging.root.__class__ = MPLogger
-    print("Loggers:", logging.Logger.manager.loggerDict)
-    for key, logger in logging.Logger.manager.loggerDict.items():
-        if key == 'ocelot':
-            continue
-        elif not isinstance(logger, logging.PlaceHolder):
-            logger.__class__ = MPLogger
-    # Then call the function
-    return function(*args, **kwargs)
+    ..code-block:: python
 
+        with multiprocessing.Pool(initializer=worker_init, initargs=[logging_queue]) as pool:
 
+    """
+    queue_handler = QueueHandler(logging_queue)
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    logger.addHandler(queue_handler)
