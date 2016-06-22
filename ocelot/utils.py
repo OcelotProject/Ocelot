@@ -106,13 +106,13 @@ def add_Ref(to_add):
     return to_add
 
 
-def internal_to_df(dataset_internal, data_format):
+def internal_to_df(dataset, data_format):
     """Takes a dataset and change its representation to a convenient dataframe format"""
     data_format = data_format.set_index(['parent', 'field']).sortlevel(level=0)
     df = {}
     for parent in ['exchanges', 'parameters']:
-        if parent in dataset_internal:
-            df = add_line_to_df(df, data_format, parent[:-1], dataset_internal[parent])
+        if parent in dataset:
+            df = add_line_to_df(df, data_format, parent[:-1], dataset[parent])
     df = pd.DataFrame(df).transpose()
     del df['id']
 
@@ -151,5 +151,37 @@ def open_file(folder, filename):
     return obj
 
 
-def print_dataset_to_excel(dataset, folder):
+def print_dataset_to_excel(dataset, folder, data_format):
+    filename = '{} - {}.xlsx'.format(dataset['name'], dataset['main reference product'])
+    writer = pd.ExcelWriter(os.path.join(folder, filename))
+    fields = ['activity name', 'location', 
+              'start date', 'end date', 'activity type', 'technology level', 
+              'access restricted', 'allocation method']
+    data_format = data_format.set_index('in dataframe').loc[fields][['field']]
+    data_format = data_format['field'].apply(lambda key: dataset[key])
+    df = pd.DataFrame()
+    
+    if 'data frame' not in dataset:
+        dataset['data frame'] = internal_to_df(dataset, data_format)
+    
     return ''
+
+
+def datasets_to_dict(datasets, fields):
+    if type(fields) == str or len(fields) == 1:
+        if type(fields) in (list, tuple):
+            fields = fields[0]
+        new_datasets = {dataset[fields]: dataset for dataset in datasets}
+    else:
+        new_datasets = {tuple([dataset[field] for field in fields]):
+            dataset for dataset in datasets}
+    return new_datasets
+
+
+def find_main_reference_product(exchanges):
+    amount = 0.
+    for exc in exchanges:
+        if abs(exc['amount']) > amount:
+            amount = exc['amount']
+            name = exc['name']
+    return name

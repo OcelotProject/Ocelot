@@ -29,5 +29,5 @@ else:
     #filename = 'ecoinvent_3.2_internal'
     datasets = ocelot.utils.open_file(folder, filename)
     data_format = ocelot.utils.read_format_definition()
-    
+    datasets = ocelot.utils.datasets_to_dict(datasets, ['name', 'location'])
     

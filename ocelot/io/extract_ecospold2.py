@@ -7,7 +7,7 @@ import os
 import pprint
 import pyprind
 import signal
-
+from .. import 
 
 def _(string):
     return string.replace("{http://www.EcoInvent.org/EcoSpold02}", "")
@@ -58,9 +58,7 @@ def extract_uncertainty(unc):
                          for label in distribution_labels
                          if hasattr(unc, label)))
     data = {UNCERTAINTY_MAPPING.get(key, key): float(distribution.get(key)) for key in distribution.keys()}
-    
     data.update({'type': _(distribution.tag)})
-    
     data.update(extract_pedigree_matrix(unc))
     
     return data
@@ -77,34 +75,35 @@ def extract_production_volume(exc, exc_data):
         data = {'amount': float(pv)}
         if hasattr(exc, "productionVolumeUncertainty"):
             data['uncertainty'] = extract_uncertainty(exc.productionVolumeUncertainty)
-        formula = exc.get('productionVolumeMathematicalRelation')
-        if formula:
-            data['mathematical relation'] = formula
-        variable = exc.get('productionVolumeVariableName')
-        if variable:
-            data['variable'] = variable
+        if exc.get('productionVolumeMathematicalRelation'):
+            data['mathematical relation'] = exc.get('productionVolumeMathematicalRelation')
+        if exc.get('productionVolumeVariableName'):
+            data['variable'] = exc.get('productionVolumeVariableName')
     
     return data
 
 
 def extract_property(exc):
-    properties = {}
+    properties = []
     for prop in exc.iterchildren():
         if _(prop.tag) == 'property':
-            properties[prop.name.text] = {
+            p = {
+                'name': prop.name.text, 
                 'id': prop.get('propertyId'),
                 'amount': float(prop.get('amount'))
                 }
             if hasattr(prop, 'unitName'):
-                properties['unit'] = prop.unitName.text
+                p['unit'] = prop.unitName.text
             else:
-                properties['unit'] = 'dimensionless'
+                p['unit'] = 'dimensionless'
             if hasattr(prop, "uncertainty"):
-                properties[prop.name.text]['uncertainty'] = extract_uncertainty(prop.uncertainty)
+                p['uncertainty'] = extract_uncertainty(prop.uncertainty)
             if prop.get("variableName"):
-                properties[prop.name.text]['variable'] = prop.get("variableName")
+                p['variable'] = prop.get("variableName")
             if prop.get("mathematicalRelation"):
-                properties[prop.name.text]['mathematical relation'] = prop.get("mathematicalRelation")
+                p['mathematical relation'] = prop.get("mathematicalRelation")
+            properties.append(p)
+    
     return properties
 
 
@@ -127,11 +126,11 @@ def extract_minimal_exchange(exc):
     
     # Byproduct classification, optional field
     for obj in exc.iterchildren():
-        if _(obj.tag) == 'classification':
-            if obj.classificationSystem.text == 'By-product classification':
-                data['byproduct classification'] = BYPRODUCT_CLASSIFICATION[
-                    obj.classificationValue.text]
-                break
+        if (_(obj.tag) == 'classification' and 
+                obj.classificationSystem.text == 'By-product classification'):
+            data['byproduct classification'] = BYPRODUCT_CLASSIFICATION[
+                obj.classificationValue.text]
+            break
     
     #Variable name and mathematical relation extraction
     if exc.get("variableName"):
@@ -147,7 +146,7 @@ def extract_minimal_exchange(exc):
     # Biosphere compartments
     if 'environment' in data['type']:
         data['compartment'] = exc.compartment.compartment.text
-        data['compartment'] = exc.compartment.subcompartment.text
+        data['subcompartment'] = exc.compartment.subcompartment.text
     
     # Production volume & uncertainty
     pv = extract_production_volume(exc, data)
@@ -178,7 +177,8 @@ def extract_minimal_ecospold2_info(elem, filepath):
         'access restricted': ACCESS_RESTRICTED[elem.administrativeInformation.dataGeneratorAndPublication.get(
                             'accessRestrictedTo')], 
         'last operation': 'extract_minimal_ecospold2_info', 
-        'allocation method': '(not known at this point)'
+        'allocation method': '(not known at this point)', 
+        'main reference product': find_main_reference_product(exchanges)
     }
     
     return data
