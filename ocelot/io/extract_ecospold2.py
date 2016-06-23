@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-from .ecospold2_meta import *
+import imp
+from . import ecospold2_meta as meta
+imp.reload(meta)
 from lxml import objectify
 from time import time
 import multiprocessing
@@ -7,47 +9,36 @@ import os
 import pprint
 import pyprind
 import signal
-from .. import 
+
+from .. import utils
+imp.reload(utils)
+
 
 def _(string):
     return string.replace("{http://www.EcoInvent.org/EcoSpold02}", "")
 
 
-def is_combined_production(dataset):
-    """"Combined production datasets have multiple reference products.
-
-    Returns a boolean."""
-    return len([1 for exc in dataset['exchanges']
-                if exc['type'] == "reference product"]) > 1
-
-
-def parameterize(elem, data):
-    parameters = [
-        obj for obj in elem.flowData.iterchildren()
-        if 'parameter' in obj.tag
-    ]
-    if not parameters:
-        return
-    else:
-        data['parameters'] = []
-    for param in parameters:
-        obj = {
-            'variable': param.get('variableName'),
-            'name': param.name.text,
-        }
-        if hasattr(param, "uncertainty"):
-            obj['uncertainty'] = extract_uncertainty(param.uncertainty)
-        formula = param.get('mathematicalRelation')
-        if formula:
-            obj['mathematical relation'] = formula
-        data['parameters'].append(obj)
-
+def extract_parameters(elem):
+    parameters = []
+    for obj in elem.flowData.iterchildren():
+        if 'parameter' in obj.tag:
+            p = {'name': obj.name.text, 
+                 'id': obj.get('parameterId')}
+            if hasattr(obj, "uncertainty"):
+                p['uncertainty'] = extract_uncertainty(obj.uncertainty)
+            formula = obj.get('mathematicalRelation')
+            if obj.get('variableName'):
+                p['variable'] = obj.get('variableName').strip()
+            if formula:
+                p['mathematical relation'] = formula.strip()
+            parameters.append(p)
+    return parameters
 
 def extract_pedigree_matrix(elem):
     pm = {}
     if hasattr(elem, 'pedigreeMatrix'):
-        for field in PEDIGREE_LABELS:
-            pm[PEDIGREE_LABELS[field]] = elem.pedigreeMatrix.get(field)
+        for field in meta.PEDIGREE_LABELS:
+            pm[meta.PEDIGREE_LABELS[field]] = int(elem.pedigreeMatrix.get(field))
     return pm
 
 
@@ -57,7 +48,7 @@ def extract_uncertainty(unc):
     distribution = next((getattr(unc, label)
                          for label in distribution_labels
                          if hasattr(unc, label)))
-    data = {UNCERTAINTY_MAPPING.get(key, key): float(distribution.get(key)) for key in distribution.keys()}
+    data = {meta.UNCERTAINTY_MAPPING.get(key, key): float(distribution.get(key)) for key in distribution.keys()}
     data.update({'type': _(distribution.tag)})
     data.update(extract_pedigree_matrix(unc))
     
@@ -76,7 +67,8 @@ def extract_production_volume(exc, exc_data):
         if hasattr(exc, "productionVolumeUncertainty"):
             data['uncertainty'] = extract_uncertainty(exc.productionVolumeUncertainty)
         if exc.get('productionVolumeMathematicalRelation'):
-            data['mathematical relation'] = exc.get('productionVolumeMathematicalRelation')
+            data['mathematical relation'] = exc.get(
+                'productionVolumeMathematicalRelation').strip()
         if exc.get('productionVolumeVariableName'):
             data['variable'] = exc.get('productionVolumeVariableName')
     
@@ -101,7 +93,7 @@ def extract_property(exc):
             if prop.get("variableName"):
                 p['variable'] = prop.get("variableName")
             if prop.get("mathematicalRelation"):
-                p['mathematical relation'] = prop.get("mathematicalRelation")
+                p['mathematical relation'] = prop.get("mathematicalRelation").strip()
             properties.append(p)
     
     return properties
@@ -115,9 +107,9 @@ def extract_minimal_exchange(exc):
         'name': exc.name.text,
         'unit': exc.unitName.text,
         'amount': float(exc.get('amount')),
-        'type': (INPUT_GROUPS[exc.inputGroup.text]
+        'type': (meta.INPUT_GROUPS[exc.inputGroup.text]
                  if hasattr(exc, "inputGroup")
-                 else OUTPUT_GROUPS[exc.outputGroup.text])
+                 else meta.OUTPUT_GROUPS[exc.outputGroup.text])
     }
     
     # Activity link, optional field
@@ -128,7 +120,7 @@ def extract_minimal_exchange(exc):
     for obj in exc.iterchildren():
         if (_(obj.tag) == 'classification' and 
                 obj.classificationSystem.text == 'By-product classification'):
-            data['byproduct classification'] = BYPRODUCT_CLASSIFICATION[
+            data['byproduct classification'] = meta.BYPRODUCT_CLASSIFICATION[
                 obj.classificationValue.text]
             break
     
@@ -136,7 +128,7 @@ def extract_minimal_exchange(exc):
     if exc.get("variableName"):
         data['variable'] = exc.get("variableName")
     if exc.get("mathematicalRelation"):
-        data['mathematical relation'] = exc.get("mathematicalRelation")
+        data['mathematical relation'] = exc.get("mathematicalRelation").strip()
     
     # Property extraction
     properties = extract_property(exc)
@@ -166,20 +158,23 @@ def extract_minimal_ecospold2_info(elem, filepath):
         'id': elem.activityDescription.activity.get('id'), 
         'name': elem.activityDescription.activity.activityName.text,
         'location': elem.activityDescription.geography.shortname.text,
-        'type': SPECIAL_ACTIVITY_TYPE[elem.activityDescription.activity.get('specialActivityType')],
-        'technology level': TECHNOLOGY_LEVEL[elem.activityDescription.technology.get('technologyLevel')],
+        'type': meta.SPECIAL_ACTIVITY_TYPE[elem.activityDescription.activity.get('specialActivityType')],
+        'technology level': meta.TECHNOLOGY_LEVEL[elem.activityDescription.technology.get('technologyLevel')],
         'start date': elem.activityDescription.timePeriod.get("startDate"), 
         'end date': elem.activityDescription.timePeriod.get("endDate"), 
         'economic scenario': elem.activityDescription.macroEconomicScenario.name.text,
         'exchanges': [extract_minimal_exchange(exc)
                       for exc in elem.flowData.iterchildren()
                       if 'Exchange' in exc.tag], 
-        'access restricted': ACCESS_RESTRICTED[elem.administrativeInformation.dataGeneratorAndPublication.get(
+        'access restricted': meta.ACCESS_RESTRICTED[elem.administrativeInformation.dataGeneratorAndPublication.get(
                             'accessRestrictedTo')], 
         'last operation': 'extract_minimal_ecospold2_info', 
-        'allocation method': '(not known at this point)', 
-        'main reference product': find_main_reference_product(exchanges)
-    }
+        'allocation method': '(not known at this point)'
+        }
+    data['main reference product'] = utils.find_main_reference_product(data['exchanges'])
+    parameters = extract_parameters(elem)
+    if len(parameters) > 0:
+        data['parameters'] = parameters
     
     return data
 

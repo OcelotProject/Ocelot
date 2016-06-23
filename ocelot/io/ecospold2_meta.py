@@ -53,6 +53,7 @@ UNCERTAINTY_MAPPING = {
     'meanValue': 'mean',
     'minValue': 'minimum',
     'mostLikelyValue': 'mode',
+    'varianceWithPedigreeUncertainty': 'variance with pedigree uncertainty'
 }
 
 ACCESS_RESTRICTED = {

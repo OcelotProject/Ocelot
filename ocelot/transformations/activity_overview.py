@@ -58,5 +58,3 @@ def activity_overview(datasets, support_excel_folder, support_pkl_folder,
     df.to_excel(writer, columns = cols, index = False, merge_cells = False)
     filename = 'activity_overview'
     ocelot.utils.save_file(df, support_pkl_folder, filename)
-
-    return df

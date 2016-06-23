@@ -6,6 +6,7 @@ from .parameterization import (
 )
 from .activity_overview import f
 from .allocation_method import f
+from .fix_known_issues_ecoinvent_32 import dummy
 
 def dummy_transformation(data):
     """This is a dummy transformation that doesn't do anything.

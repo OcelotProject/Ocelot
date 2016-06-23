@@ -68,7 +68,7 @@ def uncertainty_to_df(u, data_format):
 
 
 def is_empty(e):
-    return type(e) in ['', None, np.nan, np.NaN, np.nan, []]
+    return e in ['', None, np.nan, np.NaN, np.nan, []]
 
 
 def uncertainty_to_internal(s):
@@ -77,29 +77,53 @@ def uncertainty_to_internal(s):
     return ''
 
 
-def add_line_to_df(df, data_format, parent, element):
-    to_add = {'data type': parent}
+def add_line_to_df(df, data_format, parent, element, to_add = False):
+    if to_add == False:
+        to_add = {'data type': parent}
+    else:
+        to_add_new = copy(to_add)
+        for field in to_add:
+            if field not in ['tag', 'exchange type', 'exchange name', 
+                    'compartment', 'subcompartment', 'exchange id']:
+                del to_add_new[field]
+        to_add_new['data type'] = parent
+        to_add = copy(to_add_new)
+        
     for field in element:
-        if field in ['production volume', 'property']:
-            df = add_line_to_df(df, data_format, field, element[field])
-        elif field == 'uncertainty':
+        if field == 'uncertainty':
             for field2 in element[field]:
                 to_add[data_format.loc[(field, field2), 'in dataframe']] = element[field][field2]
-        else:
+        elif field not in ['production volume', 'properties']:
             to_add[data_format.loc[(parent, field), 'in dataframe']] = element[field]
+    if 'properties' in element:
+        for e in element['properties']:
+            df = add_line_to_df(df, data_format, 'properties', e, to_add = copy(to_add))
+    if 'production volume' in element:
+        df = add_line_to_df(df, data_format, 'production volume', 
+            element['production volume'], to_add = copy(to_add))
+    
     to_add = add_Ref(to_add)
     df[len(df)] = copy(to_add)
     return df
 
 
+def add_dummy_variable(df):
+    if 'variable' in list(df.columns):
+        counter = 0
+        for index in set(df.index):
+            if is_empty(df.loc[index, 'variable']):
+                df.loc[index, 'variable'] = 'dummy_variable_{}'.format(counter)
+                counter += 1
+    return df
+
 def add_Ref(to_add):
-    if to_add['data type'] == 'exchange':
+    if to_add['data type'] == 'exchanges':
         to_add['Ref'] = "Ref('{}')".format(to_add['exchange id'])
     elif to_add['data type'] == 'production volume':
         to_add['Ref'] = "Ref('{}', 'ProductionVolume')".format(to_add['exchange id'])
-    elif to_add['data type'] == 'parameter':
-        to_add['Ref'] = "Ref('{}')".format(to_add['id'])
-    elif to_add['data type'] == 'property':
+    elif to_add['data type'] == 'parameters':
+        to_add['Ref'] = "Ref('{}')".format(to_add['parameter id'])
+    elif to_add['data type'] == 'properties':
         to_add['Ref'] = "Ref('{}', '{}')".format(to_add['exchange id'], to_add['property id'])
     else:
         1/0
@@ -108,15 +132,20 @@ def add_Ref(to_add):
 
 def internal_to_df(dataset, data_format):
     """Takes a dataset and change its representation to a convenient dataframe format"""
-    data_format = data_format.set_index(['parent', 'field']).sortlevel(level=0)
+    if tuple(data_format.index.names) != ('parent', 'field'):
+        data_format = data_format.set_index(['parent', 'field']).sortlevel(level=0)
     df = {}
     for parent in ['exchanges', 'parameters']:
         if parent in dataset:
-            df = add_line_to_df(df, data_format, parent[:-1], dataset[parent])
+            for element in dataset[parent]:
+                df = add_line_to_df(df, data_format, parent, element)
     df = pd.DataFrame(df).transpose()
-    del df['id']
-
-    return df
+    if np.NaN in df:
+        del df[np.NaN]
+    df = add_dummy_variable(df)
+    dataset['data frame'] = df
+    
+    return dataset
 
 
 def df_to_internal(df, dataset_internal):
@@ -151,21 +180,64 @@ def open_file(folder, filename):
     return obj
 
 
-def print_dataset_to_excel(dataset, folder, data_format):
-    filename = '{} - {}.xlsx'.format(dataset['name'], dataset['main reference product'])
+def print_dataset_to_excel(dataset, folder, data_format, activity_overview):
+    if tuple(data_format.index.names) != ('in dataframe'):
+        meta = data_format.set_index('in dataframe')
+    filename = '{} - {} - {}.xlsx'.format(dataset['name'], dataset['location'], 
+        dataset['main reference product'])
     writer = pd.ExcelWriter(os.path.join(folder, filename))
-    fields = ['activity name', 'location', 
+    fields = ['activity name', 'location', 'main reference product', 
               'start date', 'end date', 'activity type', 'technology level', 
               'access restricted', 'allocation method']
-    data_format = data_format.set_index('in dataframe').loc[fields][['field']]
-    data_format = data_format['field'].apply(lambda key: dataset[key])
-    df = pd.DataFrame()
-    
+    meta = meta.loc[fields][['field']]
+    meta['value'] = meta['field'].apply(lambda key: dataset[key])
+    del meta['field']
+    meta = meta.reset_index().rename(columns = {'in dataframe': 'field'})
+    meta.to_excel(writer, 'meta', columns = ['field', 'value'], 
+        index = False, merge_cells = False)
     if 'data frame' not in dataset:
         dataset['data frame'] = internal_to_df(dataset, data_format)
-    
-    return ''
-
+    df = dataset['data frame']
+    if 'activity link' in list(df.columns):
+        with_AL = df[~df['activity link'].isin([np.nan])]
+        if tuple(activity_overview.index.names) != ('activity id', 'exchange name'):
+            activity_overview = activity_overview.set_index(
+                ['activity id', 'exchange name']).sortlevel(level=0)
+        for index in set(with_AL.index):
+            sel = activity_overview.loc[tuple(with_AL.loc[index, 
+                ['activity link', 'exchange name']])]
+            if type(sel) == pd.core.frame.DataFrame:
+                assert len(sel) == 1
+                sel = sel.iloc[0]
+            with_AL.loc[index, 'activity link name'] = sel['activity name']
+            with_AL.loc[index, 'activity link location'] = sel['location']
+        df = pd.concat([with_AL, df[df['activity link'].isin([np.nan])]])
+    columns = ['data type', 'Ref', 'tag', 'exchange type', 'exchange name', 'parameter name', 
+              'property name', 'compartment', 'subcompartment', 
+              'activity link name', 'activity link location', 
+              'amount', 'unit', 'mathematical relation', 'variable', 
+              'uncertainty type', 'mean value', 'variance', 'reliability', 'completeness', 
+              'temporal correlation', 'geographical correlation', 
+              'further technology correlation']
+    for field in set(columns).difference(set(df.columns)):
+        columns.remove(field)
+    fragment = df[df['data type'] == 'exchanges']
+    types = ['reference product', 'byproduct', 'from technosphere', 
+             'to environment', 'from environment']
+    fragments = []
+    for t in types:
+        f = fragment[fragment['exchange type'] == t]
+        if len(f) > 0:
+            fragments.append(f.sort_values(by = 'exchange name'))
+    for t in ['production volume', 'parameters', 'properties']:
+        f = df[df['data type'] == t]
+        if len(f) > 0:
+            fragments.append(f.sort_values(by = 'exchange name'))
+    df = pd.concat(fragments)
+    df.to_excel(writer, 'quantitative', columns = columns, 
+        index = False, merge_cells = False)
+    writer.save()
+    writer.close()
 
 def datasets_to_dict(datasets, fields):
     if type(fields) == str or len(fields) == 1:
