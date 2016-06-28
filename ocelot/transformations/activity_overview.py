@@ -6,7 +6,8 @@ import os
 import ocelot.utils
 imp.reload(ocelot.utils)
 
-f = lambda x: None
+def dummy():
+    return ''
 
 def activity_overview(datasets, support_excel_folder, support_pkl_folder,
         data_format):

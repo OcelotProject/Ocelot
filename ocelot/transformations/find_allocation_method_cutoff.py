@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from copy import copy
 
-def f():
+def dummy():
     return ''
 def allocation_method(datasets, logger):
     """Finds the allocation method, based on a few characteristics of outputs to technosphere"""
