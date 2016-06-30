@@ -35,11 +35,11 @@ def allocate_datasets_cutoff(datasets, data_format, logger):
             dataset = find_true_value_allocation_factors(dataset)
             new_datasets = allocate_with_factors(dataset)
         elif dataset['allocation method'] == 'waste treatment':
-            new_datasets = waste_treatment(dataset)
+            new_datasets = waste_treatment_allocation(dataset)
         elif dataset['allocation method'] == 'recyclingActivity':
             allocatedDatasets, logs = recyclingActivity(dataset, logs, masterData)
-        elif dataset['allocation method'] == 'constrainedMarket':
-            allocatedDatasets, logs = constrainedMarketAllocation(dataset, logs)
+        elif dataset['allocation method'] == 'constrained market':
+            new_datasets = constrained_market_allocation(dataset)
         else:
             raise NotImplementedError('"%s" is not a recognized allocationMethod')
         
@@ -185,7 +185,7 @@ def allocate_with_factors(dataset, new_datasets):
     return new_datasets
 
 
-def waste_treatment(dataset):
+def waste_treatment_allocation(dataset):
     
     #first allocated dataset: the treatment of the waste
     dataset = copy(dataset)
@@ -208,5 +208,17 @@ def waste_treatment(dataset):
         #create a new dataset for each byproduct
         for chosen_product_exchange_id in set(by_products['exchange id']):
             new_datasets.append(utils.make_reference_product(chosen_product_exchange_id, dataset))
+    
+    return new_datasets
+
+
+def constrained_market_allocation(dataset):
+    '''in this case, the conditional exchange is removed.  Done by simply using the 
+    utils.make_reference_product function'''
+    
+    sel = utils.select_exchanges_to_technosphere(dataset['data frame'])
+    chosen_product_exchange_id = sel[sel['exchange type'] == 'reference product'
+        ].iloc[0]['exchange id']
+    new_datasets = [utils.make_reference_product(chosen_product_exchange_id, dataset)]
     
     return new_datasets

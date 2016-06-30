@@ -205,13 +205,16 @@ def print_dataset_to_excel(dataset, folder, data_format, activity_overview):
             activity_overview = activity_overview.set_index(
                 ['activity id', 'exchange name']).sortlevel(level=0)
         for index in set(with_AL.index):
-            sel = activity_overview.loc[tuple(with_AL.loc[index, 
-                ['activity link', 'exchange name']])]
-            if type(sel) == pd.core.frame.DataFrame:
-                assert len(sel) == 1
-                sel = sel.iloc[0]
-            with_AL.loc[index, 'activity link name'] = sel['activity name']
-            with_AL.loc[index, 'activity link location'] = sel['location']
+            try:
+                sel = activity_overview.loc[tuple(with_AL.loc[index, 
+                    ['activity link', 'exchange name']])]
+                if type(sel) == pd.core.frame.DataFrame:
+                    assert len(sel) == 1
+                    sel = sel.iloc[0]
+                with_AL.loc[index, 'activity link name'] = sel['activity name']
+                with_AL.loc[index, 'activity link location'] = sel['location']
+            except KeyError:
+                pass
         df = pd.concat([with_AL, df[df['activity link'].isin([np.nan])]])
     columns = ['data type', 'Ref', 'tag', 'exchange type', 'exchange name', 'parameter name', 
               'property name', 'compartment', 'subcompartment', 
@@ -321,7 +324,9 @@ def scale_exchanges(dataset):
     '''scales the amount of the exchanges to get a reference exchange amount of 1 or -1'''
     
     df = dataset['data frame']
-    ref_amount = abs(df.loc[dataset['main reference product index'], 'amount'])
+    sel = df[df['data type'] == 'exchanges']
+    main_reference_product_index = list(sel[sel['exchange type'] == 'reference product'].index)[0]
+    ref_amount = abs(df.loc[main_reference_product_index, 'amount'])
     assert ref_amount != 0.
     if ref_amount != 1.:
         indexes = list(df[df['data type'] == 'exchanges'].index)
