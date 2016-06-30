@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from copy import copy
+from copy import copy, deepcopy
 
 def dummy():
     return ''
+
 def allocation_method(datasets, logger):
     """Finds the allocation method, based on a few characteristics of outputs to technosphere"""
     for dataset in datasets:
@@ -29,7 +30,7 @@ def allocation_method(datasets, logger):
                 if 'properties' in exc and 'true value relation' in exc['properties']:
                     has_true_value = True
         
-        #settin the allocation method
+        #setting the allocation method
         if dataset['type'] == 'market group':
             dataset['allocation method'] = 'no allocation'
         elif dataset['type'] == 'market activity':
@@ -66,15 +67,18 @@ def allocation_method(datasets, logger):
                     if field in exc:
                         del exc[field]
                 if 'properties' in exc:
+                    #deleting unnecessary properties
                     properties_to_keep = []
                     if dataset['allocation method'] in ['recycling activity', 'economic allocation']:
                         properties_to_keep = ['price']
                     elif dataset['allocation method'] in ['true value allocation']:
                         properties_to_keep = ['price', 'true value relation']
-                    #deleting unnecessary properties, mathematical relation and variable
-                    properties = copy(exc['properties'])
-                    exc['properties'] = {}
-                    for property_name in properties:
-                        if property_name in properties_to_keep:
-                            exc['properties'][property_name] = copy(properties[property_name])
+                    if len(properties_to_keep) > 0:
+                        properties = deepcopy(exc['properties'])
+                        exc['properties'] = []
+                        for p in properties:
+                            if p['name'] in properties_to_keep:
+                                exc['properties'].append(p)
+                    else:
+                        del exc['properties']
     return datasets

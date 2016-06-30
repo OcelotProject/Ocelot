@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
-from cPickle import dump, load
+from pickle import dump, load
 from copy import copy
 import os
 import numpy as np
 
+def dummy():
+    return ''
+    
 def available_production_volume(datasets, logger, support_excel_folder, support_pkl_folder):
     """Calculates available production volume for market shares by removing 
         consumption by activity links"""

@@ -84,7 +84,8 @@ def add_line_to_df(df, data_format, parent, element, to_add = False):
         to_add_new = copy(to_add)
         for field in to_add:
             if field not in ['tag', 'exchange type', 'exchange name', 
-                    'compartment', 'subcompartment', 'exchange id']:
+                    'compartment', 'subcompartment', 'exchange id', 
+                    'unit', 'byproduct classification']:
                 del to_add_new[field]
         to_add_new['data type'] = parent
         to_add = copy(to_add_new)
@@ -188,7 +189,7 @@ def print_dataset_to_excel(dataset, folder, data_format, activity_overview):
     writer = pd.ExcelWriter(os.path.join(folder, filename))
     fields = ['activity name', 'location', 'main reference product', 
               'start date', 'end date', 'activity type', 'technology level', 
-              'access restricted', 'allocation method']
+              'access restricted', 'allocation method', 'last operation']
     meta = meta.loc[fields][['field']]
     meta['value'] = meta['field'].apply(lambda key: dataset[key])
     del meta['field']
@@ -196,7 +197,7 @@ def print_dataset_to_excel(dataset, folder, data_format, activity_overview):
     meta.to_excel(writer, 'meta', columns = ['field', 'value'], 
         index = False, merge_cells = False)
     if 'data frame' not in dataset:
-        dataset['data frame'] = internal_to_df(dataset, data_format)
+        dataset = internal_to_df(dataset, data_format)
     df = dataset['data frame']
     if 'activity link' in list(df.columns):
         with_AL = df[~df['activity link'].isin([np.nan])]
@@ -236,6 +237,17 @@ def print_dataset_to_excel(dataset, folder, data_format, activity_overview):
     df = pd.concat(fragments)
     df.to_excel(writer, 'quantitative', columns = columns, 
         index = False, merge_cells = False)
+    if 'allocation factors' in dataset:
+        df = dataset['allocation factors'].reset_index()
+        if dataset['allocation method'] == 'economic allocation':
+            columns = ['exchange name', 'amount', 'price', 'revenu', 'allocation factor']
+        elif dataset['allocation method'] == 'true value allocation':
+            1/0
+        else:
+            1/0
+        df = df.sort_values(by = 'allocation factor')
+        df.to_excel(writer, 'allocation factors', columns = columns, 
+                    index = False, merge_cells = False)
     writer.save()
     writer.close()
 
@@ -250,10 +262,55 @@ def datasets_to_dict(datasets, fields):
     return new_datasets
 
 
-def find_main_reference_product(exchanges):
+def find_main_reference_product(dataset):
     amount = 0.
-    for exc in exchanges:
-        if abs(exc['amount']) > amount:
+    for exc in dataset['exchanges']:
+        if exc['type'] in ['reference product'] and abs(exc['amount']) > amount:
             amount = exc['amount']
             name = exc['name']
     return name
+
+
+def select_exchanges_to_technosphere(df):
+    '''selects only the lines of the data frame with an exchange amount to technosphere'''
+    sel = df[df['data type'] == 'exchanges']
+    sel = sel[sel['exchange type'].isin(['byproduct', 'reference product'])]
+	
+    return sel
+
+
+def make_reference_product(chosen_product_exchange_id, dataset):
+    
+    #find new reference product
+    df = dataset['data frame']
+    exchanges_to_technosphere = select_exchanges_to_technosphere(df)
+    sel = exchanges_to_technosphere[
+        exchanges_to_technosphere['exchange id'] == chosen_product_exchange_id].iloc[0]
+        
+    #add new reference product to metainformation
+    dataset['main reference product'] = sel['exchange name']
+    dataset['main reference product index'] = sel.name
+    assert df.loc[dataset['main reference product index'], 'amount'] != 0.
+    
+    #put to zero the amount of the other coproducts
+    indexes = list(tuple(exchanges_to_technosphere.index))
+    indexes.remove(sel.name)
+    allocated_df = df.copy()
+    allocated_df.loc[indexes, 'amount'] = 0.
+    
+    #make the selected coproduct the reference product
+    indexes = allocated_df[allocated_df['exchange id'
+        ] == chosen_product_exchange_id]
+    indexes = indexes[indexes['exchange type'
+        ].isin(['reference product', 'byproduct'])]
+    indexes = list(indexes.index)
+    allocated_df.loc[indexes, 'exchange type'] = 'reference product'
+    
+    #remove the production volume of the other outputs to technosphere
+    conditions = ~((allocated_df['data type'] == 'production volume') & (
+        allocated_df['exchange name'] != dataset['main reference product']))
+    allocated_df = allocated_df[conditions]
+    
+    dataset['data frame'] = allocated_df.copy()
+    
+    return dataset
