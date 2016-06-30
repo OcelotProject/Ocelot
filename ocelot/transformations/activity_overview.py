@@ -4,12 +4,11 @@ import pandas as pd
 from copy import copy
 import os
 import ocelot.utils
-imp.reload(ocelot.utils)
 
 def dummy():
     return ''
 
-def activity_overview(datasets, support_excel_folder, support_pkl_folder,
+def build_activity_overview(datasets, support_excel_folder, support_pkl_folder,
         data_format):
     """creates a spreadsheet with a line for each output to technosphere"""
     data_format = data_format.set_index(['parent', 'field']).sortlevel(level=0)

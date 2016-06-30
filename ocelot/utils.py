@@ -273,6 +273,7 @@ def find_main_reference_product(dataset):
 
 def select_exchanges_to_technosphere(df):
     '''selects only the lines of the data frame with an exchange amount to technosphere'''
+    df = df.copy()
     sel = df[df['data type'] == 'exchanges']
     sel = sel[sel['exchange type'].isin(['byproduct', 'reference product'])]
 	
@@ -280,17 +281,17 @@ def select_exchanges_to_technosphere(df):
 
 
 def make_reference_product(chosen_product_exchange_id, dataset):
-    
+    dataset_copy = copy(dataset)
     #find new reference product
-    df = dataset['data frame']
+    df = dataset_copy['data frame']
     exchanges_to_technosphere = select_exchanges_to_technosphere(df)
     sel = exchanges_to_technosphere[
         exchanges_to_technosphere['exchange id'] == chosen_product_exchange_id].iloc[0]
         
     #add new reference product to metainformation
-    dataset['main reference product'] = sel['exchange name']
-    dataset['main reference product index'] = sel.name
-    assert df.loc[dataset['main reference product index'], 'amount'] != 0.
+    dataset_copy['main reference product'] = sel['exchange name']
+    dataset_copy['main reference product index'] = sel.name
+    assert df.loc[dataset_copy['main reference product index'], 'amount'] != 0.
     
     #put to zero the amount of the other coproducts
     indexes = list(tuple(exchanges_to_technosphere.index))
@@ -308,9 +309,34 @@ def make_reference_product(chosen_product_exchange_id, dataset):
     
     #remove the production volume of the other outputs to technosphere
     conditions = ~((allocated_df['data type'] == 'production volume') & (
-        allocated_df['exchange name'] != dataset['main reference product']))
+        allocated_df['exchange name'] != dataset_copy['main reference product']))
     allocated_df = allocated_df[conditions]
     
-    dataset['data frame'] = allocated_df.copy()
+    dataset_copy['data frame'] = allocated_df.copy()
+    
+    return dataset_copy
+
+
+def scale_exchanges(dataset):
+    '''scales the amount of the exchanges to get a reference exchange amount of 1 or -1'''
+    
+    df = dataset['data frame']
+    ref_amount = abs(df.loc[dataset['main reference product index'], 'amount'])
+    assert ref_amount != 0.
+    if ref_amount != 1.:
+        indexes = list(df[df['data type'] == 'exchanges'].index)
+        df.loc[indexes, 'amount'] = df.loc[indexes, 'amount'] / ref_amount
+    dataset['data frame'] = df
     
     return dataset
+
+
+def filter_datasets(datasets, activity_overview, criteria):
+    datasets = datasets_to_dict(datasets, ['name', 'location'])
+    for field in criteria:
+        activity_overview = activity_overview[activity_overview[field].isin(criteria[field])]
+    new_datasets = []
+    activity_overview = activity_overview.set_index(['activity name', 'location']).sortlevel(level=0)
+    for index in set(activity_overview.index):
+        new_datasets.append(datasets[index])
+    return new_datasets
