@@ -29,7 +29,7 @@ else:
     filename = 'activity_overview'
     activity_overview = utils.open_file(folder, filename)
     data_format = utils.read_format_definition()
-    criteria = {'activity name': ['market for acetonitrile'], 
+    criteria = {'activity name': ['field application of compost'], 
                 'location': ['GLO']}
     datasets = utils.filter_datasets(datasets, activity_overview, criteria)
     datasets = ocelot.transformations.allocate_cutoff.allocate_datasets_cutoff(

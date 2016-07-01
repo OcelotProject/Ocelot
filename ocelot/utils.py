@@ -242,12 +242,11 @@ def print_dataset_to_excel(dataset, folder, data_format, activity_overview):
         index = False, merge_cells = False)
     if 'allocation factors' in dataset:
         df = dataset['allocation factors'].reset_index()
-        if dataset['allocation method'] == 'economic allocation':
+        if 'TVR' in set(df.columns):
+            1/0
             columns = ['exchange name', 'amount', 'price', 'revenu', 'allocation factor']
-        elif dataset['allocation method'] == 'true value allocation':
-            1/0
         else:
-            1/0
+            columns = ['exchange name', 'amount', 'price', 'revenu', 'allocation factor']
         df = df.sort_values(by = 'allocation factor')
         df.to_excel(writer, 'allocation factors', columns = columns, 
                     index = False, merge_cells = False)
@@ -320,12 +319,19 @@ def make_reference_product(chosen_product_exchange_id, dataset):
     return dataset_copy
 
 
+def find_main_reference_product_index(dataset):
+    df = dataset['data frame']
+    sel = df[df['data type'] == 'exchanges']
+    sel = sel[sel['exchange type'] == 'reference product']
+    sel = sel[sel['exchange name'] == dataset['main reference product']]
+    main_reference_product_index = list(sel.index)[0]
+    return main_reference_product_index
+
 def scale_exchanges(dataset):
     '''scales the amount of the exchanges to get a reference exchange amount of 1 or -1'''
     
     df = dataset['data frame']
-    sel = df[df['data type'] == 'exchanges']
-    main_reference_product_index = list(sel[sel['exchange type'] == 'reference product'].index)[0]
+    main_reference_product_index = find_main_reference_product_index(dataset)
     ref_amount = abs(df.loc[main_reference_product_index, 'amount'])
     assert ref_amount != 0.
     if ref_amount != 1.:
