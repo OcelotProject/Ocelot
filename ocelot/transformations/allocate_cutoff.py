@@ -31,7 +31,7 @@ def allocate_datasets_cutoff(datasets, data_format, logger):
         elif dataset['allocation method'] == 'economic allocation':
             dataset = find_economic_allocation_factors(dataset)
             new_datasets = allocate_with_factors(dataset)
-        elif dataset['allocation method'] == 'trueValueAllocation':
+        elif dataset['allocation method'] == 'true value allocation':
             dataset = find_true_value_allocation_factors(dataset)
             new_datasets = allocate_with_factors(dataset)
         elif dataset['allocation method'] == 'waste treatment':
@@ -126,9 +126,8 @@ def find_true_value_allocation_factors(dataset):
     allocation_factors = allocation_factors[allocation_factors['exchange type'
         ].isin(['reference product', 'byproduct'])]
     allocation_factors = pd.pivot_table(allocation_factors, values = 'amount', 
-        rows = 'exchange id', columns = ['property name'], aggfunc = np.sum)
-    allocation_factors = allocation_factors[['price', 'true value relation'
-        ]].set_index('exchange id')
+        index = 'exchange id', columns = ['property name'], aggfunc = np.sum)
+    allocation_factors = allocation_factors[['price', 'true value relation']]
     allocation_factors = allocation_factors.rename(columns = {'true value relation': 'TVR'})
     
     #join the exchange amounts
@@ -160,9 +159,9 @@ def find_true_value_allocation_factors(dataset):
         ] / allocation_factors['TV'].sum()
         
     #calculate allocation factors
-    dataset['allocation factors'] = allocation_factors.copy().set_index('exchange id')
+    dataset['allocation factors'] = allocation_factors.copy()
     
-    return allocation_factors
+    return dataset
 
 
 def allocate_with_factors(dataset):

@@ -14,7 +14,7 @@ if 0:
     support_excel_folder = r'C:\ocelot_DB'
     support_pkl_folder = r'C:\ocelot_DB'
     data_format = utils.read_format_definition()
-    if 0:
+    if 1:
         ocelot.transformations.activity_overview.build_activity_overview(datasets, 
             support_excel_folder, support_pkl_folder, data_format)
     utils.save_file(datasets, folder, filename)
@@ -29,8 +29,8 @@ else:
     filename = 'activity_overview'
     activity_overview = utils.open_file(folder, filename)
     data_format = utils.read_format_definition()
-    criteria = {'activity name': ['field application of compost'], 
-                'location': ['GLO']}
+    criteria = {'activity name': ['heat and power co-generation, diesel, 200kW electrical, SCR-NOx reduction'], 
+                'location': ['CH']}
     datasets = utils.filter_datasets(datasets, activity_overview, criteria)
     datasets = ocelot.transformations.allocate_cutoff.allocate_datasets_cutoff(
         datasets, data_format, '')

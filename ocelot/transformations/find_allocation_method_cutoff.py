@@ -27,8 +27,11 @@ def allocation_method(datasets, logger):
                     nb_allocatable_byproducts += 1
                     if 'activity link' in exc and dataset['type'] == 'market activity' and exc['amount'] < 0.:
                         has_conditional_exchange = True
-                if 'properties' in exc and 'true value relation' in exc['properties']:
-                    has_true_value = True
+                if 'properties' in exc:
+                    for p in exc['properties']:
+                        if p['name'] == 'true value relation':
+                            has_true_value = True
+                            break
         
         #setting the allocation method
         if dataset['type'] == 'market group':

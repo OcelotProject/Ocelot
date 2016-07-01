@@ -243,8 +243,8 @@ def print_dataset_to_excel(dataset, folder, data_format, activity_overview):
     if 'allocation factors' in dataset:
         df = dataset['allocation factors'].reset_index()
         if 'TVR' in set(df.columns):
-            1/0
-            columns = ['exchange name', 'amount', 'price', 'revenu', 'allocation factor']
+            columns = ['exchange name', 'amount', 'price', 'revenu', 'TVR', 
+                'amount*TVR', 'amount*TVR/sum(amount*TVR)', 'TV', 'allocation factor']
         else:
             columns = ['exchange name', 'amount', 'price', 'revenu', 'allocation factor']
         df = df.sort_values(by = 'allocation factor')
