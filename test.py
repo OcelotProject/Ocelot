@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import ocelot
-from ocelot import utils
+from copy import copy
+import numpy as np
+import scipy as sp
+import pandas as pd
 
 if 0:
     folder = r'C:\python\DB_versions\3.2\undefined\datasets'
@@ -13,26 +16,30 @@ if 0:
         datasets, '')
     support_excel_folder = r'C:\ocelot_DB'
     support_pkl_folder = r'C:\ocelot_DB'
-    data_format = utils.read_format_definition()
-    if 1:
+    data_format = ocelot.utils.read_format_definition()
+    if 0:
         ocelot.transformations.activity_overview.build_activity_overview(datasets, 
             support_excel_folder, support_pkl_folder, data_format)
-    utils.save_file(datasets, folder, filename)
+    ocelot.utils.save_file(datasets, folder, filename)
     datasets = datasets[:100]
     filename = 'ecoinvent_3.2_internal_small'
-    utils.save_file(datasets, folder, filename)
+    ocelot.utils.save_file(datasets, folder, filename)
 else:
     folder = r'C:\ocelot_DB'
     #filename = 'ecoinvent_3.2_internal_small'
     filename = 'ecoinvent_3.2_internal'
-    datasets = utils.open_file(folder, filename)
+    datasets = ocelot.utils.open_file(folder, filename)
     filename = 'activity_overview'
-    activity_overview = utils.open_file(folder, filename)
-    data_format = utils.read_format_definition()
-    criteria = {'activity name': ['heat and power co-generation, diesel, 200kW electrical, SCR-NOx reduction'], 
-                'location': ['CH']}
-    datasets = utils.filter_datasets(datasets, activity_overview, criteria)
+    activity_overview = ocelot.utils.open_file(folder, filename)
+    data_format = ocelot.utils.read_format_definition()
+    criteria = {'activity name': ['cement production, alternative constituents 21-35%'], 
+                'location': ['Europe without Switzerland']}
+    datasets = ocelot.utils.filter_datasets(datasets, activity_overview, criteria)
+    #dataset = datasets[0]
+    #ocelot.utils.print_dataset_to_excel(dataset, folder, data_format, activity_overview)
+    
     datasets = ocelot.transformations.allocate_cutoff.allocate_datasets_cutoff(
         datasets, data_format, '')
+    
     for dataset in datasets:
-        utils.print_dataset_to_excel(dataset, folder, data_format, activity_overview)
+        ocelot.utils.print_dataset_to_excel(dataset, folder, data_format, activity_overview)

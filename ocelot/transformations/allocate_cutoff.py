@@ -25,7 +25,7 @@ def allocate_datasets_cutoff(datasets, data_format, logger):
         if dataset['allocation method'] == 'no allocation':
             new_datasets = [dataset]
         elif 'combined' in dataset['allocation method']:
-            allocatedDatasets, logs = combinedProduction(dataset, logs, masterData)
+            new_datasets = combined_production(dataset)
             if dataset['allocation method'] == 'combinedProductionWithByProduct':
                 allocatedDatasets, logs = mergeCombinedProductionWithByProduct(allocatedDatasets, logs)
         elif dataset['allocation method'] == 'economic allocation':
@@ -248,4 +248,36 @@ def recycling_activity_allocation(dataset):
             #economic allocation
             dataset = find_economic_allocation_factors(dataset)
         new_datasets = allocate_with_factors(dataset)
+    return new_datasets
+
+
+def combined_production(dataset):
+    
+    #are recyclable not supposed to be allocated anything?
+    dataset = copy(dataset)
+    
+    #establish relationship between variables with a graph matrix
+    dataset = utils.build_graph(dataset, combined = True)
+    
+    #find the recalculation order with the graph
+    dataset = utils.calculation_order(dataset)
+    
+    df = dataset['data frame']
+    new_datasets = []
+    
+    #select the reference products
+    sel = df[df['exchange type'] == 'reference product']
+    reference_products_ids = list(sel[sel['data type'] == 'exchanges']['exchange id'])
+    
+    #for each reference product
+    for chosen_product_exchange_id in reference_products_ids:
+        new_dataset = utils.make_reference_product(chosen_product_exchange_id, dataset)
+        new_dataset = utils.recalculate(new_dataset)
+        df = new_dataset['data frame']
+        if df.loc[new_dataset['main reference product index'], 'amount'] != 0.:
+            df['amount'] = df['calculated amount'].copy()
+            del df['calculated amount']
+            new_dataset['data frame'] = df.copy()
+            new_datasets.append(new_dataset)
+    
     return new_datasets

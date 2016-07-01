@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import re
+from copy import copy
+
 def dummy():
     return ''
 def fix_known_issues(datasets, logger):
@@ -50,4 +53,31 @@ def fix_known_issues(datasets, logger):
                                 ] = exc['production volume']['mathematical relation'
                                 ].replace("UnitConversion(152000000, 'pound avoirdupois', 'kg')", 
                                 '68949040.24')
+        for exc in dataset['exchanges']:
+            if 'mathematical relation' in exc:
+                exc['mathematical relation'] = fixMathematicalRelation(
+                    exc['mathematical relation'])
+            if 'production volume' in exc:
+                if 'mathematical relation' in exc['production volume']:
+                    exc['production volume']['mathematical relation'
+                        ] = fixMathematicalRelation(
+                        exc['production volume']['mathematical relation'])
+            if 'properties' in exc:
+                for p in exc['properties']:
+                    if 'mathematical relation' in p:
+                        p['mathematical relation'] = fixMathematicalRelation(
+                            p['mathematical relation'])
+        if 'parameters' in dataset:
+            for p in dataset['parameters']:
+                if 'mathematical relation' in p:
+                    p['mathematical relation'] = fixMathematicalRelation(
+                        p['mathematical relation'])
+    
     return datasets
+
+
+def fixMathematicalRelation(m):
+    for before, after in [('ABS(', 'abs('), ('%', 'e-2'), ('^', '**')]:
+        m = m.replace(before, after)
+    #also, need to replace division by int by division by float
+    return m

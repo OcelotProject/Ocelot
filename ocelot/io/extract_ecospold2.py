@@ -48,7 +48,8 @@ def extract_uncertainty(unc):
     distribution = next((getattr(unc, label)
                          for label in distribution_labels
                          if hasattr(unc, label)))
-    data = {meta.UNCERTAINTY_MAPPING.get(key, key): float(distribution.get(key)) for key in distribution.keys()}
+    data = {meta.UNCERTAINTY_MAPPING.get(key, key): float(distribution.get(key)
+        ) for key in distribution.keys()}
     data.update({'type': _(distribution.tag)})
     data.update(extract_pedigree_matrix(unc))
     

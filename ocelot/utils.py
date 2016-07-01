@@ -4,7 +4,9 @@ import functools
 import pandas as pd
 from copy import copy
 import numpy as np
+import scipy as sp
 from pickle import dump, load
+import ocelot
 
 def extract_products_as_tuple(dataset):
     return tuple(sorted([exc['name']
@@ -62,7 +64,7 @@ def uncertainty_to_df(u, data_format):
 
     to_add = {}
     for field in u:
-        to_add[data_format.loc[('uncertainty', field), 'in dataframe']] = u[field]
+        to_add[data_format.loc[('uncertainty', field), 'in data frame']] = u[field]
 
     return to_add
 
@@ -93,9 +95,9 @@ def add_line_to_df(df, data_format, parent, element, to_add = False):
     for field in element:
         if field == 'uncertainty':
             for field2 in element[field]:
-                to_add[data_format.loc[(field, field2), 'in dataframe']] = element[field][field2]
+                to_add[data_format.loc[(field, field2), 'in data frame']] = element[field][field2]
         elif field not in ['production volume', 'properties']:
-            to_add[data_format.loc[(parent, field), 'in dataframe']] = element[field]
+            to_add[data_format.loc[(parent, field), 'in data frame']] = element[field]
     if 'properties' in element:
         for e in element['properties']:
             df = add_line_to_df(df, data_format, 'properties', e, to_add = copy(to_add))
@@ -109,12 +111,13 @@ def add_line_to_df(df, data_format, parent, element, to_add = False):
 
 
 def add_dummy_variable(df):
-    if 'variable' in list(df.columns):
-        counter = 0
-        for index in set(df.index):
-            if is_empty(df.loc[index, 'variable']):
-                df.loc[index, 'variable'] = 'dummy_variable_{}'.format(counter)
-                counter += 1
+    if 'variable' not in list(df.columns):
+        df['variable'] = ''
+    counter = 0
+    for index in set(df.index):
+        if is_empty(df.loc[index, 'variable']):
+            df.loc[index, 'variable'] = 'dummy_variable_{}'.format(counter)
+            counter += 1
     return df
 
 def add_Ref(to_add):
@@ -132,7 +135,7 @@ def add_Ref(to_add):
 
 
 def internal_to_df(dataset, data_format):
-    """Takes a dataset and change its representation to a convenient dataframe format"""
+    """Takes a dataset and change its representation to a convenient data frame format"""
     if tuple(data_format.index.names) != ('parent', 'field'):
         data_format = data_format.set_index(['parent', 'field']).sortlevel(level=0)
     df = {}
@@ -182,8 +185,9 @@ def open_file(folder, filename):
 
 
 def print_dataset_to_excel(dataset, folder, data_format, activity_overview):
-    if tuple(data_format.index.names) != ('in dataframe'):
-        meta = data_format.set_index('in dataframe')
+    dataset = copy(dataset)
+    if tuple(data_format.index.names) != ('in data frame'):
+        meta = data_format.set_index('in data frame')
     filename = '{} - {} - {}.xlsx'.format(dataset['name'], dataset['location'], 
         dataset['main reference product'])
     writer = pd.ExcelWriter(os.path.join(folder, filename))
@@ -193,7 +197,7 @@ def print_dataset_to_excel(dataset, folder, data_format, activity_overview):
     meta = meta.loc[fields][['field']]
     meta['value'] = meta['field'].apply(lambda key: dataset[key])
     del meta['field']
-    meta = meta.reset_index().rename(columns = {'in dataframe': 'field'})
+    meta = meta.reset_index().rename(columns = {'in data frame': 'field'})
     meta.to_excel(writer, 'meta', columns = ['field', 'value'], 
         index = False, merge_cells = False)
     if 'data frame' not in dataset:
@@ -351,3 +355,150 @@ def filter_datasets(datasets, activity_overview, criteria):
     for index in set(activity_overview.index):
         new_datasets.append(datasets[index])
     return new_datasets
+
+
+def replace_Ref_by_variable(dataset):
+    '''finds mathematical relations using Ref instead of variables.  
+    The Refs are replaced by variables'''
+    
+    #find indexes where there are mathematical relations
+    df = dataset['data frame']
+    indexes = df[~df['mathematical relation'].apply(ocelot.utils.is_empty)]
+    if len(indexes) > 0:
+        #find indexes where the mathematical relation contains Refs
+        indexes = list(indexes[indexes['mathematical relation'].apply(
+            lambda x: 'Ref(' in x)].index)
+    
+    if len(indexes) > 0:
+        #build how to go from Ref to variable
+        Ref_to_variable = df[['Ref', 'variable']].set_index('Ref')
+        
+        #find and replace Refs by variables
+        for index in indexes: #for each mathematical relation containing a Ref
+            for reg in ocelot.io.ecospold2_meta.REF_REGURLAR_EXPRESSIONS: #for each kind of Ref
+                founds = reg.findall(df.loc[index, 'mathematical relation'])
+                for found in founds:
+                    df.loc[index, 'mathematical relation'] = df.loc[index, 'mathematical relation'
+                        ].replace(found, Ref_to_variable.loc[found, 'variable'])
+    
+    dataset['data frame'] = df.copy()
+    
+    return dataset
+
+
+def build_graph(dataset, combined = False):
+    '''builds a matrix of dependencies between each mathematical relation and other variables'''
+    
+    #Problem: if a mathematicalRelation1 = variable11*2, and the variableName variable1 exists, 
+    #and we do "variable1 in mathematicalRelation1", we will get a false dependency of 
+    #mathematicalRelation1 on variable1.  
+    #Solution: check for the longest variableName first, and once found, remove
+    #them from the mathematicalRelation.
+    
+    dataset = ocelot.utils.replace_Ref_by_variable(dataset)
+    dataset = copy(dataset)
+    df = dataset['data frame']
+    df['length'] = df['variable'].apply(len)
+    order = list(df.sort_values(by = 'length', ascending = False).index)
+    if combined:
+        #in the context of combined production, PVs and amounts of reference products 
+        #are out of the equation
+        indexes = list(df[df['data type'] == 'production volume'].index)
+        df.loc[indexes, 'mathematical relation'] = ''
+        indexes = df[df['data type'] == 'exchanges']
+        indexes = list(indexes[indexes['exchange type'] == 'reference product'].index)
+        df.loc[indexes, 'mathematical relation'] = ''
+    df_with_formula = df[~df['mathematical relation'].apply(ocelot.utils.is_empty)]
+    mathematical_relations = dict(zip(list(df_with_formula.index), 
+        list(df_with_formula['mathematical relation'])))
+    
+    #gathering information for the graph matrix
+    rows = []
+    columns = []
+    for i in mathematical_relations:
+        for j in order:
+            v = df.loc[j, 'variable']
+            if v in mathematical_relations[i]:
+                mathematical_relations[i] = mathematical_relations[i].replace(v, '')
+                rows.append(j)
+                columns.append(i)
+    c = [1 for i in range(len(rows))]
+    ij = np.vstack((rows, columns))
+    graph = sp.sparse.csr_matrix((c,ij), shape = (len(df), len(df)))
+    
+    #graph contains a "1" in position (i,j) if the mathematical relation of amount j
+    dataset['graph'] = graph
+    
+    return dataset
+
+
+def calculation_order(dataset):
+    #for a given amount, find all the paths between it and the other amounts
+    #the calculation order is based on the longest path: amounts with longest 
+    #maximum length path are calculated last.
+  
+    dataset = copy(dataset)
+    df = dataset['data frame']
+    graph = dataset['graph']
+    longestPath = {}
+    for index in range(len(df)): #for each amount
+        paths = [[index]] #the path starts with itself
+        longest = 0
+        while True:#iterate until there is no more path to find
+            paths_to_check = []
+            for i in range(len(paths)):
+                path = copy(paths[i])
+                rows, columns, c = sp.sparse.find(graph.getcol(path[-1]))
+                if len(rows) == 0: #if the last amount of the path has no dependant
+                    longest = max(longest, len(path))
+                    #keep track of the longest path so far
+                else:
+                    for row in rows:
+                        if row in path:
+                            #if the amount to add in the path is already there, 
+                            #it means there is a circular reference
+                            raise NotImplementedError('circular reference')
+                        #accumulate path at the end of the list of path
+                        new_path = copy(path)
+                        new_path.append(row)
+                        paths_to_check.append(new_path)
+            if len(paths_to_check) == 0:
+                #no more path to check, out of the loop!
+                break
+            else:
+                paths = copy(paths_to_check)
+        longestPath[index] = copy(longest)
+    df['calculation order'] = pd.Series(longestPath)
+    df = df.sort_values(by = 'calculation order')
+    
+    dataset['data frame'] = df
+    
+    return dataset
+
+
+def recalculate(dataset):
+    dataset = copy(dataset)
+    df = dataset['data frame']
+    #the shortest paths do not depend on other variables, so they are "calculated" first
+    minOrder = df['calculation order'].min()
+    sel = df[df['calculation order'] == minOrder]
+    calculatedAmount = dict(zip(list(sel['variable']), list(sel['amount'])))
+    values = dict(zip(list(sel.index), list(sel['amount'])))
+    
+    #then, calculation of the other path, in increasing length of path
+    for index in list(df[df['calculation order'] != minOrder].index):
+        m = df.loc[index, 'mathematical relation']
+        v = df.loc[index, 'variable']
+        if m == '':
+            calculatedAmount[v] = copy(df.loc[index, 'amount'])
+        else:
+            try:
+                calculatedAmount[v] = eval(m, calculatedAmount)
+            except:
+                raise NotImplementedError('error in calculation of an amount')
+        values[index] = copy(calculatedAmount[df.loc[index, 'variable']])
+    df['calculated amount'] = pd.Series(values)
+    
+    dataset['data frame'] = df    
+    
+    return dataset

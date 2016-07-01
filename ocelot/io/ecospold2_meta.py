@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import re 
+
 SPECIAL_ACTIVITY_TYPE = {
     "0": "transforming activity",
     "1": "market activity",
@@ -53,7 +55,8 @@ UNCERTAINTY_MAPPING = {
     'meanValue': 'mean',
     'minValue': 'minimum',
     'mostLikelyValue': 'mode',
-    'varianceWithPedigreeUncertainty': 'variance with pedigree uncertainty'
+    'varianceWithPedigreeUncertainty': 'variance with pedigree uncertainty', 
+    'standardDeviation95': 'standard deviation 95%'
 }
 
 ACCESS_RESTRICTED = {
@@ -68,3 +71,13 @@ BYPRODUCT_CLASSIFICATION = {
     'Waste': 'waste', 
     'Recyclable': 'recyclable'
 }
+
+UUID_REGULAR_EXPRESSION = '\w{8}-\w{4}-\w{4}-\w{4}-\w{12}'
+REF_REGURLAR_EXPRESSIONS = [
+    #exchange amount and parameters
+    re.compile("Ref\(\'%s\'\)" % UUID_REGULAR_EXPRESSION), 
+    #production volume
+    re.compile("Ref\(\'%s\'[,]\s'ProductionVolume'\)" % (UUID_REGULAR_EXPRESSION)), 
+    #property
+    re.compile("Ref\(\'%s\'[,]\s\'%s\'\)" % (UUID_REGULAR_EXPRESSION, UUID_REGULAR_EXPRESSION)) 
+]
