@@ -7,6 +7,7 @@ import numpy as np
 import scipy as sp
 from pickle import dump, load
 import ocelot
+import random
 
 def extract_products_as_tuple(dataset):
     return tuple(sorted([exc['name']
@@ -184,12 +185,27 @@ def open_file(folder, filename):
     return obj
 
 
+def do_not_overwrite(folder, filename_to_save, filelist = []):
+    if filelist == []:
+        filelist = [os.path.join(folder, filename) for filename in os.listdir(folder)]
+    if os.path.join(folder, filename_to_save) in filelist:
+        extention = filename_to_save.split('.')[-1]
+        filename_to_save = filename_to_save.replace('.'+extention, '')
+        r = str(random.random()*1000).split('.')[0]
+        filename_to_save = filename_to_save+r+'.'+extention
+        if filename_to_save in filelist:
+            filename_to_save = do_not_overwrite(folder, filename_to_save, filelist = filelist)
+    return filename_to_save
+    
+
 def print_dataset_to_excel(dataset, folder, data_format, activity_overview):
     dataset = copy(dataset)
     if tuple(data_format.index.names) != ('in data frame'):
         meta = data_format.set_index('in data frame')
     filename = '{} - {} - {}.xlsx'.format(dataset['name'], dataset['location'], 
         dataset['main reference product'])
+    filename = do_not_overwrite(folder, filename, filelist = [])
+        
     writer = pd.ExcelWriter(os.path.join(folder, filename))
     fields = ['activity name', 'location', 'main reference product', 
               'start date', 'end date', 'activity type', 'technology level', 
@@ -388,16 +404,15 @@ def replace_Ref_by_variable(dataset):
 
 def build_graph(dataset, combined = False):
     '''builds a matrix of dependencies between each mathematical relation and other variables'''
-    
     #Problem: if a mathematicalRelation1 = variable11*2, and the variableName variable1 exists, 
     #and we do "variable1 in mathematicalRelation1", we will get a false dependency of 
     #mathematicalRelation1 on variable1.  
     #Solution: check for the longest variableName first, and once found, remove
     #them from the mathematicalRelation.
-    
     dataset = ocelot.utils.replace_Ref_by_variable(dataset)
     dataset = copy(dataset)
     df = dataset['data frame']
+    
     df['length'] = df['variable'].apply(len)
     order = list(df.sort_values(by = 'length', ascending = False).index)
     if combined:
@@ -426,7 +441,7 @@ def build_graph(dataset, combined = False):
     ij = np.vstack((rows, columns))
     graph = sp.sparse.csr_matrix((c,ij), shape = (len(df), len(df)))
     
-    #graph contains a "1" in position (i,j) if the mathematical relation of amount j
+    #graph contains a "1" in position (i,j) if the mathematical relation i depends on amount j
     dataset['graph'] = graph
     
     return dataset
@@ -500,5 +515,22 @@ def recalculate(dataset):
     df['calculated amount'] = pd.Series(values)
     
     dataset['data frame'] = df    
+    
+    return dataset
+
+def reset_index_df(dataset):
+    '''after some linking steps, the number of rows might have changed, and this
+    creates errors in the recalculation algorithm.  This function resets the index of the
+    dataframe to a continuous series from 0 to len(dataset['data frame']) - 1.  '''
+    
+    dataset = copy(dataset)
+    df = dataset['data frame']
+    df.index = range(len(df))
+    sel = df[df['exchange type'] == 'reference product']
+    sel = sel[sel['data type'] == 'exchanges']
+    sel = sel[sel['exchange name'] == dataset['main reference product']]
+    assert len(sel) == 1
+    dataset['main reference product index'] = sel.iloc[0].name
+    dataset['data frame'] = df
     
     return dataset

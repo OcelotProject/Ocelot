@@ -32,14 +32,10 @@ else:
     filename = 'activity_overview'
     activity_overview = ocelot.utils.open_file(folder, filename)
     data_format = ocelot.utils.read_format_definition()
-    criteria = {'activity name': ['cement production, alternative constituents 21-35%'], 
-                'location': ['Europe without Switzerland']}
+    criteria = {'activity name': ['petroleum refinery operation'], 
+                'location': ['CH']}
     datasets = ocelot.utils.filter_datasets(datasets, activity_overview, criteria)
-    #dataset = datasets[0]
-    #ocelot.utils.print_dataset_to_excel(dataset, folder, data_format, activity_overview)
-    
     datasets = ocelot.transformations.allocate_cutoff.allocate_datasets_cutoff(
         datasets, data_format, '')
-    
     for dataset in datasets:
         ocelot.utils.print_dataset_to_excel(dataset, folder, data_format, activity_overview)

@@ -26,8 +26,8 @@ def allocate_datasets_cutoff(datasets, data_format, logger):
             new_datasets = [dataset]
         elif 'combined' in dataset['allocation method']:
             new_datasets = combined_production(dataset)
-            if dataset['allocation method'] == 'combinedProductionWithByProduct':
-                allocatedDatasets, logs = mergeCombinedProductionWithByProduct(allocatedDatasets, logs)
+            if dataset['allocation method'] == 'combined production with byproducts':
+                new_datasets = allocate_after_subdivision(dataset, new_datasets)
         elif dataset['allocation method'] == 'economic allocation':
             dataset = find_economic_allocation_factors(dataset)
             new_datasets = allocate_with_factors(dataset)
@@ -67,19 +67,26 @@ def flip_non_allocatable_byproducts(dataset):
         df.loc[to_flip_indexes, 'exchange type'] = 'from technosphere'
         
         #only the exchange amounts should have their sign changed
-        to_flip_indexes = tuple(to_flip[to_flip['data type'] == 'exchanges'].index)
+        to_flip_indexes = list(to_flip[to_flip['data type'] == 'exchanges'].index)
         df.loc[to_flip_indexes, 'amount'] = -df.loc[to_flip_indexes, 'amount']
+        
+        #check if mathematical relations have to be changed because of flipping
         if 'mathematical relation' in set(df.columns):
-            s = set(df.loc[to_flip_indexes, 'mathematical relation'])
-            s.difference_update(set([np.nan]))
-            assert len(s) == 0 #the mathematical formula should be changed too
+            indexes = df.loc[to_flip_indexes]
+            if len(indexes) > 0:
+                indexes = list(indexes[~indexes['mathematical relation'
+                        ].apply(utils.is_empty)].index)
+            if len(indexes) > 0:
+                df.loc[indexes, 'mathematical relation'] = df.loc[
+                    indexes, 'mathematical relation'].apply(
+                    lambda m: '-(%s)' % m)
         
         #remove production volume for the flipped exchanges
         indexes = list(to_flip[to_flip['data type'] == 'production volume'].index)
         df = df.drop(indexes)
         
         dataset['data frame'] = df.copy()
-        
+        dataset = utils.reset_index_df(dataset)
     return dataset
 
 	
@@ -172,16 +179,16 @@ def allocate_with_factors(dataset):
     new_datasets = []
     for chosen_product_exchange_id in list(allocation_factors.index):
         new_dataset = utils.make_reference_product(chosen_product_exchange_id, dataset)
-        
         #multiply all exchange amounts by allocation factor, except reference product
-        df = new_dataset['data frame'].copy()
-        exchanges = df[df['data type'] == 'exchanges']
+        df = new_dataset['data frame']
+        exchanges = df[df['data type'] == 'exchanges'].copy()
         indexes = list(exchanges.index)
         indexes.remove(new_dataset['main reference product index'])
         df.loc[indexes, 'amount'] = df.loc[indexes, 'amount'
             ] * allocation_factors.loc[chosen_product_exchange_id, 'allocation factor']
         new_dataset['data frame'] = df.copy()
         new_datasets.append(deepcopy(new_dataset))
+        
     return new_datasets
 
 
@@ -278,6 +285,65 @@ def combined_production(dataset):
             df['amount'] = df['calculated amount'].copy()
             del df['calculated amount']
             new_dataset['data frame'] = df.copy()
+            new_datasets.append(new_dataset)
+    
+    return new_datasets
+
+
+def allocate_after_subdivision(undefined_dataset, datasets):
+    
+    #PV get erased in the process, but can be retrieved from the undefined dataset
+    for_PV = undefined_dataset['data frame'].copy()
+    for_PV = for_PV[for_PV['data type'] == 'produciton volume']
+    #each dataset needs to be allocated
+    allocated_dataset_ungrouped = []
+    for dataset in datasets:
+        dataset = find_economic_allocation_factors(dataset)
+        to_add = allocate_with_factors(dataset)
+        allocated_dataset_ungrouped.extend(to_add)
+    
+    #grouping of datasets with the same reference product
+    allocated_dataset_grouped = {}
+    for dataset in allocated_dataset_ungrouped:
+        if dataset['main reference product'] not in allocated_dataset_grouped:
+            allocated_dataset_grouped[dataset['main reference product']] = []
+        allocated_dataset_grouped[dataset['main reference product']].append(dataset)
+    
+    new_datasets = []
+    for reference_product in allocated_dataset_grouped:
+        if len(allocated_dataset_grouped[reference_product]) == 1:
+            #nothing to merge
+            new_datasets.append(allocated_dataset_grouped[reference_product][0])
+        else:
+            #put exchanges and produciton volume in the same data frame
+            to_merge = []
+            for dataset in allocated_dataset_grouped[reference_product]:
+                df = dataset['data frame'].copy()
+                df = df[df['data type'] == 'exchanges']
+                to_merge.append(df)
+            to_merge = pd.concat(to_merge)
+            
+            #add the amounts of the same exchanges
+            merged = pd.pivot_table(to_merge, values = ['amount'], 
+                index = ['Ref'], aggfunc = np.sum)
+            
+            #put back the amounts in the data frame with all the information
+            df = df.set_index('Ref')
+            cols = list(df.columns)
+            cols.remove('amount')
+            cols.remove('length')
+            cols.remove('calculation order')
+            merged = df[cols].join(merged)
+            
+            #add parameters, properties and production volumes
+            df = dataset['data frame'].copy()
+            df = df[df['data type'].isin(['properties', 'parameters'])]
+            merged = pd.concat([merged.reset_index(), df, 
+                for_PV[for_PV['exchange name'] == reference_product]])
+            new_dataset = copy(dataset)
+            new_dataset['data frame'] = merged.copy()
+            new_dataset = utils.reset_index_df(new_dataset)
+            
             new_datasets.append(new_dataset)
     
     return new_datasets

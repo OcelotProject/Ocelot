@@ -23,7 +23,8 @@ def extract_parameters(elem):
     for obj in elem.flowData.iterchildren():
         if 'parameter' in obj.tag:
             p = {'name': obj.name.text, 
-                 'id': obj.get('parameterId')}
+                 'id': obj.get('parameterId'), 
+                'amount': float(obj.get('amount'))}
             if hasattr(obj, "uncertainty"):
                 p['uncertainty'] = extract_uncertainty(obj.uncertainty)
             formula = obj.get('mathematicalRelation')
@@ -33,6 +34,7 @@ def extract_parameters(elem):
                 p['mathematical relation'] = formula.strip()
             parameters.append(p)
     return parameters
+
 
 def extract_pedigree_matrix(elem):
     pm = {}
