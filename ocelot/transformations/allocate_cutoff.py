@@ -263,6 +263,7 @@ def combined_production(dataset):
     
     #are recyclable not supposed to be allocated anything?
     dataset = copy(dataset)
+    df = dataset['data frame'].copy()
     
     #establish relationship between variables with a graph matrix
     dataset = utils.build_graph(dataset, combined = True)
@@ -279,14 +280,20 @@ def combined_production(dataset):
     
     #for each reference product
     for chosen_product_exchange_id in reference_products_ids:
-        new_dataset = utils.make_reference_product(chosen_product_exchange_id, dataset)
-        new_dataset = utils.recalculate(new_dataset)
-        df = new_dataset['data frame']
-        if df.loc[new_dataset['main reference product index'], 'amount'] != 0.:
-            df['amount'] = df['calculated amount'].copy()
-            del df['calculated amount']
-            new_dataset['data frame'] = df.copy()
-            new_datasets.append(new_dataset)
+        df = dataset['data frame']
+        #do not allocate for child datasets that have the reference product already set to zero
+        exchanges_to_technosphere = utils.select_exchanges_to_technosphere(df)
+        sel = exchanges_to_technosphere[
+            exchanges_to_technosphere['exchange id'] == chosen_product_exchange_id].iloc[0]
+        if sel['amount'] != 0.:
+            new_dataset = utils.make_reference_product(chosen_product_exchange_id, dataset)
+            new_dataset = utils.recalculate(new_dataset)
+            df = new_dataset['data frame']
+            if df.loc[new_dataset['main reference product index'], 'amount'] != 0.:
+                df['amount'] = df['calculated amount'].copy()
+                del df['calculated amount']
+                new_dataset['data frame'] = df.copy()
+                new_datasets.append(new_dataset)
     
     return new_datasets
 

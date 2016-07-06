@@ -27,29 +27,31 @@ if 0:
     ocelot.utils.save_file(datasets, folder, filename)
 else:
     folder = r'C:\ocelot_DB'
+    filename = 'ecoinvent_3.2_internal'
     #filename = 'ecoinvent_3.2_internal_small'
-    filename = 'after_economic_allocation'
-    #filename = 'ecoinvent_3.2_internal'
+    #filename = 'after_economic_allocation'
+    #filename = 'after_true_value_allocation'
     datasets = ocelot.utils.open_file(folder, filename)
+    #datasets = ocelot.transformations.fix_known_issues_ecoinvent_32.fix_known_issues(
+    #    datasets, '')
     filename = 'activity_overview'
     activity_overview = ocelot.utils.open_file(folder, filename)
     data_format = ocelot.utils.read_format_definition()
     criteria = {
-        'allocation method': ['economic allocation'], 
-        #'name': [''], 
-        #'location': ['CH'], 
+        'allocation method': ['combined production without byproducts'], 
+        #'activity name': ['cement production, alternative constituents 6-20%'], 
+        #'location': ['CA-QC'], 
                 }
     datasets = ocelot.utils.filter_datasets(datasets, activity_overview, criteria)
-    datasets = ocelot.transformations.find_allocation_method_cutoff.allocation_method(datasets, '')
     if 0:
         datasets = ocelot.transformations.allocate_cutoff.allocate_datasets_cutoff(
             datasets, data_format, '')
         folder = 'C:\ocelot_DB'
-        filename = 'after_economic_allocation'
+        filename = 'after_combined_production_without_byproducts'
         ocelot.utils.save_file(datasets, folder, filename)
     system_model_folder = r'C:\python\DB_versions\3.2\cut-off'
     result_folder = r'C:\ocelot_DB'
     ocelot.utils.validate_against_linking(datasets, system_model_folder, data_format, result_folder)
     
         
-        #ocelot.utils.print_dataset_to_excel(dataset, folder, data_format, activity_overview)
+    #ocelot.utils.print_dataset_to_excel(dataset, folder, data_format, activity_overview)

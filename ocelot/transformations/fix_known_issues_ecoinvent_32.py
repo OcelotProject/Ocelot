@@ -26,9 +26,11 @@ def fix_known_issues(datasets, logger):
                 if 'variable' in exc and exc['variable'] == 'ggbfs':
                     exc['variable'] = 'GGBFS'
         elif dataset['name'] == 'ethylene glycol production':
+            #yield is a reserved word that cannot be used as a variable in Python
             for p in dataset['parameters']:
                 if 'variable' in p and p['variable'] == 'yield':
                     p['variable'] = 'YIELD'
+            for exc in dataset['exchanges']:
                 if 'mathematical relation' in exc:
                     if 'yield' in exc['mathematical relation']:
                         exc['mathematical relation'] = exc['mathematical relation'

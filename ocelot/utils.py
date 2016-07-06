@@ -317,6 +317,8 @@ def make_reference_product(chosen_product_exchange_id, dataset):
     #add new reference product to metainformation
     dataset_copy['main reference product'] = sel['exchange name']
     dataset_copy['main reference product index'] = sel.name
+    
+    #this assertion error will be caught and handle by calling function, do not remove!
     assert df.loc[dataset_copy['main reference product index'], 'amount'] != 0.
     
     #put to zero the amount of the other coproducts
