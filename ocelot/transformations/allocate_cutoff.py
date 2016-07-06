@@ -12,6 +12,7 @@ def allocate_datasets_cutoff(datasets, data_format, logger):
     allocated_datasets = []
     
     for dataset in datasets:
+        print(dataset['name'], dataset['location'])
         dataset['last operation'] = 'allocate_datasets'
         
         #create the data frame representation of the quantitative information of the dataset

@@ -24,7 +24,8 @@ def allocation_method(datasets, logger):
                         reference_product_amount_sign = 1
                     reference_product_classification = exc['byproduct classification']
                 elif exc['type'] == 'byproduct':
-                    nb_allocatable_byproducts += 1
+                    if exc['byproduct classification'] == 'allocatable':
+                        nb_allocatable_byproducts += 1
                     if 'activity link' in exc and dataset['type'] == 'market activity' and exc['amount'] < 0.:
                         has_conditional_exchange = True
                 if 'properties' in exc:
@@ -65,11 +66,17 @@ def allocation_method(datasets, logger):
             if 'parameters' in dataset:
                 del dataset['parameters'] #parameters are only useful in the case of combined production
             for exc in dataset['exchanges']:
+                
                 #mathematical relation and variable names not necessary
                 for field in ['mathematical relation', 'variable']:
                     if field in exc:
                         del exc[field]
+                if 'production volume' in exc:
+                    for field in ['mathematical relation', 'variable']:
+                        if field in exc['production volume']:
+                            del exc['production volume'][field]
                 if 'properties' in exc:
+                    
                     #deleting unnecessary properties
                     properties_to_keep = []
                     if dataset['allocation method'] in ['recycling activity', 'economic allocation']:
@@ -84,4 +91,5 @@ def allocation_method(datasets, logger):
                                 exc['properties'].append(p)
                     else:
                         del exc['properties']
+    
     return datasets

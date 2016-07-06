@@ -181,7 +181,11 @@ def save_file(obj, folder, filename):
 
 def open_file(folder, filename):
     f = open(os.path.join(folder, filename) + '.pkl', mode = 'rb')
-    obj = load(f)
+    try:
+        obj = load(f)
+    except:
+        obj = load(f, encoding = 'cp1252')
+    f.close()
     return obj
 
 
@@ -518,6 +522,7 @@ def recalculate(dataset):
     
     return dataset
 
+
 def reset_index_df(dataset):
     '''after some linking steps, the number of rows might have changed, and this
     creates errors in the recalculation algorithm.  This function resets the index of the
@@ -534,3 +539,67 @@ def reset_index_df(dataset):
     dataset['data frame'] = df
     
     return dataset
+
+
+def validate_against_linking(datasets, system_model_folder, data_format, result_folder):
+    folder = os.path.join(system_model_folder, 'excel and csv')
+    filename = 'activity_overview_3.2_cut-off.xlsx'
+    ao = pd.read_excel(os.path.join(folder, filename), 'activity overview')
+    ao = ao.set_index(['activityName', 'Geography', 'Product']).sortlevel(level=0)
+    folder = folder = os.path.join(system_model_folder, 'datasets')
+    results = {}
+    
+    for dataset in datasets:
+        print('validating', dataset['name'], dataset['location'], dataset['main reference product'])
+        print(datasets.index(dataset), 'of', len(datasets))
+        to_add = {'activity name': dataset['name'], 
+                  'location': dataset['location'], 
+                'reference product': dataset['main reference product']}
+        index = dataset['name'], dataset['location'], dataset['main reference product']
+        found = True
+        if index in set(ao.index):
+            linked_filename = ao.loc[index]['filename']
+        elif index[1] == 'GLO':
+            index = dataset['name'], 'RoW', dataset['main reference product']
+            if index in set(ao.index):
+                linked_filename = ao.loc[index]['filename']
+            else:
+                found = False
+        else:
+            found = False
+        if found:
+            df = dataset['data frame'].copy()
+            sel = df[df['data type'] == 'exchanges']
+            sel = sel[sel['tag'] == 'elementaryExchange']
+            sel = sel[sel['amount'] != 0.]
+            if len(sel) > 0:
+                linked_filename = os.path.join(folder, linked_filename)
+                linked_dataset = ocelot.io.extract_ecospold2.generic_extractor(linked_filename)[0]
+                linked_dataset = ocelot.utils.internal_to_df(linked_dataset, data_format)
+                df = linked_dataset['data frame'].copy()
+                sel_linked = df[df['data type'] == 'exchanges']
+                sel_linked = sel_linked[sel_linked['tag'] == 'elementaryExchange']
+                sel_linked = sel_linked[sel_linked['amount'] != 0.]
+                sel = sel.set_index(['exchange name', 'compartment', 'subcompartment'
+                    ])[['amount']]
+                sel_linked = sel_linked.set_index(['exchange name', 'compartment', 'subcompartment'
+                    ])[['amount']]
+                df = sel.join(sel_linked, how = 'outer', rsuffix = '_reference')
+                df['test'] = abs(df['amount'].divide(df['amount_reference']))
+                tolerance = .001
+                if sum(df['test'] > 1. + tolerance) + sum(df['test'] < 1. - tolerance):
+                    to_add['message'] = 'differences'
+                else:
+                    to_add['message'] = 'validation passed'
+            else:
+                to_add['message'] = 'no exchange to/from nature: nothing to validate against the reference'
+        else:
+            to_add['message'] = 'reference not found, (not necessarily an error)'
+        results[len(results)] = copy(to_add)
+        print(to_add['message'])
+        print('')
+    results = pd.DataFrame(results).transpose()
+    filename = 'validation_results.xlsx'
+    columns = ['activity name', 'location', 'reference product', 'message']
+    results.to_excel(os.path.join(result_folder, filename), columns = columns, 
+                     index = False, merge_cells = False)

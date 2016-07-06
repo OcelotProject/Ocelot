@@ -37,13 +37,13 @@ def build_activity_overview(datasets, support_excel_folder, support_pkl_folder,
         baseline = {}
         for field in dataset_fields_to_keep:
             if field in dataset:
-                baseline[data_format.loc[('dataset', field), 'in dataframe']
+                baseline[data_format.loc[('dataset', field), 'in data frame']
                     ] = dataset[field]
         for exc in dataset['exchanges']:
             if exc['type'] in ['reference product', 'byproduct']:
                 to_add = copy(baseline)
                 for field in exchange_fields_to_keep:
-                    to_add[data_format.loc[('exchanges', field), 'in dataframe']
+                    to_add[data_format.loc[('exchanges', field), 'in data frame']
                         ] = exc[field]
                 to_add['production volume'] = exc['production volume']['amount']
                 df[len(df)] = copy(to_add)
