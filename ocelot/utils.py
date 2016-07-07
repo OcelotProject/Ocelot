@@ -432,15 +432,18 @@ def build_graph(dataset, combined = False):
     df_with_formula = df[~df['mathematical relation'].apply(ocelot.utils.is_empty)]
     mathematical_relations = dict(zip(list(df_with_formula.index), 
         list(df_with_formula['mathematical relation'])))
-    
+    print(len(mathematical_relations), 'mathematical relations')
+    print(len(df), 'variables')
+    print('')
     #gathering information for the graph matrix
     rows = []
     columns = []
+    variables = dict(zip(list(df.index), list(df['variable'])))
     for i in mathematical_relations:
         for j in order:
-            v = df.loc[j, 'variable']
-            if v in mathematical_relations[i]:
-                mathematical_relations[i] = mathematical_relations[i].replace(v, '')
+            variable = variables[j]
+            if variable in mathematical_relations[i]:
+                mathematical_relations[i] = mathematical_relations[i].replace(variable, '')
                 rows.append(j)
                 columns.append(i)
     c = [1 for i in range(len(rows))]
@@ -550,10 +553,11 @@ def validate_against_linking(datasets, system_model_folder, data_format, result_
     ao = ao.set_index(['activityName', 'Geography', 'Product']).sortlevel(level=0)
     folder = folder = os.path.join(system_model_folder, 'datasets')
     results = {}
-    
+    counter = 0
     for dataset in datasets:
+        counter += 1
         print('validating', dataset['name'], dataset['location'], dataset['main reference product'])
-        print(datasets.index(dataset), 'of', len(datasets))
+        print(counter, 'of', len(datasets))
         to_add = {'activity name': dataset['name'], 
                   'location': dataset['location'], 
                 'reference product': dataset['main reference product']}
@@ -591,6 +595,13 @@ def validate_against_linking(datasets, system_model_folder, data_format, result_
                 tolerance = .001
                 if sum(df['test'] > 1. + tolerance) + sum(df['test'] < 1. - tolerance):
                     to_add['message'] = 'differences'
+                    filename = '%s - %s - %s.xlsx' % (dataset['name'], 
+                        dataset['location'], dataset['main reference product'])
+                    df = df.reset_index()
+                    columns = ['exchange name', 'compartment', 'subcompartment', 
+                               'amount', 'amount_reference', 'test']
+                    df.to_excel(os.path.join(result_folder, filename), 
+                        columns = columns, index = False, merge_cells = False)
                 else:
                     to_add['message'] = 'validation passed'
             else:

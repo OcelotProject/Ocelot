@@ -260,7 +260,6 @@ def recycling_activity_allocation(dataset):
 
 
 def combined_production(dataset):
-    
     #are recyclable not supposed to be allocated anything?
     dataset = copy(dataset)
     df = dataset['data frame'].copy()
@@ -289,7 +288,7 @@ def combined_production(dataset):
             new_dataset = utils.make_reference_product(chosen_product_exchange_id, dataset)
             new_dataset = utils.recalculate(new_dataset)
             df = new_dataset['data frame']
-            if df.loc[new_dataset['main reference product index'], 'amount'] != 0.:
+            if df.loc[new_dataset['main reference product index'], 'amount'] != 0. or True:
                 df['amount'] = df['calculated amount'].copy()
                 del df['calculated amount']
                 new_dataset['data frame'] = df.copy()

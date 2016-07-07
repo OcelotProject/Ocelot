@@ -27,7 +27,8 @@ if 0:
     ocelot.utils.save_file(datasets, folder, filename)
 else:
     folder = r'C:\ocelot_DB'
-    filename = 'ecoinvent_3.2_internal'
+    #filename = 'ecoinvent_3.2_internal'
+    filename = 'after_combined_production_with_byproducts'
     #filename = 'ecoinvent_3.2_internal_small'
     #filename = 'after_economic_allocation'
     #filename = 'after_true_value_allocation'
@@ -38,16 +39,18 @@ else:
     activity_overview = ocelot.utils.open_file(folder, filename)
     data_format = ocelot.utils.read_format_definition()
     criteria = {
-        'allocation method': ['combined production without byproducts'], 
-        #'activity name': ['cement production, alternative constituents 6-20%'], 
-        #'location': ['CA-QC'], 
+        #'allocation method': ['combined production with byproducts', 
+        #                      'combined production without byproducts'
+         #                     ], 
+        #'activity name': ['petroleum refinery operation'], 
+        'location': ['GLO'], 
                 }
-    datasets = ocelot.utils.filter_datasets(datasets, activity_overview, criteria)
+    #datasets = ocelot.utils.filter_datasets(datasets, activity_overview, criteria)
     if 0:
         datasets = ocelot.transformations.allocate_cutoff.allocate_datasets_cutoff(
             datasets, data_format, '')
         folder = 'C:\ocelot_DB'
-        filename = 'after_combined_production_without_byproducts'
+        filename = 'after_combined_production_with_byproducts'
         ocelot.utils.save_file(datasets, folder, filename)
     system_model_folder = r'C:\python\DB_versions\3.2\cut-off'
     result_folder = r'C:\ocelot_DB'
