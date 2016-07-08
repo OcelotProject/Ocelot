@@ -10,7 +10,8 @@ def dummy():
 def allocate_datasets_cutoff(datasets, data_format, logger):
     '''a new list of datasets is created, all made single output by the right allocation method'''
     allocated_datasets = []
-    
+    data_format_for_return_to_internal = data_format[~data_format['in data frame'].apply(utils.is_empty)]
+    data_format_for_return_to_internal = data_format_for_return_to_internal.set_index(['parent', 'in data frame']).sortlevel(level=0)
     for dataset in datasets:
         print(dataset['name'], dataset['location'])
         dataset['last operation'] = 'allocate_datasets'
@@ -44,9 +45,10 @@ def allocate_datasets_cutoff(datasets, data_format, logger):
         else:
             raise NotImplementedError('"%s" is not a recognized allocationMethod')
         
-        #each dataset has to be scaled
+        #each dataset has to be scaled, then put back to the internal format
         for dataset in new_datasets:
             dataset = utils.scale_exchanges(dataset)
+            dataset = utils.df_to_internal(dataset, data_format_for_return_to_internal)
         allocated_datasets.extend(new_datasets)
     return allocated_datasets
 

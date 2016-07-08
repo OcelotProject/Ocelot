@@ -71,13 +71,40 @@ def uncertainty_to_df(u, data_format):
 
 
 def is_empty(e):
-    return e in ['', None, np.nan, np.NaN, np.nan, []]
+    if type(e) in [float]:
+        test = e in ['', None, np.nan, np.NaN, np.nan, []] or np.isnan(e)
+    else:
+        test = e in ['', None, np.nan, np.NaN, np.nan, []]
+    return test
 
 
-def uncertainty_to_internal(s):
-    if 'uncertainty type' in s and not is_empty(s['uncertainty type']):
-        pass
-    return ''
+def property_to_internal(to_add, properties, data_format, sel):
+    if sel['exchange id'] in set(properties.index):
+        1/0 #to be tested
+        to_add['properties'] = []
+        sel_properties = properties.loc[sel['exchange id']]
+        if type(sel_properties) == pd.core.frame.Series:
+            sel_properties = pd.DataFrame(sel_properties).transpose()
+        for j in range(len(sel_properties)):
+            sel_p = sel_properties.iloc[j]
+            p = {}
+            for col in set(data_format.loc['properties'].index):
+                if col in sel_p.index and not ocelot.utils.is_empty(sel_p[col]):
+                    field = data_format.loc[('properties', col), 'field']
+                    p[field] = sel_p[col]
+            p = ocelot.utils.uncertainty_to_internal(p, sel_p, data_format)
+            to_add['properties'].append(p)
+    return to_add
+
+def uncertainty_to_internal(to_add, sel, data_format):
+    uncertainty = {}
+    for col in set(data_format.loc['uncertainty'].index):
+        if col in sel.index and not ocelot.utils.is_empty(sel[col]):
+            field = data_format.loc[('uncertainty', col), 'field']
+            uncertainty[field] = sel[col]
+    if len(uncertainty) > 0:
+        to_add['uncertainty'] = uncertainty
+    return to_add
 
 
 def add_line_to_df(df, data_format, parent, element, to_add = False):
@@ -150,24 +177,82 @@ def internal_to_df(dataset, data_format):
     df = add_dummy_variable(df)
     dataset['data frame'] = df
     
+    for field in ['exchanges', 'parameters']:
+        if field in dataset:
+            del dataset[field]
+    
     return dataset
 
 
-def df_to_internal(df, dataset_internal):
+def df_to_internal(dataset, data_format):
+    dataset = copy(dataset)
+    df = dataset['data frame']
+    
+    #adjust index of the data format
+    if not list(data_format.index.names) == ['parent', 'in data frame']:
+        print('warning: pass to function already indexed data_format for faster execution')
+        data_format = data_format[~data_format['in data frame'].apply(is_empty)]
+        data_format = data_format.set_index(['parent', 'in data frame']).sortlevel(level=0)
+        
+    #divide info in practical separate data frames
+    exchanges = df[df['data type'] == 'exchanges']
+    PVs = df[df['data type'] == 'production volume'].set_index('exchange id')
+    properties = df[df['data type'] == 'properties'].set_index('exchange id')
+    dataset['exchanges'] = []
+    
+    for i in range(len(exchanges)):
+        sel = exchanges.iloc[i]
+        to_add = {}
+        
+        #add the exchange info
+        for col in sel.index:
+            if not is_empty(sel[col]) and ('exchanges', col) in set(data_format.index):
+                field = data_format.loc[('exchanges', col), 'field']
+                to_add[field] = sel[col]
+        
+        #add the PV info
+        if sel['exchange id'] in set(PVs.index):
+            sel_PV = PVs.loc[sel['exchange id']]
+            PV = {}
+            for col in set(data_format.loc['production volume'].index):
+                if col in sel_PV.index and not is_empty(sel_PV[col]):
+                    field = data_format.loc[('production volume', col), 'field']
+                    PV[field] = sel_PV[col]
+            
+            #add uncertainty to production volume
+            PV = uncertainty_to_internal(PV, sel_PV, data_format)
+            to_add['production volume'] = PV
+        
+        #add uncertainty to exchange
+        to_add = uncertainty_to_internal(to_add, sel, data_format)
+        
+        #add properties to exchange
+        to_add = property_to_internal(to_add, properties, data_format, sel)
+        
+        dataset['exchanges'].append(to_add)
+    
+    #add parameters
     parameters = df[df['data type'] == 'parameter']
     if len(parameters) > 0:
-        dataset_internal['parameters'] = []
-        for index in parameters.index:
-            s = parameters.loc[index]
+        dataset['parameters'] = []
+        for i in range(len(parameters)):
+            sel = parameters.iloc[i]
             to_add = {}
-            for field in parameters:
-                if not is_empty(s[field]) and field != 'Ref':
-                    to_add[field] = s[field]
-                elif field == 'Ref':
-                    to_add['id'] = s[field].replace('Ref(', '').replace('(', '')
-
-            dataset_internal['parameters'].append(copy(to_add))
-
+            
+            #add information about parameter
+            for col in set(data_format.loc['parameters'].index):
+                if col in sel.index and not is_empty(sel[col]):
+                    field = data_format.loc[('parameters', col), 'field']
+                    to_add[field] = sel[col]
+            
+            #add uncertainty to parameter
+            to_add = uncertainty_to_internal(to_add, sel, data_format)
+            
+            dataset['parameters'].append(to_add)
+    
+    del dataset['data frame']
+    
+    return df_to_internal
 
 def read_format_definition():
     return pd.read_excel(os.path.join(os.path.dirname(__file__), "data", "format.xlsx"))

@@ -11,7 +11,7 @@ def dummy():
 def available_production_volume(datasets, logger, support_excel_folder, support_pkl_folder):
     """Calculates available production volume for market shares by removing 
         consumption by activity links"""
-        
+    
     #first, an activity link overview is required
     activity_overview = load(os.path.join(support_pkl_folder, 'activity_overview.pkl'))
     activity_overview = activity_overview.set_index(['activity id', 'product']).sortlevel(level=0)

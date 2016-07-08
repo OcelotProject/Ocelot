@@ -8,7 +8,7 @@ from .activity_overview import dummy
 from .find_allocation_method_cutoff import dummy
 from .fix_known_issues_ecoinvent_32 import dummy
 from .allocate_cutoff import dummy
-from .available_production_volume import dummy
+from .calculate_available_PV import dummy
 
 def dummy_transformation(data):
     """This is a dummy transformation that doesn't do anything.
