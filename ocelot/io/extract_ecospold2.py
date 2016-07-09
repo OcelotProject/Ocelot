@@ -9,6 +9,7 @@ import os
 import pprint
 import pyprind
 import signal
+import time
 
 from .. import utils
 imp.reload(utils)
@@ -59,22 +60,22 @@ def extract_uncertainty(unc):
 
 
 def extract_production_volume(exc, exc_data):
-    pv = exc.get('productionVolumeAmount')
-    if not pv:
-        if exc_data['type'] in ['reference product', 'byproduct']:
-            data = {'amount': 0.}
+    if exc_data['type'] in ['reference product', 'byproduct']:
+        pv = exc.get('productionVolumeAmount')
+        if not pv:
+            if exc_data['type'] in ['reference product', 'byproduct']:
+                data = {'amount': 0.}
         else:
-            data = False
+            data = {'amount': float(pv)}
+            if hasattr(exc, "productionVolumeUncertainty"):
+                data['uncertainty'] = extract_uncertainty(exc.productionVolumeUncertainty)
+            if exc.get('productionVolumeMathematicalRelation'):
+                data['mathematical relation'] = exc.get(
+                    'productionVolumeMathematicalRelation').strip()
+            if exc.get('productionVolumeVariableName'):
+                data['variable'] = exc.get('productionVolumeVariableName')
     else:
-        data = {'amount': float(pv)}
-        if hasattr(exc, "productionVolumeUncertainty"):
-            data['uncertainty'] = extract_uncertainty(exc.productionVolumeUncertainty)
-        if exc.get('productionVolumeMathematicalRelation'):
-            data['mathematical relation'] = exc.get(
-                'productionVolumeMathematicalRelation').strip()
-        if exc.get('productionVolumeVariableName'):
-            data['variable'] = exc.get('productionVolumeVariableName')
-    
+        data = False
     return data
 
 
@@ -171,7 +172,7 @@ def extract_minimal_ecospold2_info(elem, filepath):
                       if 'Exchange' in exc.tag], 
         'access restricted': meta.ACCESS_RESTRICTED[elem.administrativeInformation.dataGeneratorAndPublication.get(
                             'accessRestrictedTo')], 
-        'last operation': 'extract_minimal_ecospold2_info', 
+        'history': {'extract_ecospold2': time.ctime()}, 
         'allocation method': '(not known at this point)'
         }
     data['main reference product'] = utils.find_main_reference_product(data)

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from copy import copy, deepcopy
+import time
 
 def dummy():
     return ''
@@ -7,6 +8,7 @@ def dummy():
 def allocation_method(datasets, logger):
     """Finds the allocation method, based on a few characteristics of outputs to technosphere"""
     for dataset in datasets:
+        dataset['history']['find_allocation_method_cutoff'] = time.ctime()
         #initializing some variables
         nb_reference_products = 0
         nb_allocatable_byproducts = 0

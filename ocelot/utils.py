@@ -56,7 +56,7 @@ def get_function_meta(function):
 
 def get_reference_product(ds):
     for exc in ds['exchanges']:
-        if exc['type'] == 'reference exchange' and exc['amount'] != 0.:
+        if exc['type'] == 'reference product' and exc['amount'] != 0.:
             break
     return exc
 
@@ -80,7 +80,6 @@ def is_empty(e):
 
 def property_to_internal(to_add, properties, data_format, sel):
     if sel['exchange id'] in set(properties.index):
-        1/0 #to be tested
         to_add['properties'] = []
         sel_properties = properties.loc[sel['exchange id']]
         if type(sel_properties) == pd.core.frame.Series:
@@ -190,7 +189,7 @@ def df_to_internal(dataset, data_format):
     
     #adjust index of the data format
     if not list(data_format.index.names) == ['parent', 'in data frame']:
-        print('warning: pass to function already indexed data_format for faster execution')
+        #print('warning: pass to function already indexed data_format for faster execution')
         data_format = data_format[~data_format['in data frame'].apply(is_empty)]
         data_format = data_format.set_index(['parent', 'in data frame']).sortlevel(level=0)
         
@@ -252,7 +251,7 @@ def df_to_internal(dataset, data_format):
     
     del dataset['data frame']
     
-    return df_to_internal
+    return dataset
 
 def read_format_definition():
     return pd.read_excel(os.path.join(os.path.dirname(__file__), "data", "format.xlsx"))
@@ -303,6 +302,12 @@ def print_dataset_to_excel(dataset, folder, data_format, activity_overview):
     meta['value'] = meta['field'].apply(lambda key: dataset[key])
     del meta['field']
     meta = meta.reset_index().rename(columns = {'in data frame': 'field'})
+    meta = pd.concat([meta, pd.DataFrame({len(meta): {'field': 'history', 'value': ''}})])
+    hist = pd.DataFrame(dataset['history']).transpose().reset_index()
+    #hist = hist.sort_values(by = )
+    hist = hist.rename(columns = {'': 'field', '': 'value'})
+    meta = pd.concat([meta, hist])
+    
     meta.to_excel(writer, 'meta', columns = ['field', 'value'], 
         index = False, merge_cells = False)
     if 'data frame' not in dataset:

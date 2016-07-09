@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import re
 from copy import copy
+import time
 
 def dummy():
     return ''
 def fix_known_issues(datasets, logger):
     for dataset in datasets:
+        dataset['history']['fix_known_issues_ecoinvent_32'] = time.ctime()
         if dataset['name'] == 'clinker production':
             for exc in dataset['exchanges']:
                 if 'production volume' in exc:

@@ -3,7 +3,7 @@ import pandas as pd
 from copy import copy, deepcopy
 import numpy as np
 from .. import utils
-
+import time
 def dummy():
     return ''
 		
@@ -12,9 +12,15 @@ def allocate_datasets_cutoff(datasets, data_format, logger):
     allocated_datasets = []
     data_format_for_return_to_internal = data_format[~data_format['in data frame'].apply(utils.is_empty)]
     data_format_for_return_to_internal = data_format_for_return_to_internal.set_index(['parent', 'in data frame']).sortlevel(level=0)
+    counter = 0
     for dataset in datasets:
+        assert set(dataset['history'].keys()) == set([
+            'find_allocation_method_cutoff', 'fix_known_issues_ecoinvent_32', 
+            'extract_ecospold2'])
+        counter += 1
         print(dataset['name'], dataset['location'])
-        dataset['last operation'] = 'allocate_datasets'
+        print(counter, 'of', len(datasets))
+        dataset['history']['allocate_cutoff'] = time.ctime()
         
         #create the data frame representation of the quantitative information of the dataset
         if 'data frame' not in dataset:
@@ -49,7 +55,9 @@ def allocate_datasets_cutoff(datasets, data_format, logger):
         for dataset in new_datasets:
             dataset = utils.scale_exchanges(dataset)
             dataset = utils.df_to_internal(dataset, data_format_for_return_to_internal)
-        allocated_datasets.extend(new_datasets)
+            allocated_datasets.append(dataset)
+        assert 'exchanges' in allocated_datasets[-1]
+    
     return allocated_datasets
 
 	
