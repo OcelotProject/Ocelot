@@ -60,15 +60,6 @@ def get_reference_product(ds):
             break
     return exc
 
-def uncertainty_to_df(u, data_format):
-    """used by the function internal_to_df"""
-
-    to_add = {}
-    for field in u:
-        to_add[data_format.loc[('uncertainty', field), 'in data frame']] = u[field]
-
-    return to_add
-
 
 def is_empty(e):
     if type(e) in [float]:
@@ -77,23 +68,6 @@ def is_empty(e):
         test = e in ['', None, np.nan, np.NaN, np.nan, []]
     return test
 
-
-def property_to_internal(to_add, properties, data_format, sel):
-    if sel['exchange id'] in set(properties.index):
-        to_add['properties'] = []
-        sel_properties = properties.loc[sel['exchange id']]
-        if type(sel_properties) == pd.core.frame.Series:
-            sel_properties = pd.DataFrame(sel_properties).transpose()
-        for j in range(len(sel_properties)):
-            sel_p = sel_properties.iloc[j]
-            p = {}
-            for col in set(data_format.loc['properties'].index):
-                if col in sel_p.index and not ocelot.utils.is_empty(sel_p[col]):
-                    field = data_format.loc[('properties', col), 'field']
-                    p[field] = sel_p[col]
-            p = ocelot.utils.uncertainty_to_internal(p, sel_p, data_format)
-            to_add['properties'].append(p)
-    return to_add
 
 def uncertainty_to_internal(to_add, sel, data_format):
     uncertainty = {}
@@ -105,36 +79,6 @@ def uncertainty_to_internal(to_add, sel, data_format):
         to_add['uncertainty'] = uncertainty
     return to_add
 
-
-def add_line_to_df(df, data_format, parent, element, to_add = False):
-    if to_add == False:
-        to_add = {'data type': parent}
-    else:
-        to_add_new = copy(to_add)
-        for field in to_add:
-            if field not in ['tag', 'exchange type', 'exchange name', 
-                    'compartment', 'subcompartment', 'exchange id', 
-                    'unit', 'byproduct classification']:
-                del to_add_new[field]
-        to_add_new['data type'] = parent
-        to_add = copy(to_add_new)
-        
-    for field in element:
-        if field == 'uncertainty':
-            for field2 in element[field]:
-                to_add[data_format.loc[(field, field2), 'in data frame']] = element[field][field2]
-        elif field not in ['production volume', 'properties']:
-            to_add[data_format.loc[(parent, field), 'in data frame']] = element[field]
-    if 'properties' in element:
-        for e in element['properties']:
-            df = add_line_to_df(df, data_format, 'properties', e, to_add = copy(to_add))
-    if 'production volume' in element:
-        df = add_line_to_df(df, data_format, 'production volume', 
-            element['production volume'], to_add = copy(to_add))
-    
-    to_add = add_Ref(to_add)
-    df[len(df)] = copy(to_add)
-    return df
 
 
 def add_dummy_variable(df):
