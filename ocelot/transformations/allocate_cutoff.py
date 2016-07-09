@@ -10,8 +10,6 @@ def dummy():
 def allocate_datasets_cutoff(datasets, data_format, logger):
     '''a new list of datasets is created, all made single output by the right allocation method'''
     allocated_datasets = []
-    data_format_for_return_to_internal = data_format[~data_format['in data frame'].apply(utils.is_empty)]
-    data_format_for_return_to_internal = data_format_for_return_to_internal.set_index(['parent', 'in data frame']).sortlevel(level=0)
     counter = 0
     for dataset in datasets:
         assert set(dataset['history'].keys()) == set([
@@ -21,10 +19,6 @@ def allocate_datasets_cutoff(datasets, data_format, logger):
         print(dataset['name'], dataset['location'])
         print(counter, 'of', len(datasets))
         dataset['history']['allocate_cutoff'] = time.ctime()
-        
-        #create the data frame representation of the quantitative information of the dataset
-        if 'data frame' not in dataset:
-            dataset = utils.internal_to_df(dataset, data_format)
         
         #flip non allocatable byproducts, if necessary
         dataset = flip_non_allocatable_byproducts(dataset)
@@ -36,11 +30,9 @@ def allocate_datasets_cutoff(datasets, data_format, logger):
             new_datasets = combined_production(dataset)
             if dataset['allocation method'] == 'combined production with byproducts':
                 new_datasets = allocate_after_subdivision(dataset, new_datasets)
-        elif dataset['allocation method'] == 'economic allocation':
-            dataset = find_economic_allocation_factors(dataset)
-            new_datasets = allocate_with_factors(dataset)
-        elif dataset['allocation method'] == 'true value allocation':
-            dataset = find_true_value_allocation_factors(dataset)
+        elif dataset['allocation method'] in ['economic allocation', 'true value allocation']:
+            dataset = info_for_allocation_factor(dataset)
+            dataset = find_allocation_factors(dataset)
             new_datasets = allocate_with_factors(dataset)
         elif dataset['allocation method'] == 'waste treatment':
             new_datasets = waste_treatment_allocation(dataset)
@@ -54,9 +46,7 @@ def allocate_datasets_cutoff(datasets, data_format, logger):
         #each dataset has to be scaled, then put back to the internal format
         for dataset in new_datasets:
             dataset = utils.scale_exchanges(dataset)
-            dataset = utils.df_to_internal(dataset, data_format_for_return_to_internal)
             allocated_datasets.append(dataset)
-        assert 'exchanges' in allocated_datasets[-1]
     
     return allocated_datasets
 
@@ -64,120 +54,68 @@ def allocate_datasets_cutoff(datasets, data_format, logger):
 def flip_non_allocatable_byproducts(dataset):
     '''makes the non-allocatable byproducts an input from technosphere.  Sign has to be changed.'''
     
+    for exc in dataset['exchanges']:
+        if exc['type'] == 'byproduct' and exc['byproduct classification'] != 'allocatable':
+            exc['type'] = 'from technosphere'
+            exc['amount'] = -exc['amount']
+            if 'mathematical relation' in exc:
+                exc['mathematical relation'] = '-(%s)' % exc['mathematical relation']
+            del exc['production volume']
     
-    df = dataset['data frame'].copy()
-    to_technosphere = utils.select_exchanges_to_technosphere(df)
-    to_flip = to_technosphere[to_technosphere['exchange type'] == 'byproduct']
-    to_flip = to_flip[to_flip['byproduct classification'].isin(['waste', 'recyclable'])]
-    if len(to_flip) > 0:
-        #set the exchange type to "from technosphere" for all exchange amount and properties
-        exchange_names = set(df.loc[list(tuple(to_flip.index))]['exchange name'])
-        to_flip = df[df['exchange type'] == 'byproduct']
-        to_flip = to_flip[to_flip['exchange name'].isin(exchange_names)]
-        to_flip_indexes = tuple(to_flip.index)
-        df.loc[to_flip_indexes, 'exchange type'] = 'from technosphere'
-        
-        #only the exchange amounts should have their sign changed
-        to_flip_indexes = list(to_flip[to_flip['data type'] == 'exchanges'].index)
-        df.loc[to_flip_indexes, 'amount'] = -df.loc[to_flip_indexes, 'amount']
-        
-        #check if mathematical relations have to be changed because of flipping
-        if 'mathematical relation' in set(df.columns):
-            indexes = df.loc[to_flip_indexes]
-            if len(indexes) > 0:
-                indexes = list(indexes[~indexes['mathematical relation'
-                        ].apply(utils.is_empty)].index)
-            if len(indexes) > 0:
-                df.loc[indexes, 'mathematical relation'] = df.loc[
-                    indexes, 'mathematical relation'].apply(
-                    lambda m: '-(%s)' % m)
-        
-        #remove production volume for the flipped exchanges
-        indexes = list(to_flip[to_flip['data type'] == 'production volume'].index)
-        df = df.drop(indexes)
-        
-        dataset['data frame'] = df.copy()
-        dataset = utils.reset_index_df(dataset)
     return dataset
 
+
+def info_for_allocation_factor(dataset):
+    if dataset['allocation method'] in ['economic allocation', 'recycling activity']:
+        properties = ['price']
+    elif dataset['allocation method'] == 'true value allocation':
+        properties = ['price', 'true value relation']
+    df = {}
+    for exc in dataset['exchanges']:
+        if exc['type'] in ['reference product', 'byproduct']:
+            to_add = {'name': exc['name'], 
+                      'amount': exc['amount']}
+            for p in exc['properties']:
+                if p['name'] in properties:
+                    to_add[p['name']] = p['amount']
+            df[len(df)] = copy(to_add)
+    df = pd.DataFrame(df).transpose()
+    dataset['allocation factors'] = df.copy()
+    
+    return dataset
 	
-def find_economic_allocation_factors(dataset):
-    #selecting only prices of allocatable outputs to technosphere
-    df = dataset['data frame']
-    allocation_factors = df[df['property name'] == 'price']
-    allocation_factors = allocation_factors[allocation_factors[
-        'byproduct classification'] == 'allocatable']
-    allocation_factors = allocation_factors[allocation_factors['exchange type'
-        ].isin(['reference product', 'byproduct'])]
-    allocation_factors = allocation_factors.rename(columns = {'amount': 'price'})
-    allocation_factors = allocation_factors[['price', 'exchange id']].set_index('exchange id')
-    
-    #join the exchange amounts
-    sel = utils.select_exchanges_to_technosphere(df).set_index(
-        'exchange id')[['exchange name', 'amount']]
-    allocation_factors = allocation_factors.join(sel)
+def find_allocation_factors(dataset):
+    df = dataset['allocation factors'].copy()
     
     #calculate revenu
-    allocation_factors['revenu'] = abs(allocation_factors['price'
-        ] * allocation_factors['amount'])
+    dataset['allocation factors']['revenu'] = abs(df['price'] * df['amount'])
+    
+    if dataset['allocation method'] in ['economic allocation', 'recycling activity']:
+        #calculate allocation factors
+        df['allocation factor'] = df['revenu'] / df['revenu'].sum()
+    elif dataset['allocation method'] == 'true value allocation':
+        #put to zero TVR if it was not there for some exchanges
+        df = df.replace(to_replace = {'TVR': {np.nan: 0.}})
         
-    #calculate allocation factors
-    allocation_factors['allocation factor'] = allocation_factors['revenu'
-        ] / allocation_factors['revenu'].sum()
+        #calculate true value for exchange with TVR
+        TV_exchanges = df[df['TVR'] != 0.]
+        TV_exchanges['amount*TVR'] = TV_exchanges['TVR'] * TV_exchanges['amount']
+        TV_exchanges['amount*TVR/sum(amount*TVR)'] = TV_exchanges['amount*TVR'] / TV_exchanges['amount*TVR'].sum()
+        TV_exchanges['TV'] = TV_exchanges['amount*TVR/sum(amount*TVR)'] * (
+            TV_exchanges['revenu'].sum() / TV_exchanges['amount*TVR'].sum())
         
+        #calculate true value for exchange without TVR, if any
+        price_only_exchanges = df[df['TVR'] == 0.]
+        if len(price_only_exchanges) > 0:
+            price_only_exchanges['TV'] = price_only_exchanges['revenu'].copy()
+            df = pd.concat([TV_exchanges, price_only_exchanges])
+        else:
+            df = TV_exchanges.copy()
+        df['allocation factor'] = df['TV'] / df['TV'].sum()
+    
     #remove allocation factors equal to zero
-    allocation_factors = allocation_factors[allocation_factors['allocation factor'] != 0.]
-    
-    #calculate allocation factors
-    dataset['allocation factors'] = allocation_factors.copy()
-    
-    return dataset
-
-
-def find_true_value_allocation_factors(dataset):
-    
-    #select price and true value relation properties
-    df = dataset['data frame']
-    allocation_factors = df[df['property name'].isin(['price', 'true value relation'])]
-    allocation_factors = allocation_factors[allocation_factors[
-        'byproduct classification'] == 'allocatable']
-    allocation_factors = allocation_factors[allocation_factors['exchange type'
-        ].isin(['reference product', 'byproduct'])]
-    allocation_factors = pd.pivot_table(allocation_factors, values = 'amount', 
-        index = 'exchange id', columns = ['property name'], aggfunc = np.sum)
-    allocation_factors = allocation_factors[['price', 'true value relation']]
-    allocation_factors = allocation_factors.rename(columns = {'true value relation': 'TVR'})
-    
-    #join the exchange amounts
-    sel = utils.select_exchanges_to_technosphere(df).set_index(
-        'exchange id')[['exchange name', 'amount']]
-    allocation_factors = allocation_factors.join(sel)
-    
-    #put to zero TVR if it was not there for some exchanges
-    allocation_factors = allocation_factors.replace(to_replace = {
-        'TVR': {np.nan: 0.}})
-        
-    #calculate revenu
-    allocation_factors['revenu'] = abs(allocation_factors['price'
-        ] * allocation_factors['amount'])
-    
-    #calculate true value for exchange with TVR
-    price_only_exchanges = allocation_factors[allocation_factors['TVR'] == 0.]
-    allocation_factors = allocation_factors[allocation_factors['TVR'] != 0.]
-    allocation_factors['amount*TVR'] = allocation_factors['TVR'] * allocation_factors['amount']
-    allocation_factors['amount*TVR/sum(amount*TVR)'] = allocation_factors['amount*TVR'] / allocation_factors['amount*TVR'].sum()
-    allocation_factors['TV'] = allocation_factors['amount*TVR/sum(amount*TVR)'] * (
-        allocation_factors['revenu'].sum() / allocation_factors['amount*TVR'].sum())
-    
-    #calculate true value for exchange without TVR, if any
-    if len(price_only_exchanges) > 0:
-        price_only_exchanges['TV'] = price_only_exchanges['revenu'].copy()
-        allocation_factors = pd.concat([allocation_factors, price_only_exchanges])
-    allocation_factors['allocation factor'] = allocation_factors['TV'
-        ] / allocation_factors['TV'].sum()
-        
-    #calculate allocation factors
-    dataset['allocation factors'] = allocation_factors.copy()
+    df = df[df['allocation factor'] != 0.]
+    dataset['allocation factors'] = df.set_index('name')
     
     return dataset
 
@@ -186,18 +124,17 @@ def allocate_with_factors(dataset):
     '''create datasets from an unallocated dataset, with allocation factors calculated
     with economic or true value allocation'''
     
-    allocation_factors = dataset['allocation factors']
+    df = dataset['allocation factors']
     new_datasets = []
-    for chosen_product_exchange_id in list(allocation_factors.index):
-        new_dataset = utils.make_reference_product(chosen_product_exchange_id, dataset)
+    for reference_product_name in list(df.index):
+        new_dataset = utils.make_reference_product(reference_product_name, dataset)
+        factor = df.loc[reference_product_name, 'allocation factor']
+        
         #multiply all exchange amounts by allocation factor, except reference product
-        df = new_dataset['data frame']
-        exchanges = df[df['data type'] == 'exchanges'].copy()
-        indexes = list(exchanges.index)
-        indexes.remove(new_dataset['main reference product index'])
-        df.loc[indexes, 'amount'] = df.loc[indexes, 'amount'
-            ] * allocation_factors.loc[chosen_product_exchange_id, 'allocation factor']
-        new_dataset['data frame'] = df.copy()
+        for exc in new_dataset['exchanges']:
+            if exc['type'] != 'reference product':
+                exc['amount'] = exc['amount'] * factor
+        
         new_datasets.append(deepcopy(new_dataset))
         
     return new_datasets
@@ -206,26 +143,16 @@ def allocate_with_factors(dataset):
 def waste_treatment_allocation(dataset):
     
     #first allocated dataset: the treatment of the waste
-    dataset = copy(dataset)
-    df = dataset['data frame']
-    exchanges_to_technosphere = utils.select_exchanges_to_technosphere(df)
-    sel = exchanges_to_technosphere[exchanges_to_technosphere[
-        'exchange type'] == 'reference product']
-    chosen_product_exchange_id = sel.iloc[0]['exchange id']
-    new_dataset = utils.make_reference_product(chosen_product_exchange_id, dataset)
-    new_datasets = [new_dataset]
-    by_products = exchanges_to_technosphere[exchanges_to_technosphere[
-            'exchange type'] == 'byproduct']
-    if len(by_products) > 0:
-        #put to zero all the other exchanges
-        indexes = set(df[df['data type'] == 'exchanges'].index)
-        indexes.difference_update(set(by_products.index))
-        df.loc[indexes, 'amount'] = 0.
-        dataset['data frame'] = df.copy()
-        
-        #create a new dataset for each byproduct
-        for chosen_product_exchange_id in set(by_products['exchange id']):
-            new_datasets.append(utils.make_reference_product(chosen_product_exchange_id, dataset))
+    new_datasets = [utils.make_reference_product(dataset['reference product'], dataset)]
+    
+    #potential byproducts
+    for bp in dataset['exchanges']:
+        if bp['type'] == 'byproduct' and bp['amount'] != 0.:
+            new_dataset = utils.make_reference_product(bp['name'], dataset)
+            for exc in new_dataset['exchanges']:
+                #put to zero all the other exchanges
+                exc['amount'] = 0.
+            new_datasets.append(new_dataset)
     
     return new_datasets
 
@@ -234,38 +161,26 @@ def constrained_market_allocation(dataset):
     '''in this case, the conditional exchange is removed.  Done by simply using the 
     utils.make_reference_product function'''
     
-    sel = utils.select_exchanges_to_technosphere(dataset['data frame'])
-    chosen_product_exchange_id = sel[sel['exchange type'] == 'reference product'
-        ].iloc[0]['exchange id']
-    new_datasets = [utils.make_reference_product(chosen_product_exchange_id, dataset)]
+    new_datasets = [utils.make_reference_product(dataset['reference product'], dataset)]
     
     return new_datasets
 
 
 def recycling_activity_allocation(dataset):
-    dataset = copy(dataset)
-    df = dataset['data frame']
-    #flip the reference product to FromTechnosphere
-    indexes = list(tuple(df[df['exchange type'] == 'reference product'].index))
-    df.loc[indexes, 'exchange type'] = 'from technosphere'
-    index = tuple(df[df['data type'] == 'exchanges'].index)[0]
-    df.loc[index, 'amount'] = -df.loc[index, 'amount']
     
-    exchanges_to_technosphere = utils.select_exchanges_to_technosphere(dataset['data frame'])
-    if len(exchanges_to_technosphere) == 1:
-        #no allocation required
-        chosen_product_exchange_id = exchanges_to_technosphere.iloc[0]['exchange id']
-        new_datasets = [utils.make_reference_product(chosen_product_exchange_id, dataset)]
-    else:
-        dataset['data frame'] = df.copy()
-        sel = df[df['exchange type'] == 'byproduct']
-        if 'true value relation' in set(sel['property name']):
-            #true value allocation.  Does not happen, but would work
-            dataset = find_true_value_allocation_factors(dataset)
-        else:
-            #economic allocation
-            dataset = find_economic_allocation_factors(dataset)
-        new_datasets = allocate_with_factors(dataset)
+    #flip the reference product to from technosphere
+    for exc in dataset['exchanges']:
+        if exc['type'] == 'reference product':
+            exc['type'] = 'from technosphere'
+            exc['amount'] = -exc['amount']
+    
+    #find allocation factors
+    #if there is only one byproduct left, the allocation factor will be 100% and only one
+    #dataset will be created
+    dataset = info_for_allocation_factor(dataset)
+    dataset = find_allocation_factors(dataset)
+    new_datasets = allocate_with_factors(dataset)
+    
     return new_datasets
 
 

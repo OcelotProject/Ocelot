@@ -175,7 +175,7 @@ def extract_minimal_ecospold2_info(elem, filepath):
         'history': {'extract_ecospold2': time.ctime()}, 
         'allocation method': '(not known at this point)'
         }
-    data['main reference product'] = utils.find_main_reference_product(data)
+    data['reference product'] = utils.find_reference_product(data)
     parameters = extract_parameters(elem)
     if len(parameters) > 0:
         data['parameters'] = parameters

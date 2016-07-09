@@ -235,11 +235,11 @@ def print_dataset_to_excel(dataset, folder, data_format, activity_overview):
     if tuple(data_format.index.names) != ('in data frame'):
         meta = data_format.set_index('in data frame')
     filename = '{} - {} - {}.xlsx'.format(dataset['name'], dataset['location'], 
-        dataset['main reference product'])
+        dataset['reference product'])
     filename = do_not_overwrite(folder, filename, filelist = [])
         
     writer = pd.ExcelWriter(os.path.join(folder, filename))
-    fields = ['activity name', 'location', 'main reference product', 
+    fields = ['activity name', 'location', 'reference product', 
               'start date', 'end date', 'activity type', 'technology level', 
               'access restricted', 'allocation method', 'last operation']
     meta = meta.loc[fields][['field']]
@@ -322,7 +322,7 @@ def datasets_to_dict(datasets, fields):
     return new_datasets
 
 
-def find_main_reference_product(dataset):
+def find_reference_product(dataset):
     amount = 0.
     for exc in dataset['exchanges']:
         if exc['type'] in ['reference product'] and abs(exc['amount']) > amount:
@@ -331,73 +331,38 @@ def find_main_reference_product(dataset):
     return name
 
 
-def select_exchanges_to_technosphere(df):
-    '''selects only the lines of the data frame with an exchange amount to technosphere'''
-    df = df.copy()
-    sel = df[df['data type'] == 'exchanges']
-    sel = sel[sel['exchange type'].isin(['byproduct', 'reference product'])]
-	
-    return sel
+def make_reference_product(reference_product_name, dataset):
+    dataset = copy(dataset)
+    
+    #change type if necessary
+    for exc in dataset['exchanges']:
+        if exc['name'] == reference_product_name and exc['type'] in ['reference product', 'byproduct']:
+            assert exc['amount'] != 0.
+            exc['type'] = 'reference product'
+        else:
+            #put to zero the amount of the other coproducts
+            exc['amount'] = 0.
+            
+            #remove the production volume of the other outputs to technosphere
+            del exc['production volume']
+    
+    return dataset
 
 
-def make_reference_product(chosen_product_exchange_id, dataset):
-    dataset_copy = copy(dataset)
-    #find new reference product
-    df = dataset_copy['data frame']
-    exchanges_to_technosphere = select_exchanges_to_technosphere(df)
-    sel = exchanges_to_technosphere[
-        exchanges_to_technosphere['exchange id'] == chosen_product_exchange_id].iloc[0]
-        
-    #add new reference product to metainformation
-    dataset_copy['main reference product'] = sel['exchange name']
-    dataset_copy['main reference product index'] = sel.name
-    
-    #this assertion error will be caught and handle by calling function, do not remove!
-    assert df.loc[dataset_copy['main reference product index'], 'amount'] != 0.
-    
-    #put to zero the amount of the other coproducts
-    indexes = list(tuple(exchanges_to_technosphere.index))
-    indexes.remove(sel.name)
-    allocated_df = df.copy()
-    allocated_df.loc[indexes, 'amount'] = 0.
-    
-    #make the selected coproduct the reference product
-    indexes = allocated_df[allocated_df['exchange id'
-        ] == chosen_product_exchange_id]
-    indexes = indexes[indexes['exchange type'
-        ].isin(['reference product', 'byproduct'])]
-    indexes = list(indexes.index)
-    allocated_df.loc[indexes, 'exchange type'] = 'reference product'
-    
-    #remove the production volume of the other outputs to technosphere
-    conditions = ~((allocated_df['data type'] == 'production volume') & (
-        allocated_df['exchange name'] != dataset_copy['main reference product']))
-    allocated_df = allocated_df[conditions]
-    
-    dataset_copy['data frame'] = allocated_df.copy()
-    
-    return dataset_copy
-
-
-def find_main_reference_product_index(dataset):
-    df = dataset['data frame']
-    sel = df[df['data type'] == 'exchanges']
-    sel = sel[sel['exchange type'] == 'reference product']
-    sel = sel[sel['exchange name'] == dataset['main reference product']]
-    main_reference_product_index = list(sel.index)[0]
-    return main_reference_product_index
+def find_reference_product(dataset):
+    for exc in dataset['exchanges']:
+        if exc['name'] == dataset['reference product'] and exc['type'] == 'reference product':
+            break
+    return exc
 
 def scale_exchanges(dataset):
     '''scales the amount of the exchanges to get a reference exchange amount of 1 or -1'''
     
-    df = dataset['data frame']
-    main_reference_product_index = find_main_reference_product_index(dataset)
-    ref_amount = abs(df.loc[main_reference_product_index, 'amount'])
-    assert ref_amount != 0.
-    if ref_amount != 1.:
-        indexes = list(df[df['data type'] == 'exchanges'].index)
-        df.loc[indexes, 'amount'] = df.loc[indexes, 'amount'] / ref_amount
-    dataset['data frame'] = df
+    ref = find_reference_product(dataset)
+    assert ref['amount'] != 0.
+    if ref['amount'] != 1.:
+        for exc in dataset['exchanges']:
+            exc['amount'] = exc['amount'] / abs(ref['amount'])
     
     return dataset
 
@@ -572,9 +537,9 @@ def reset_index_df(dataset):
     df.index = range(len(df))
     sel = df[df['exchange type'] == 'reference product']
     sel = sel[sel['data type'] == 'exchanges']
-    sel = sel[sel['exchange name'] == dataset['main reference product']]
+    sel = sel[sel['exchange name'] == dataset['reference product']]
     assert len(sel) == 1
-    dataset['main reference product index'] = sel.iloc[0].name
+    dataset['reference product index'] = sel.iloc[0].name
     dataset['data frame'] = df
     
     return dataset
@@ -590,17 +555,17 @@ def validate_against_linking(datasets, system_model_folder, data_format, result_
     counter = 0
     for dataset in datasets:
         counter += 1
-        print('validating', dataset['name'], dataset['location'], dataset['main reference product'])
+        print('validating', dataset['name'], dataset['location'], dataset['reference product'])
         print(counter, 'of', len(datasets))
         to_add = {'activity name': dataset['name'], 
                   'location': dataset['location'], 
-                'reference product': dataset['main reference product']}
-        index = dataset['name'], dataset['location'], dataset['main reference product']
+                'reference product': dataset['reference product']}
+        index = dataset['name'], dataset['location'], dataset['reference product']
         found = True
         if index in set(ao.index):
             linked_filename = ao.loc[index]['filename']
         elif index[1] == 'GLO':
-            index = dataset['name'], 'RoW', dataset['main reference product']
+            index = dataset['name'], 'RoW', dataset['reference product']
             if index in set(ao.index):
                 linked_filename = ao.loc[index]['filename']
             else:
@@ -630,7 +595,7 @@ def validate_against_linking(datasets, system_model_folder, data_format, result_
                 if sum(df['test'] > 1. + tolerance) + sum(df['test'] < 1. - tolerance):
                     to_add['message'] = 'differences'
                     filename = '%s - %s - %s.xlsx' % (dataset['name'], 
-                        dataset['location'], dataset['main reference product'])
+                        dataset['location'], dataset['reference product'])
                     df = df.reset_index()
                     columns = ['exchange name', 'compartment', 'subcompartment', 
                                'amount', 'amount_reference', 'test']
