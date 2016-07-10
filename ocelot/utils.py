@@ -81,28 +81,42 @@ def uncertainty_to_internal(to_add, sel, data_format):
 
 
 
-def add_dummy_variable(df):
-    if 'variable' not in list(df.columns):
-        df['variable'] = ''
+def add_dummy_variable(dataset):
     counter = 0
-    for index in set(df.index):
-        if is_empty(df.loc[index, 'variable']):
-            df.loc[index, 'variable'] = 'dummy_variable_{}'.format(counter)
+    for exc in dataset['exchanges']:
+        if 'variable' not in exchange:
+            exc['variable'] = 'dummy_variable_{}'.format(counter)
             counter += 1
-    return df
+        if 'production volume' in exc and 'variable' not in exc['production volume']:
+            exc['production volume']['variable'] = 'dummy_variable_{}'.format(counter)
+            counter += 1
+        if 'properties' in exc:
+            for p in exc['properties']:
+                if 'variable' not in p:
+                    p['variable'] = 'dummy_variable_{}'.format(counter)
+                    counter += 1
+    if 'parameters' in dataset:
+        for p in dataset['parameters']:
+            if 'variable' not in p:
+                p['variable'] = 'dummy_variable_{}'.format(counter)
+                counter += 1
+    return dataset
 
-def add_Ref(to_add):
-    if to_add['data type'] == 'exchanges':
-        to_add['Ref'] = "Ref('{}')".format(to_add['exchange id'])
-    elif to_add['data type'] == 'production volume':
-        to_add['Ref'] = "Ref('{}', 'ProductionVolume')".format(to_add['exchange id'])
-    elif to_add['data type'] == 'parameters':
-        to_add['Ref'] = "Ref('{}')".format(to_add['parameter id'])
-    elif to_add['data type'] == 'properties':
-        to_add['Ref'] = "Ref('{}', '{}')".format(to_add['exchange id'], to_add['property id'])
-    else:
-        1/0
-    return to_add
+
+def add_Ref(dataset):
+    for exc in dataset['exchanges']:
+        exc['Ref'] = "Ref('{}')".format(exc['id'])
+        if 'production volume' in exc:
+            exc['production volume']['Ref'] = "Ref('{}', 'ProductionVolume')".format(
+                exc['id'])
+        if 'properties' in exc:
+            for p in exc['properties']:
+                p['Ref'] = "Ref('{}', '{}')".format(exc['id'], p['id'])
+    if 'parameters' in dataset:
+        for p in dataset['parameters']:
+            p['Ref'] = "Ref('{}')".format(p['id'])
+    
+    return dataset
 
 
 def internal_to_df(dataset, data_format):
@@ -322,15 +336,6 @@ def datasets_to_dict(datasets, fields):
     return new_datasets
 
 
-def find_reference_product(dataset):
-    amount = 0.
-    for exc in dataset['exchanges']:
-        if exc['type'] in ['reference product'] and abs(exc['amount']) > amount:
-            amount = exc['amount']
-            name = exc['name']
-    return name
-
-
 def make_reference_product(reference_product_name, dataset):
     dataset = copy(dataset)
     
@@ -377,35 +382,101 @@ def filter_datasets(datasets, activity_overview, criteria):
         new_datasets.append(datasets[index])
     return new_datasets
 
+def build_Ref_to_variable(dataset):
+    Ref_to_variable = {}
+    for exc in dataset['exchanges']:
+        Ref_to_variable[exc['Ref']] = exc['variable']
+        if 'production volume' in exc:
+            Ref_to_variable[exc['production volume']['Ref']] = exc['production volume']['variable']
+        if 'properties' in exc:
+            for p in exc['properties']:
+                Ref_to_variable[p['Ref']] = p['variable']
+    if 'parameters' in dataset:
+        for p in dataset['parameters']:
+            Ref_to_variable[p['Ref']] = p['variable']
+    return Ref_to_variable
 
-def replace_Ref_by_variable(dataset):
+
+def replace_Ref_by_variable(mathematical_relation, Ref_to_variable):
+    for reg in ocelot.io.ecospold2_meta.REF_REGURLAR_EXPRESSIONS:
+        founds = reg.findall(mathematical_relation)
+        for found in founds:
+            mathematical_relation = mathematical_relation.replace(
+                found, Ref_to_variable[found])
+    return mathematical_relation
+
+
+def replace_all_Ref_by_variable(dataset):
     '''finds mathematical relations using Ref instead of variables.  
     The Refs are replaced by variables'''
-    
-    #find indexes where there are mathematical relations
-    df = dataset['data frame']
-    indexes = df[~df['mathematical relation'].apply(ocelot.utils.is_empty)]
-    if len(indexes) > 0:
-        #find indexes where the mathematical relation contains Refs
-        indexes = list(indexes[indexes['mathematical relation'].apply(
-            lambda x: 'Ref(' in x)].index)
-    
-    if len(indexes) > 0:
-        #build how to go from Ref to variable
-        Ref_to_variable = df[['Ref', 'variable']].set_index('Ref')
-        
-        #find and replace Refs by variables
-        for index in indexes: #for each mathematical relation containing a Ref
-            for reg in ocelot.io.ecospold2_meta.REF_REGURLAR_EXPRESSIONS: #for each kind of Ref
-                founds = reg.findall(df.loc[index, 'mathematical relation'])
-                for found in founds:
-                    df.loc[index, 'mathematical relation'] = df.loc[index, 'mathematical relation'
-                        ].replace(found, Ref_to_variable.loc[found, 'variable'])
-    
-    dataset['data frame'] = df.copy()
+    Ref_to_variable = build_Ref_to_variable(dataset)
+    for exc in dataset['exchanges']:
+        if 'mathematical relation' in exc:
+            exc['mathematical relation'] = replace_Ref_by_variable(
+                exc['mathematical relation'], Ref_to_variable)
+        if 'production volume' in exc:
+            if 'mathematical relation' in exc['production volume']:
+                exc['production volume']['mathematical relation'] = replace_Ref_by_variable(
+                    exc['production volume']['mathematical relation'], Ref_to_variable)
+        if 'properties' in exc:
+            for p in exc['properties']:
+                if 'mathematical relation' in p:
+                    p['mathematical relation'] = replace_Ref_by_variable(
+                        p['mathematical relation'], Ref_to_variable)
+    if 'parameters' in dataset:
+        for p in dataset['parameters']:
+            if 'mathematical relation' in p:
+                p['mathematical relation'] = replace_Ref_by_variable(
+                    p['mathematical relation'], Ref_to_variable)
     
     return dataset
 
+
+def build_quantity_df(dataset, combined = False):
+    df = {}
+    fields = ['Ref', 'variable', 'mathematical relation', 'amount']
+    for exc in dataset['exchanges']:
+        to_add = {}
+        for field in fields:
+            if field in exc:
+                to_add[field] = exc[field]
+            else:
+                to_add[field] = ''
+        if combined and exc['type'] == 'reference product':
+            to_add['mathematical relation'] = ''
+        df[len(df)] = copy(to_add)
+        if 'production volume' in exc:
+            to_add = {}
+            for field in fields:
+                if field in exc['production volume']:
+                    to_add[field] = exc['production volume'][field]
+                else:
+                    to_add[field] = ''
+            if combined:
+                to_add['mathematical relation'] = ''
+            df[len(df)] = copy(to_add)
+        if 'properties' in exc:
+            for p in exc['properties']:
+                to_add = {}
+                for field in fields:
+                    if field in p:
+                        to_add[field] = p[field]
+                    else:
+                        to_add[field] = ''
+                df[len(df)] = copy(to_add)
+    if 'parameters' in dataset:
+        for p in dataset['parameters']:
+            to_add = {}
+            for field in fields:
+                if field in p:
+                    to_add[field] = p[field]
+                else:
+                    to_add[field] = ''
+            df[len(df)] = copy(to_add)
+    df = pd.DataFrame(df).transpose()
+    dataset['quantity data frame'] = df.copy()
+    
+    return dataset
 
 def build_graph(dataset, combined = False):
     '''builds a matrix of dependencies between each mathematical relation and other variables'''
@@ -414,30 +485,25 @@ def build_graph(dataset, combined = False):
     #mathematicalRelation1 on variable1.  
     #Solution: check for the longest variableName first, and once found, remove
     #them from the mathematicalRelation.
-    dataset = ocelot.utils.replace_Ref_by_variable(dataset)
-    dataset = copy(dataset)
-    df = dataset['data frame']
+    dataset = add_Ref(dataset)
+    dataset = add_dummy_variable(dataset)
+    dataset = replace_Ref_by_variable(dataset)
+    dataset = build_quantity_df(dataset, combined = True)
+    quantity_df = dataset['quantity data frame']
+    quantity_df['length'] = quantity_df['variable'].apply(len)
+    order = list(quantity_df.sort_values(by = 'length', ascending = False).index)
     
-    df['length'] = df['variable'].apply(len)
-    order = list(df.sort_values(by = 'length', ascending = False).index)
-    if combined:
-        #in the context of combined production, PVs and amounts of reference products 
-        #are out of the equation
-        indexes = list(df[df['data type'] == 'production volume'].index)
-        df.loc[indexes, 'mathematical relation'] = ''
-        indexes = df[df['data type'] == 'exchanges']
-        indexes = list(indexes[indexes['exchange type'] == 'reference product'].index)
-        df.loc[indexes, 'mathematical relation'] = ''
-    df_with_formula = df[~df['mathematical relation'].apply(ocelot.utils.is_empty)]
+    df_with_formula = quantity_df[~quantity_df['mathematical relation'
+        ].apply(ocelot.utils.is_empty)]
     mathematical_relations = dict(zip(list(df_with_formula.index), 
         list(df_with_formula['mathematical relation'])))
     print(len(mathematical_relations), 'mathematical relations')
-    print(len(df), 'variables')
+    print(len(quantity_df), 'variables')
     print('')
     #gathering information for the graph matrix
     rows = []
     columns = []
-    variables = dict(zip(list(df.index), list(df['variable'])))
+    variables = dict(zip(list(quantity_df.index), list(quantity_df['variable'])))
     for i in mathematical_relations:
         for j in order:
             variable = variables[j]
@@ -447,7 +513,7 @@ def build_graph(dataset, combined = False):
                 columns.append(i)
     c = [1 for i in range(len(rows))]
     ij = np.vstack((rows, columns))
-    graph = sp.sparse.csr_matrix((c,ij), shape = (len(df), len(df)))
+    graph = sp.sparse.csr_matrix((c,ij), shape = (len(quantity_df), len(quantity_df)))
     
     #graph contains a "1" in position (i,j) if the mathematical relation i depends on amount j
     dataset['graph'] = graph
@@ -460,11 +526,9 @@ def calculation_order(dataset):
     #the calculation order is based on the longest path: amounts with longest 
     #maximum length path are calculated last.
   
-    dataset = copy(dataset)
-    df = dataset['data frame']
     graph = dataset['graph']
     longestPath = {}
-    for index in range(len(df)): #for each amount
+    for index in range(len(graph.shape[0])): #for each amount
         paths = [[index]] #the path starts with itself
         longest = 0
         while True:#iterate until there is no more path to find
@@ -491,17 +555,31 @@ def calculation_order(dataset):
             else:
                 paths = copy(paths_to_check)
         longestPath[index] = copy(longest)
-    df['calculation order'] = pd.Series(longestPath)
-    df = df.sort_values(by = 'calculation order')
-    
-    dataset['data frame'] = df
+    dataset['quantity data frame']['calculation order'] = pd.Series(longestPath)
+    dataset['quantity data frame'] = dataset['quantity data frame'
+        ].sort_values(by = 'calculation order')
     
     return dataset
 
 
+def quantity_df_to_internal(dataset):
+    df = dataset['quantity data frame']
+    amounts = dict(zip(df['Ref'], df['amount']))
+    for exc in dataset['exchanges']:
+        exc['amount'] = amounts[exc['Ref']]
+        if 'production volume' in exc:
+            exc['production volume']['amount'] = amounts[exc['production volume']['Ref']]
+        if 'properties' in exc:
+            for p in exc['properties']:
+                p['amount'] = amounts[p['Ref']]
+    if 'parameters' in dataset:
+        for p in dataset['parameters']:
+            p['amount'] = amounts[p['Ref']]
+    return dataset
+
 def recalculate(dataset):
-    dataset = copy(dataset)
-    df = dataset['data frame']
+    
+    df = dataset['quantity data frame']
     #the shortest paths do not depend on other variables, so they are "calculated" first
     minOrder = df['calculation order'].min()
     sel = df[df['calculation order'] == minOrder]
@@ -522,7 +600,7 @@ def recalculate(dataset):
         values[index] = copy(calculatedAmount[df.loc[index, 'variable']])
     df['calculated amount'] = pd.Series(values)
     
-    dataset['data frame'] = df    
+    dataset['quantity data frame'] = df    
     
     return dataset
 

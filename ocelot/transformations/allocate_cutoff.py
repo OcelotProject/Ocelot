@@ -66,7 +66,8 @@ def flip_non_allocatable_byproducts(dataset):
 
 
 def info_for_allocation_factor(dataset):
-    if dataset['allocation method'] in ['economic allocation', 'recycling activity']:
+    if dataset['allocation method'] in ['economic allocation', 
+            'recycling activity', 'combined production with byproducts']:
         properties = ['price']
     elif dataset['allocation method'] == 'true value allocation':
         properties = ['price', 'true value relation']
@@ -90,7 +91,8 @@ def find_allocation_factors(dataset):
     #calculate revenu
     dataset['allocation factors']['revenu'] = abs(df['price'] * df['amount'])
     
-    if dataset['allocation method'] in ['economic allocation', 'recycling activity']:
+    if dataset['allocation method'] in ['economic allocation', 
+            'recycling activity', 'combined production with byproducts']:
         #calculate allocation factors
         df['allocation factor'] = df['revenu'] / df['revenu'].sum()
     elif dataset['allocation method'] == 'true value allocation':
@@ -185,9 +187,7 @@ def recycling_activity_allocation(dataset):
 
 
 def combined_production(dataset):
-    #are recyclable not supposed to be allocated anything?
     dataset = copy(dataset)
-    df = dataset['data frame'].copy()
     
     #establish relationship between variables with a graph matrix
     dataset = utils.build_graph(dataset, combined = True)
@@ -195,51 +195,38 @@ def combined_production(dataset):
     #find the recalculation order with the graph
     dataset = utils.calculation_order(dataset)
     
-    df = dataset['data frame']
     new_datasets = []
     
-    #select the reference products
-    sel = df[df['exchange type'] == 'reference product']
-    reference_products_ids = list(sel[sel['data type'] == 'exchanges']['exchange id'])
-    
     #for each reference product
-    for chosen_product_exchange_id in reference_products_ids:
-        df = dataset['data frame']
-        #do not allocate for child datasets that have the reference product already set to zero
-        exchanges_to_technosphere = utils.select_exchanges_to_technosphere(df)
-        sel = exchanges_to_technosphere[
-            exchanges_to_technosphere['exchange id'] == chosen_product_exchange_id].iloc[0]
-        if sel['amount'] != 0.:
-            new_dataset = utils.make_reference_product(chosen_product_exchange_id, dataset)
+    for exc in dataset['exchanges']:
+        if exc['type'] == 'reference product' and exc['amount'] != 0.:
+            #do not allocate for child datasets that have the reference product already set to zero
+            new_dataset = utils.make_reference_product(exc['name'], dataset)
             new_dataset = utils.recalculate(new_dataset)
-            df = new_dataset['data frame']
-            if df.loc[new_dataset['main reference product index'], 'amount'] != 0. or True:
-                df['amount'] = df['calculated amount'].copy()
-                del df['calculated amount']
-                new_dataset['data frame'] = df.copy()
-                new_datasets.append(new_dataset)
+            df = new_dataset['quantity data frame']
+            df['amount'] = df['calculated amount'].copy()
+            del df['calculated amount']
+            new_dataset['quantity data frame'] = df.copy()
+            new_dataset = utils.quantity_df_to_internal(new_dataset)
+            new_datasets.append(new_dataset)
     
     return new_datasets
 
 
 def allocate_after_subdivision(undefined_dataset, datasets):
     
-    #PV get erased in the process, but can be retrieved from the undefined dataset
-    for_PV = undefined_dataset['data frame'].copy()
-    for_PV = for_PV[for_PV['data type'] == 'produciton volume']
-    #each dataset needs to be allocated
-    allocated_dataset_ungrouped = []
+    #each dataset needs to be allocated.  
+    #datasets with the same reference product are grouped
+    allocated_dataset_grouped = []
     for dataset in datasets:
-        dataset = find_economic_allocation_factors(dataset)
-        to_add = allocate_with_factors(dataset)
-        allocated_dataset_ungrouped.extend(to_add)
+        dataset = info_for_allocation_factor(dataset)
+        dataset = find_allocation_factors(dataset)
+        new_datasets = allocate_with_factors(dataset)
+        for new_dataset in new_datasets:
+            if new_dataset['reference product'] not in allocated_dataset_grouped:
+                allocated_dataset_grouped[new_dataset['reference product']] = []
+            allocated_dataset_grouped[new_dataset['reference product']].append(new_dataset)
     
-    #grouping of datasets with the same reference product
-    allocated_dataset_grouped = {}
-    for dataset in allocated_dataset_ungrouped:
-        if dataset['main reference product'] not in allocated_dataset_grouped:
-            allocated_dataset_grouped[dataset['main reference product']] = []
-        allocated_dataset_grouped[dataset['main reference product']].append(dataset)
     
     new_datasets = []
     for reference_product in allocated_dataset_grouped:
@@ -250,32 +237,16 @@ def allocate_after_subdivision(undefined_dataset, datasets):
             #put exchanges and produciton volume in the same data frame
             to_merge = []
             for dataset in allocated_dataset_grouped[reference_product]:
-                df = dataset['data frame'].copy()
-                df = df[df['data type'] == 'exchanges']
-                to_merge.append(df)
+                dataset = utils.build_quantity_df(dataset)
+                to_merge.append(dataset['quantity data frame'].copy())
             to_merge = pd.concat(to_merge)
             
             #add the amounts of the same exchanges
             merged = pd.pivot_table(to_merge, values = ['amount'], 
                 index = ['Ref'], aggfunc = np.sum)
-            
-            #put back the amounts in the data frame with all the information
-            df = df.set_index('Ref')
-            cols = list(df.columns)
-            cols.remove('amount')
-            cols.remove('length')
-            cols.remove('calculation order')
-            merged = df[cols].join(merged)
-            
-            #add parameters, properties and production volumes
-            df = dataset['data frame'].copy()
-            df = df[df['data type'].isin(['properties', 'parameters'])]
-            merged = pd.concat([merged.reset_index(), df, 
-                for_PV[for_PV['exchange name'] == reference_product]])
-            new_dataset = copy(dataset)
-            new_dataset['data frame'] = merged.copy()
-            new_dataset = utils.reset_index_df(new_dataset)
-            
+            undefined_dataset['quantity data frame'] = merged.copy()
+            new_dataset = utils.quantity_df_to_internal(undefined_dataset)
+            new_dataset = utils.make_reference_product(reference_product, dataset)
             new_datasets.append(new_dataset)
     
     return new_datasets
