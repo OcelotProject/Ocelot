@@ -7,7 +7,7 @@ import pandas as pd
 import os
 import time
 
-if 1:
+if 0:
     folder = r'C:\python\DB_versions\3.2\undefined\datasets'
     datasets = ocelot.io.extract_ecospold2.extract_directory(folder, False)
     filename = 'ecoinvent_3.2_internal'
@@ -28,8 +28,9 @@ if 1:
     ocelot.utils.save_file(datasets, folder, filename)
 else:
     folder = r'C:\ocelot_DB'
-    #filename = 'ecoinvent_3.2_internal'
-    filename = 'ecoinvent_3.2_internal_after_allocation'
+    filename = 'ecoinvent_3.2_internal'
+    #filename = 'after_combined_production_without_byproducts'
+    #filename = 'ecoinvent_3.2_internal_after_allocation'
     #filename = 'after_allocation_treatment_and_recycling'
     #filename = 'after_combined_production_with_byproducts'
     #filename = 'ecoinvent_3.2_internal_small'
@@ -39,18 +40,25 @@ else:
     data_format = ocelot.utils.read_format_definition()
     criteria = {
         'allocation method': [
-            'recycling activity', 
-              'waste treatment'
+            #'recycling activity', 
+              #'waste treatment', 
+              #'economic allocation', 
+                #'true value allocation'
+                #'combined production without byproducts'
+                'combined production with byproducts'
               ], 
-        #'activity name': ['petroleum refinery operation'], 
-        #'location': ['GLO'], 
+        #'activity name': ['treatment of residue from mechanical treatment, laser printer, municipal incineration with fly ash extraction'], 
+        #'location': ['CH'], 
                 }
+    activity_overview = ocelot.utils.open_file(folder, 'activity_overview')
     #datasets = ocelot.utils.filter_datasets(datasets, activity_overview, criteria)
-    if 0:
+    if 1:
         datasets = ocelot.transformations.allocate_cutoff.allocate_datasets_cutoff(
             datasets, data_format, '')
         folder = 'C:\ocelot_DB'
         filename = 'ecoinvent_3.2_internal_after_allocation'
         ocelot.utils.save_file(datasets, folder, filename)
-    #ocelot.utils.print_dataset_to_excel(dataset, folder, data_format, activity_overview)
+    system_model_folder = r'C:\python\DB_versions\3.2\cut-off'
+    ocelot.utils.validate_against_linking(datasets, system_model_folder, data_format, 
+        folder, types_to_validate = ['from environment', 'to environment'])
     

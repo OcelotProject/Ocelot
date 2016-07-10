@@ -58,7 +58,7 @@ def build_activity_link_overview(activity_overview, datasets):
     activity_link_overview = {}
     for dataset in datasets:
         assert 'allocate_cutoff' in dataset['history'].keys()
-        ref_exc = utils.get_reference_product(dataset)
+        ref_exc = utils.find_reference_product(dataset)
         for exc in dataset['exchanges']:
             if 'activity link' in exc and exc['type'] != 'reference product': # why link in RP?
                 #qualitative information about the exchange
@@ -97,7 +97,7 @@ def build_available_PV_overview(datasets, activity_overview, activity_link_overv
     
     for dataset in datasets:
         #fetch information already in the exchange
-        exc = utils.get_reference_product(dataset)
+        exc = utils.find_reference_product(dataset)
         to_add = {'activity name': dataset['name'], 
                   'location': dataset['location'], 
                     'exchange name': exc['name'], 

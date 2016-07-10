@@ -10,6 +10,7 @@ import pprint
 import pyprind
 import signal
 import time
+from copy import copy
 
 from .. import utils
 imp.reload(utils)
@@ -175,7 +176,12 @@ def extract_minimal_ecospold2_info(elem, filepath):
         'history': {'extract_ecospold2': time.ctime()}, 
         'allocation method': '(not known at this point)'
         }
-    data['reference product'] = utils.find_reference_product(data)
+    max_amount = 0.
+    for exc in data['exchanges']:
+        if exc['type'] == 'reference product':
+            if abs(exc['amount']) > max_amount:
+                max_amount = copy(exc['amount'])
+                data['reference product'] = copy(exc['name'])
     parameters = extract_parameters(elem)
     if len(parameters) > 0:
         data['parameters'] = parameters

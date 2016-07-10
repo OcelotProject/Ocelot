@@ -44,9 +44,9 @@ def allocate_datasets_cutoff(datasets, data_format, logger):
             raise NotImplementedError('"%s" is not a recognized allocationMethod')
         
         #each dataset has to be scaled, then put back to the internal format
-        for dataset in new_datasets:
-            dataset = utils.scale_exchanges(dataset)
-            allocated_datasets.append(dataset)
+        for new_dataset in new_datasets:
+            new_dataset = utils.scale_exchanges(new_dataset)
+            allocated_datasets.append(new_dataset)
     
     return allocated_datasets
 
@@ -81,12 +81,15 @@ def info_for_allocation_factor(dataset):
                     to_add[p['name']] = p['amount']
             df[len(df)] = copy(to_add)
     df = pd.DataFrame(df).transpose()
+    df['revenu'] = df['amount'] * df['price']
+    
     dataset['allocation factors'] = df.copy()
     
     return dataset
 	
 def find_allocation_factors(dataset):
     df = dataset['allocation factors'].copy()
+    df = df.rename(columns = {'true value relation': 'TVR'})
     
     #calculate revenu
     dataset['allocation factors']['revenu'] = abs(df['price'] * df['amount'])
@@ -129,7 +132,7 @@ def allocate_with_factors(dataset):
     df = dataset['allocation factors']
     new_datasets = []
     for reference_product_name in list(df.index):
-        new_dataset = utils.make_reference_product(reference_product_name, dataset)
+        new_dataset = utils.make_reference_product(reference_product_name, copy(dataset))
         factor = df.loc[reference_product_name, 'allocation factor']
         
         #multiply all exchange amounts by allocation factor, except reference product
@@ -137,7 +140,7 @@ def allocate_with_factors(dataset):
             if exc['type'] != 'reference product':
                 exc['amount'] = exc['amount'] * factor
         
-        new_datasets.append(deepcopy(new_dataset))
+        new_datasets.append(new_dataset)
         
     return new_datasets
 
@@ -151,10 +154,14 @@ def waste_treatment_allocation(dataset):
     for bp in dataset['exchanges']:
         if bp['type'] == 'byproduct' and bp['amount'] != 0.:
             new_dataset = utils.make_reference_product(bp['name'], dataset)
-            for exc in new_dataset['exchanges']:
+            new_datasets.append(new_dataset)
+    
+    #those come for free in cut-off
+    for new_dataset in new_datasets:
+        for exc in new_dataset['exchanges']:
+            if exc['type'] != 'reference product':
                 #put to zero all the other exchanges
                 exc['amount'] = 0.
-            new_datasets.append(new_dataset)
     
     return new_datasets
 
@@ -217,7 +224,7 @@ def allocate_after_subdivision(undefined_dataset, datasets):
     
     #each dataset needs to be allocated.  
     #datasets with the same reference product are grouped
-    allocated_dataset_grouped = []
+    allocated_dataset_grouped = {}
     for dataset in datasets:
         dataset = info_for_allocation_factor(dataset)
         dataset = find_allocation_factors(dataset)
@@ -244,9 +251,20 @@ def allocate_after_subdivision(undefined_dataset, datasets):
             #add the amounts of the same exchanges
             merged = pd.pivot_table(to_merge, values = ['amount'], 
                 index = ['Ref'], aggfunc = np.sum)
-            undefined_dataset['quantity data frame'] = merged.copy()
+            undefined_dataset['quantity data frame'] = merged.reset_index()
             new_dataset = utils.quantity_df_to_internal(undefined_dataset)
             new_dataset = utils.make_reference_product(reference_product, dataset)
+            
+            #fetch production volume info from pre-allocation dataset
+            for exc in new_dataset['exchanges']:
+                if exc['name'] == new_dataset['reference product'] and exc[
+                        'type'] == 'reference product':
+                    for exc_ in undefined_dataset['exchanges']:
+                        if exc_['name'] == new_dataset['reference product'] and exc_[
+                                'type'] == 'reference product':
+                            exc['production volume'] = exc_['production volume']
+                            break
+                    break
             new_datasets.append(new_dataset)
     
     return new_datasets

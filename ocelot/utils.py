@@ -2,7 +2,7 @@
 import os
 import functools
 import pandas as pd
-from copy import copy
+from copy import copy, deepcopy
 import numpy as np
 import scipy as sp
 from pickle import dump, load
@@ -54,13 +54,6 @@ def get_function_meta(function):
         }
 
 
-def get_reference_product(ds):
-    for exc in ds['exchanges']:
-        if exc['type'] == 'reference product' and exc['amount'] != 0.:
-            break
-    return exc
-
-
 def is_empty(e):
     if type(e) in [float]:
         test = e in ['', None, np.nan, np.NaN, np.nan, []] or np.isnan(e)
@@ -80,11 +73,10 @@ def uncertainty_to_internal(to_add, sel, data_format):
     return to_add
 
 
-
 def add_dummy_variable(dataset):
     counter = 0
     for exc in dataset['exchanges']:
-        if 'variable' not in exchange:
+        if 'variable' not in exc:
             exc['variable'] = 'dummy_variable_{}'.format(counter)
             counter += 1
         if 'production volume' in exc and 'variable' not in exc['production volume']:
@@ -118,6 +110,36 @@ def add_Ref(dataset):
     
     return dataset
 
+def add_line_to_df(df, data_format, parent, element, to_add = False):
+    if to_add == False:
+        to_add = {'data type': parent}
+    else:
+        to_add_new = copy(to_add)
+        for field in to_add:
+            if field not in ['tag', 'exchange type', 'exchange name', 
+                    'compartment', 'subcompartment', 'exchange id', 
+                    'unit', 'byproduct classification']:
+                del to_add_new[field]
+        to_add_new['data type'] = parent
+        to_add = copy(to_add_new)
+        
+    for field in element:
+        if field == 'uncertainty':
+            for field2 in element[field]:
+                to_add[data_format.loc[(field, field2), 'in data frame']] = element[field][field2]
+        elif field not in ['production volume', 'properties']:
+            to_add[data_format.loc[(parent, field), 'in data frame']] = element[field]
+    if 'properties' in element:
+        for e in element['properties']:
+            df = add_line_to_df(df, data_format, 'properties', e, to_add = copy(to_add))
+    if 'production volume' in element:
+        df = add_line_to_df(df, data_format, 'production volume', 
+            element['production volume'], to_add = copy(to_add))
+    
+    to_add = add_Ref(to_add)
+    df[len(df)] = copy(to_add)
+    return df
+
 
 def internal_to_df(dataset, data_format):
     """Takes a dataset and change its representation to a convenient data frame format"""
@@ -140,76 +162,6 @@ def internal_to_df(dataset, data_format):
     
     return dataset
 
-
-def df_to_internal(dataset, data_format):
-    dataset = copy(dataset)
-    df = dataset['data frame']
-    
-    #adjust index of the data format
-    if not list(data_format.index.names) == ['parent', 'in data frame']:
-        #print('warning: pass to function already indexed data_format for faster execution')
-        data_format = data_format[~data_format['in data frame'].apply(is_empty)]
-        data_format = data_format.set_index(['parent', 'in data frame']).sortlevel(level=0)
-        
-    #divide info in practical separate data frames
-    exchanges = df[df['data type'] == 'exchanges']
-    PVs = df[df['data type'] == 'production volume'].set_index('exchange id')
-    properties = df[df['data type'] == 'properties'].set_index('exchange id')
-    dataset['exchanges'] = []
-    
-    for i in range(len(exchanges)):
-        sel = exchanges.iloc[i]
-        to_add = {}
-        
-        #add the exchange info
-        for col in sel.index:
-            if not is_empty(sel[col]) and ('exchanges', col) in set(data_format.index):
-                field = data_format.loc[('exchanges', col), 'field']
-                to_add[field] = sel[col]
-        
-        #add the PV info
-        if sel['exchange id'] in set(PVs.index):
-            sel_PV = PVs.loc[sel['exchange id']]
-            PV = {}
-            for col in set(data_format.loc['production volume'].index):
-                if col in sel_PV.index and not is_empty(sel_PV[col]):
-                    field = data_format.loc[('production volume', col), 'field']
-                    PV[field] = sel_PV[col]
-            
-            #add uncertainty to production volume
-            PV = uncertainty_to_internal(PV, sel_PV, data_format)
-            to_add['production volume'] = PV
-        
-        #add uncertainty to exchange
-        to_add = uncertainty_to_internal(to_add, sel, data_format)
-        
-        #add properties to exchange
-        to_add = property_to_internal(to_add, properties, data_format, sel)
-        
-        dataset['exchanges'].append(to_add)
-    
-    #add parameters
-    parameters = df[df['data type'] == 'parameter']
-    if len(parameters) > 0:
-        dataset['parameters'] = []
-        for i in range(len(parameters)):
-            sel = parameters.iloc[i]
-            to_add = {}
-            
-            #add information about parameter
-            for col in set(data_format.loc['parameters'].index):
-                if col in sel.index and not is_empty(sel[col]):
-                    field = data_format.loc[('parameters', col), 'field']
-                    to_add[field] = sel[col]
-            
-            #add uncertainty to parameter
-            to_add = uncertainty_to_internal(to_add, sel, data_format)
-            
-            dataset['parameters'].append(to_add)
-    
-    del dataset['data frame']
-    
-    return dataset
 
 def read_format_definition():
     return pd.read_excel(os.path.join(os.path.dirname(__file__), "data", "format.xlsx"))
@@ -262,10 +214,10 @@ def print_dataset_to_excel(dataset, folder, data_format, activity_overview):
     meta = meta.reset_index().rename(columns = {'in data frame': 'field'})
     meta = pd.concat([meta, pd.DataFrame({len(meta): {'field': 'history', 'value': ''}})])
     hist = pd.DataFrame(dataset['history']).transpose().reset_index()
+    1/0
     #hist = hist.sort_values(by = )
     hist = hist.rename(columns = {'': 'field', '': 'value'})
     meta = pd.concat([meta, hist])
-    
     meta.to_excel(writer, 'meta', columns = ['field', 'value'], 
         index = False, merge_cells = False)
     if 'data frame' not in dataset:
@@ -337,21 +289,24 @@ def datasets_to_dict(datasets, fields):
 
 
 def make_reference_product(reference_product_name, dataset):
-    dataset = copy(dataset)
+    new_dataset = deepcopy(dataset)
     
     #change type if necessary
-    for exc in dataset['exchanges']:
-        if exc['name'] == reference_product_name and exc['type'] in ['reference product', 'byproduct']:
-            assert exc['amount'] != 0.
-            exc['type'] = 'reference product'
-        else:
-            #put to zero the amount of the other coproducts
-            exc['amount'] = 0.
-            
-            #remove the production volume of the other outputs to technosphere
-            del exc['production volume']
+    for exc in new_dataset['exchanges']:
+        if exc['type'] in ['reference product', 'byproduct']:
+            if exc['name'] == reference_product_name:
+                assert exc['amount'] != 0.
+                exc['type'] = 'reference product'
+                new_dataset['reference product'] = exc['name']
+            else:
+                #put to zero the amount of the other coproducts
+                exc['amount'] = 0.
+                
+                #remove the production volume of the other outputs to technosphere
+                if 'production volume' in exc:
+                    del exc['production volume']
     
-    return dataset
+    return new_dataset
 
 
 def find_reference_product(dataset):
@@ -361,7 +316,7 @@ def find_reference_product(dataset):
     return exc
 
 def scale_exchanges(dataset):
-    '''scales the amount of the exchanges to get a reference exchange amount of 1 or -1'''
+    '''scales the amount of the exchanges to get a reference product amount of 1 or -1'''
     
     ref = find_reference_product(dataset)
     assert ref['amount'] != 0.
@@ -381,6 +336,7 @@ def filter_datasets(datasets, activity_overview, criteria):
     for index in set(activity_overview.index):
         new_datasets.append(datasets[index])
     return new_datasets
+
 
 def build_Ref_to_variable(dataset):
     Ref_to_variable = {}
@@ -432,46 +388,59 @@ def replace_all_Ref_by_variable(dataset):
     return dataset
 
 
-def build_quantity_df(dataset, combined = False):
+def build_quantity_df(dataset):
     df = {}
-    fields = ['Ref', 'variable', 'mathematical relation', 'amount']
     for exc in dataset['exchanges']:
         to_add = {}
-        for field in fields:
+        for field in ['Ref', 'variable', 'mathematical relation', 'amount', 
+              'name', 'compartment', 'subcompartment', 'activity link', 
+              'type']:
             if field in exc:
                 to_add[field] = exc[field]
             else:
                 to_add[field] = ''
-        if combined and exc['type'] == 'reference product':
-            to_add['mathematical relation'] = ''
+        to_add['data type'] = 'exchanges'
         df[len(df)] = copy(to_add)
         if 'production volume' in exc:
             to_add = {}
-            for field in fields:
-                if field in exc['production volume']:
-                    to_add[field] = exc['production volume'][field]
+            for field in ['name', 'compartment', 'subcompartment', 'activity link', 
+                  'type']:
+                if field in exc:
+                    to_add[field] = exc[field]
                 else:
                     to_add[field] = ''
-            if combined:
-                to_add['mathematical relation'] = ''
+            for field in ['Ref', 'variable', 'mathematical relation', 'amount']:
+                if field in exc['production volume']:
+                    to_add[field] = exc['production volume'][field]
+            to_add['data type'] = 'production volume'
             df[len(df)] = copy(to_add)
         if 'properties' in exc:
             for p in exc['properties']:
                 to_add = {}
-                for field in fields:
+                for field in ['name', 'compartment', 'subcompartment', 'activity link', 
+                              'type']:
+                    if field in exc:
+                        to_add[field] = exc[field]
+                    else:
+                        to_add[field] = ''
+                for field in ['Ref', 'variable', 'mathematical relation', 'amount']:
                     if field in p:
                         to_add[field] = p[field]
                     else:
                         to_add[field] = ''
+                to_add['property name'] = p['name']
+                to_add['data type'] = 'properties'
                 df[len(df)] = copy(to_add)
     if 'parameters' in dataset:
         for p in dataset['parameters']:
             to_add = {}
-            for field in fields:
+            for field in ['Ref', 'variable', 'mathematical relation', 'amount']:
                 if field in p:
                     to_add[field] = p[field]
                 else:
                     to_add[field] = ''
+            to_add['parameter name'] = p['name']
+            to_add['data type'] = 'parameters'
             df[len(df)] = copy(to_add)
     df = pd.DataFrame(df).transpose()
     dataset['quantity data frame'] = df.copy()
@@ -487,19 +456,20 @@ def build_graph(dataset, combined = False):
     #them from the mathematicalRelation.
     dataset = add_Ref(dataset)
     dataset = add_dummy_variable(dataset)
-    dataset = replace_Ref_by_variable(dataset)
-    dataset = build_quantity_df(dataset, combined = True)
+    dataset = replace_all_Ref_by_variable(dataset)
+    dataset = build_quantity_df(dataset)
     quantity_df = dataset['quantity data frame']
     quantity_df['length'] = quantity_df['variable'].apply(len)
     order = list(quantity_df.sort_values(by = 'length', ascending = False).index)
     
     df_with_formula = quantity_df[~quantity_df['mathematical relation'
         ].apply(ocelot.utils.is_empty)]
+    df_with_formula = df_with_formula[quantity_df['data type'] != 'production volume']
+    c = (df_with_formula['data type'] == 'exchanges') & (df_with_formula['type'] == 'reference product')
+    df_with_formula = df_with_formula[~c]
     mathematical_relations = dict(zip(list(df_with_formula.index), 
         list(df_with_formula['mathematical relation'])))
-    print(len(mathematical_relations), 'mathematical relations')
-    print(len(quantity_df), 'variables')
-    print('')
+    
     #gathering information for the graph matrix
     rows = []
     columns = []
@@ -509,8 +479,8 @@ def build_graph(dataset, combined = False):
             variable = variables[j]
             if variable in mathematical_relations[i]:
                 mathematical_relations[i] = mathematical_relations[i].replace(variable, '')
-                rows.append(j)
-                columns.append(i)
+                rows.append(int(j))
+                columns.append(int(i))
     c = [1 for i in range(len(rows))]
     ij = np.vstack((rows, columns))
     graph = sp.sparse.csr_matrix((c,ij), shape = (len(quantity_df), len(quantity_df)))
@@ -528,7 +498,7 @@ def calculation_order(dataset):
   
     graph = dataset['graph']
     longestPath = {}
-    for index in range(len(graph.shape[0])): #for each amount
+    for index in range(graph.shape[0]): #for each amount
         paths = [[index]] #the path starts with itself
         longest = 0
         while True:#iterate until there is no more path to find
@@ -568,7 +538,8 @@ def quantity_df_to_internal(dataset):
     for exc in dataset['exchanges']:
         exc['amount'] = amounts[exc['Ref']]
         if 'production volume' in exc:
-            exc['production volume']['amount'] = amounts[exc['production volume']['Ref']]
+            if exc['production volume']['Ref'] in amounts:
+                exc['production volume']['amount'] = amounts[exc['production volume']['Ref']]
         if 'properties' in exc:
             for p in exc['properties']:
                 p['amount'] = amounts[p['Ref']]
@@ -605,30 +576,16 @@ def recalculate(dataset):
     return dataset
 
 
-def reset_index_df(dataset):
-    '''after some linking steps, the number of rows might have changed, and this
-    creates errors in the recalculation algorithm.  This function resets the index of the
-    dataframe to a continuous series from 0 to len(dataset['data frame']) - 1.  '''
-    
-    dataset = copy(dataset)
-    df = dataset['data frame']
-    df.index = range(len(df))
-    sel = df[df['exchange type'] == 'reference product']
-    sel = sel[sel['data type'] == 'exchanges']
-    sel = sel[sel['exchange name'] == dataset['reference product']]
-    assert len(sel) == 1
-    dataset['reference product index'] = sel.iloc[0].name
-    dataset['data frame'] = df
-    
-    return dataset
-
-
-def validate_against_linking(datasets, system_model_folder, data_format, result_folder):
-    folder = os.path.join(system_model_folder, 'excel and csv')
+def validate_against_linking(datasets, reference_folder, data_format, 
+        result_folder, types_to_validate = [], tolerance = .001):
+    if len(types_to_validate) == 0:
+        types_to_validate = ['reference product', 'from technosphere', 
+                             'from environment', 'to environment']
+    folder = os.path.join(reference_folder, 'excel and csv')
     filename = 'activity_overview_3.2_cut-off.xlsx'
     ao = pd.read_excel(os.path.join(folder, filename), 'activity overview')
     ao = ao.set_index(['activityName', 'Geography', 'Product']).sortlevel(level=0)
-    folder = folder = os.path.join(system_model_folder, 'datasets')
+    folder = os.path.join(reference_folder, 'datasets')
     results = {}
     counter = 0
     for dataset in datasets:
@@ -641,50 +598,56 @@ def validate_against_linking(datasets, system_model_folder, data_format, result_
         index = dataset['name'], dataset['location'], dataset['reference product']
         found = True
         if index in set(ao.index):
-            linked_filename = ao.loc[index]['filename']
+            reference_filename = ao.loc[index]['filename']
         elif index[1] == 'GLO':
             index = dataset['name'], 'RoW', dataset['reference product']
             if index in set(ao.index):
-                linked_filename = ao.loc[index]['filename']
+                reference_filename = ao.loc[index]['filename']
             else:
                 found = False
         else:
             found = False
         if found:
-            df = dataset['data frame'].copy()
-            sel = df[df['data type'] == 'exchanges']
-            sel = sel[sel['tag'] == 'elementaryExchange']
-            sel = sel[sel['amount'] != 0.]
-            if len(sel) > 0:
-                linked_filename = os.path.join(folder, linked_filename)
-                linked_dataset = ocelot.io.extract_ecospold2.generic_extractor(linked_filename)[0]
-                linked_dataset = ocelot.utils.internal_to_df(linked_dataset, data_format)
-                df = linked_dataset['data frame'].copy()
-                sel_linked = df[df['data type'] == 'exchanges']
-                sel_linked = sel_linked[sel_linked['tag'] == 'elementaryExchange']
-                sel_linked = sel_linked[sel_linked['amount'] != 0.]
-                sel = sel.set_index(['exchange name', 'compartment', 'subcompartment'
-                    ])[['amount']]
-                sel_linked = sel_linked.set_index(['exchange name', 'compartment', 'subcompartment'
-                    ])[['amount']]
-                df = sel.join(sel_linked, how = 'outer', rsuffix = '_reference')
-                df['test'] = abs(df['amount'].divide(df['amount_reference']))
-                tolerance = .001
-                if sum(df['test'] > 1. + tolerance) + sum(df['test'] < 1. - tolerance):
+            dataset = build_quantity_df(dataset)
+            df = dataset['quantity data frame'].copy()
+            df = df[df['data type'] == 'exchanges']
+            df = df[df['type'].isin(types_to_validate)]
+            if len(df) > 0:
+                df = df[df['amount'] != 0.]
+            if len(df) > 0:
+                reference_filename = os.path.join(folder, reference_filename)
+                reference_dataset = ocelot.io.extract_ecospold2.generic_extractor(reference_filename)[0]
+                reference_dataset = build_quantity_df(reference_dataset)
+                df_reference = dataset['quantity data frame'].copy()
+                df_reference = df_reference[df_reference['data type'] == 'exchanges']
+                df_reference = df_reference[df_reference['type'].isin(types_to_validate)]
+                df = df.set_index(['name', 'compartment', 
+                    'subcompartment', 'activity link'])[['amount']]
+                df_reference = df_reference.set_index(['name', 'compartment', 
+                    'subcompartment', 'activity link'])[['amount']]
+                df = df.join(df_reference, how = 'left', rsuffix = '_reference')
+                if 0. in set(df['amount_reference']):
                     to_add['message'] = 'differences'
-                    filename = '%s - %s - %s.xlsx' % (dataset['name'], 
-                        dataset['location'], dataset['reference product'])
-                    df = df.reset_index()
-                    columns = ['exchange name', 'compartment', 'subcompartment', 
-                               'amount', 'amount_reference', 'test']
-                    df.to_excel(os.path.join(result_folder, filename), 
-                        columns = columns, index = False, merge_cells = False)
+                    1/0
                 else:
-                    to_add['message'] = 'validation passed'
+                    df['test'] = abs(df['amount'].divide(df['amount_reference']))
+                    if sum(df['test'] > 1. + tolerance) + sum(df['test'] < 1. - tolerance) > 0:
+                        to_add['message'] = 'differences'
+                        1/0
+                    else:
+                        to_add['message'] = 'validation passed'
             else:
-                to_add['message'] = 'no exchange to/from nature: nothing to validate against the reference'
+                to_add['message'] = 'no exchange in types to validate'
         else:
             to_add['message'] = 'reference not found, (not necessarily an error)'
+        if to_add['message'] == 'differences':
+            filename = '%s - %s - %s.xlsx' % (dataset['name'], 
+                dataset['location'], dataset['reference product'])
+            df = df.reset_index()
+            columns = ['name', 'compartment', 'subcompartment', 
+                'activity link', 'amount', 'amount_reference', 'test']
+            df.to_excel(os.path.join(result_folder, filename), 
+                columns = columns, index = False, merge_cells = False)
         results[len(results)] = copy(to_add)
         print(to_add['message'])
         print('')
