@@ -14,7 +14,7 @@ def allocate_datasets_cutoff(datasets, data_format, logger):
     for dataset in datasets:
         assert set(dataset['history'].keys()) == set([
             'find_allocation_method_cutoff', 'fix_known_issues_ecoinvent_32', 
-            'extract_ecospold2'])
+            'extract_ecospold2', 'calculate_available_PV'])
         counter += 1
         print(dataset['name'], dataset['location'])
         print(counter, 'of', len(datasets))
@@ -167,9 +167,8 @@ def waste_treatment_allocation(dataset):
 
 
 def constrained_market_allocation(dataset):
-    '''in this case, the conditional exchange is removed.  Done by simply using the 
-    utils.make_reference_product function'''
-    
+    '''in this case, the conditional exchange is removed.'''
+    #The use of the function flip_non_allocatable_byproducts has made the conditional exchange
     new_datasets = [utils.make_reference_product(dataset['reference product'], dataset)]
     
     return new_datasets

@@ -628,12 +628,10 @@ def validate_against_linking(datasets, reference_folder, data_format,
                 df = df.join(df_reference, how = 'left', rsuffix = '_reference')
                 if 0. in set(df['amount_reference']):
                     to_add['message'] = 'differences'
-                    1/0
                 else:
                     df['test'] = abs(df['amount'].divide(df['amount_reference']))
                     if sum(df['test'] > 1. + tolerance) + sum(df['test'] < 1. - tolerance) > 0:
                         to_add['message'] = 'differences'
-                        1/0
                     else:
                         to_add['message'] = 'validation passed'
             else:

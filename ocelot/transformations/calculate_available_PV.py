@@ -9,7 +9,7 @@ import time
 def dummy():
     return ''
     
-def available_production_volume(datasets, logger, support_excel_folder, support_pkl_folder):
+def calculate_available_PV(datasets, logger, support_excel_folder, support_pkl_folder):
     """Calculates available production volume for market shares by removing 
         consumption by activity links"""
     
@@ -19,7 +19,7 @@ def available_production_volume(datasets, logger, support_excel_folder, support_
     
     #write the activity link overview for reference
     filename = 'activity_link_overview.xlsx'
-    writer = pd.ExcelWriter(os.path.join(support_pkl_folder, filename))
+    writer = pd.ExcelWriter(os.path.join(support_excel_folder, filename))
     columns = ['activity name', 'location', 'reference product', 
                'exchange name', 'activity link activity name', 
                'activity link location', 'amount', 'consumed amount', 
@@ -39,13 +39,14 @@ def available_production_volume(datasets, logger, support_excel_folder, support_
         activity_overview, activity_link_overview)
     
     #write it to excel for reference
-    columns = ['activity name', 'location', 'exchange name', 'production volume', 
-               'consumed by activity links', 'available production volume']
+    columns = ['activity name', 'location', 'exchange type', 'exchange name', 
+       'byproduct classification', 'production volume', 
+       'consumed by activity links', 'available production volume']
     available_PV_overview.to_excel(writer, 'available_PV_overview', columns = columns, 
         index = False, merge_cells = False)
-    utils.save_file(available_PV_overview, support_pkl_folder, 'available_PV_overview')
     writer.save()
     writer.close()
+    utils.save_file(available_PV_overview, support_pkl_folder, 'available_PV_overview')
     
     #write in the exchanges the available PV
     datasets = write_availabe_PV_in_exchanges(datasets, available_PV_overview)
@@ -57,34 +58,36 @@ def build_activity_link_overview(activity_overview, datasets):
             ).sortlevel(level=0)
     activity_link_overview = {}
     for dataset in datasets:
-        assert 'allocate_cutoff' in dataset['history'].keys()
         ref_exc = utils.find_reference_product(dataset)
         for exc in dataset['exchanges']:
             if 'activity link' in exc and exc['type'] != 'reference product': # why link in RP?
                 #qualitative information about the exchange
-                sel = activity_overview.loc[(exc['activity link'], exc['name'])]
-                if type(sel) == pd.core.frame.DataFrame:
-                    sel = sel.iloc[0]
                 to_add = {'activity name': dataset['name'], 
                           'location': dataset['location'], 
-                    'reference product': dataset['main reference product'], 
+                    'reference product': dataset['reference product'], 
                     'exchange name': exc['name'], 
-                    'amount': exc['amount'], 
-                    'activity link activity name': sel['activity name'], 
-                    'activity link location': sel['location']
+                    'amount': exc['amount']
                     }
+                #might be a loss or a conditional exchange
+                if exc['activity link'] == dataset['id']:
+                    to_add['note'] = 'loss'
+                elif exc['conditional exchange']:
+                    to_add['note'] = 'conditional exchange'
+                else:
+                    to_add['note'] = ''
+                if to_add['note'] == 'conditional exchange':
+                    sel = activity_overview.loc[exc['activity link']]
+                else:
+                    sel = activity_overview.loc[(exc['activity link'], exc['name'])]
+                if type(sel) == pd.core.frame.DataFrame:
+                    sel = sel.iloc[0]
+                to_add['activity link activity name'] = sel['activity name']
+                to_add['activity link location'] = sel['location']
                 
                 #how much is consumed?
                 to_add['consumed amount'] = abs(to_add['amount'] / ref_exc['amount'
                     ] * ref_exc['production volume']['amount'])
                 
-                #might be a loss or a conditional exchange
-                if exc['activity link'] == dataset['id']:
-                    to_add['note'] = 'loss'
-                elif to_add['amount'] < 0. and dataset['type'] == 'market activity':
-                    to_add['note'] = 'conditional exchange'
-                else:
-                    to_add['note'] = ''
                 activity_link_overview[len(activity_link_overview)] = copy(to_add)
     activity_link_overview = pd.DataFrame(activity_link_overview).transpose()
     
@@ -96,27 +99,30 @@ def build_available_PV_overview(datasets, activity_overview, activity_link_overv
     activity_overview = activity_overview.set_index(['activity name', 'location', 'exchange name'])
     
     for dataset in datasets:
-        #fetch information already in the exchange
-        exc = utils.find_reference_product(dataset)
-        to_add = {'activity name': dataset['name'], 
-                  'location': dataset['location'], 
-                    'exchange name': exc['name'], 
-                    'production volume': exc['production volume']['amount']}
-        
-        #get the information in the activity link overview
-        index = (dataset['name'], dataset['location'], dataset['main reference product'])
-        if index in set(activity_link_overview.index):
-            sel = activity_link_overview.loc[index]
-            to_add['consumed by activity links'] = sel['consumed amount']
-            if sel['consumed amount'] < exc['available production volume']:
-                available = exc['available production volume'] - sel['consumed amount']
-            else:
-                available = 0.
-        else:
-            to_add['consumed by activity links'] = 0.
-            available = exc['available production volume']
-        to_add['available production volume'] = copy(available)
-        available_PV_overview[len(available_PV_overview)] = copy(to_add)
+        for exc in dataset['exchanges']:
+            if exc['type'] in ['reference product', 'byproduct']:
+                #fetch information already in the exchange
+                to_add = {'activity name': dataset['name'], 
+                          'location': dataset['location'], 
+                            'exchange name': exc['name'], 
+                            'production volume': exc['production volume']['amount'], 
+                            'exchange type': exc['type'], 
+                            'byproduct classification': exc['byproduct classification']}
+                
+                #get the information in the activity link overview
+                index = (dataset['name'], dataset['location'], dataset['reference product'])
+                if index in set(activity_link_overview.index):
+                    sel = activity_link_overview.loc[index]
+                    to_add['consumed by activity links'] = sel['consumed amount']
+                    if sel['consumed amount'] < exc['production volume']['amount']:
+                        available = exc['production volume']['amount'] - sel['consumed amount']
+                    else:
+                        available = 0.
+                else:
+                    to_add['consumed by activity links'] = 0.
+                    available = exc['production volume']['amount']
+                to_add['available production volume'] = copy(available)
+                available_PV_overview[len(available_PV_overview)] = copy(to_add)
     
     available_PV_overview = pd.DataFrame(available_PV_overview).transpose()
     

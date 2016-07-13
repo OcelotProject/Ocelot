@@ -28,7 +28,7 @@ def allocation_method(datasets, logger):
                 elif exc['type'] == 'byproduct':
                     if exc['byproduct classification'] == 'allocatable':
                         nb_allocatable_byproducts += 1
-                    if 'activity link' in exc and dataset['type'] == 'market activity' and exc['amount'] < 0.:
+                    if exc['conditional exchange']:
                         has_conditional_exchange = True
                 if 'properties' in exc:
                     for p in exc['properties']:

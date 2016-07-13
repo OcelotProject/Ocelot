@@ -34,14 +34,13 @@ def build_activity_overview(datasets, support_excel_folder, support_pkl_folder,
         ]
 
     for dataset in datasets:
-        baseline = {}
-        for field in dataset_fields_to_keep:
-            if field in dataset:
-                baseline[data_format.loc[('dataset', field), 'in data frame']
-                    ] = dataset[field]
         for exc in dataset['exchanges']:
             if exc['type'] in ['reference product', 'byproduct']:
-                to_add = copy(baseline)
+                to_add = {}
+                for field in dataset_fields_to_keep:
+                    if field in dataset:
+                        to_add[data_format.loc[('dataset', field), 'in data frame']
+                            ] = dataset[field]
                 for field in exchange_fields_to_keep:
                     to_add[data_format.loc[('exchanges', field), 'in data frame']
                         ] = exc[field]

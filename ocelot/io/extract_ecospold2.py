@@ -104,7 +104,7 @@ def extract_property(exc):
     return properties
 
 
-def extract_minimal_exchange(exc):
+def extract_minimal_exchange(exc, dataset):
     # Basic data
     data = {
         'id': exc.get('id'),
@@ -153,6 +153,11 @@ def extract_minimal_exchange(exc):
     # Uncertainty
     if hasattr(exc, "uncertainty"):
         data['uncertainty'] = extract_uncertainty(exc.uncertainty)
+    
+    #conditional exchange
+    data['conditional exchange'] = ('activity link' in data and 
+        dataset['type'] == 'market activity' and data['amount'] < 0.)
+    
 
     return data
 
@@ -168,14 +173,14 @@ def extract_minimal_ecospold2_info(elem, filepath):
         'start date': elem.activityDescription.timePeriod.get("startDate"), 
         'end date': elem.activityDescription.timePeriod.get("endDate"), 
         'economic scenario': elem.activityDescription.macroEconomicScenario.name.text,
-        'exchanges': [extract_minimal_exchange(exc)
-                      for exc in elem.flowData.iterchildren()
-                      if 'Exchange' in exc.tag], 
         'access restricted': meta.ACCESS_RESTRICTED[elem.administrativeInformation.dataGeneratorAndPublication.get(
                             'accessRestrictedTo')], 
         'history': {'extract_ecospold2': time.ctime()}, 
         'allocation method': '(not known at this point)'
         }
+    data['exchanges'] = [extract_minimal_exchange(exc, data)
+                      for exc in elem.flowData.iterchildren()
+                      if 'Exchange' in exc.tag]
     max_amount = 0.
     for exc in data['exchanges']:
         if exc['type'] == 'reference product':
