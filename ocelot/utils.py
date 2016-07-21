@@ -58,7 +58,7 @@ def is_empty(e):
     if type(e) in [float, np.float, np.float64, np.float16, np.float32, np.float_]:
         test = e in ['', None, np.nan, np.NaN, np.nan, []] or np.isnan(e)
     else:
-        test = e in ['', None, np.nan, np.NaN, np.nan, [], ]
+        test = e in ['', None, np.nan, np.NaN, np.nan, []]
     return test
 
 
