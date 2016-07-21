@@ -6,7 +6,10 @@ import scipy as sp
 import pandas as pd
 import os
 import time
-
+data_format = ocelot.utils.read_format_definition()
+dirpath = r'C:\Ocelot\test_cases'
+datasets = ocelot.io.extract_excel.extract_excel(dirpath, data_format)
+1/0
 if 0:
     folder = r'C:\python\DB_versions\3.2\undefined\datasets'
     datasets = ocelot.io.extract_ecospold2.extract_directory(folder, False)

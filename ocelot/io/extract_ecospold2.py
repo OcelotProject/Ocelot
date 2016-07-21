@@ -11,9 +11,7 @@ import pyprind
 import signal
 import time
 from copy import copy
-
 from .. import utils
-imp.reload(utils)
 
 
 def _(string):
