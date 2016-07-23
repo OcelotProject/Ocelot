@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import re
-from copy import copy
 import time
 
 def dummy():

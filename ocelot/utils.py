@@ -654,3 +654,20 @@ def validate_against_linking(datasets, reference_folder, data_format,
     columns = ['activity name', 'location', 'reference product', 'message']
     results.to_excel(os.path.join(result_folder, filename), columns = columns, 
                      index = False, merge_cells = False)
+
+
+def sel_data_frame(df, criteria, with_lists = False):
+    if with_lists:
+        1/0 #to be implemented
+    else:
+        indexes = list(criteria.keys())
+        df = df.set_index(indexes).sortlevel(level=0)
+        index = tuple(criteria.values())
+        if index not in df.index:
+            df = pd.DataFrame()
+        else:
+            df = df.loc[index]
+            if type(df) != pd.core.frame.DataFrame:
+                df = pd.DataFrame(df).transpose()
+            df = df.reset_index()
+    return df

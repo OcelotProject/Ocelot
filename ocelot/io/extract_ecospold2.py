@@ -27,6 +27,10 @@ def extract_parameters(elem):
                 'amount': float(obj.get('amount'))}
             if hasattr(obj, "uncertainty"):
                 p['uncertainty'] = extract_uncertainty(obj.uncertainty)
+            if hasattr(obj, 'unitName'):
+                p['unit'] = obj.unitName.text
+            else:
+                p['unit'] = 'adimensional'
             formula = obj.get('mathematicalRelation')
             if obj.get('variableName'):
                 p['variable'] = obj.get('variableName').strip()
@@ -53,8 +57,12 @@ def extract_uncertainty(unc):
     data = {meta.UNCERTAINTY_MAPPING.get(key, key): float(distribution.get(key)
         ) for key in distribution.keys()}
     data.update({'type': _(distribution.tag)})
-    data.update(extract_pedigree_matrix(unc))
-    
+    pedigree_matrix = extract_pedigree_matrix(unc)
+    if len(pedigree_matrix) > 0:
+        data.update(pedigree_matrix)
+    elif data['type'] in ['lognormal', 'normal']:
+        pedigree_matrix = dict(zip(list(meta.PEDIGREE_LABELS.values()), [5, 5, 5, 5, 5]))
+        data.update(pedigree_matrix)
     return data
 
 
