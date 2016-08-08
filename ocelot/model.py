@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from .configuration import default_configuration
 from .filesystem import (
+    cache_data,
     check_cache_directory,
     get_from_cache,
     OutputDir,
@@ -72,8 +73,10 @@ def system_model(data_path, config=None, show=False, use_cache=True):
         config = config or default_configuration
         if use_cache and check_cache_directory(data_path):
             data = get_from_cache(data_path)
+            print("Using cached ecospold2 data")
         else:
             data = extract_directory(data_path)
+            cache_data(data, data_path)
         output_manager = OutputDir()
         counter = itertools.count()
         logfile_path = create_log(output_manager.directory)

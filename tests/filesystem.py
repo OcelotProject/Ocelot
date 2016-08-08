@@ -50,7 +50,6 @@ tempdir = TempDir()
 
 @pytest.fixture
 def fake_output_dir(monkeypatch):
-    tempdir.reset()
     monkeypatch.setattr(
         'ocelot.filesystem.get_base_directory',
         tempdir
@@ -58,15 +57,18 @@ def fake_output_dir(monkeypatch):
 
 
 def test_fake_output_dir_fixture(fake_output_dir):
+    tempdir.reset()
     assert "Ocelot" not in get_cache_directory()
 
 def test_cache_loading(fake_output_dir):
+    tempdir.reset()
     random_data = {k: random.randint(0, 10) for k in "abcdefghijklmnop"}
     fp = os.path.abspath(__file__)
     cache_data(random_data, fp)
     assert random_data == get_from_cache(fp)
 
 def test_cache_expiration(fake_output_dir):
+    tempdir.reset()
     new_dp = tempfile.mkdtemp()
     new_file = os.path.join(new_dp, "test.file")
     with open(new_file, "w") as f:

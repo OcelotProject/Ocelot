@@ -88,6 +88,8 @@ def check_cache_directory(data_path):
     Returns a boolean."""
     assert os.path.isdir(data_path), "Invalid path for ``data_path``: {}".format(data_path)
     cache_fp = get_cache_filepath_for_data_path(data_path)
+    if not os.path.exists(cache_fp):
+        return False
     cache_time = os.stat(cache_fp).st_mtime
     source_time = os.stat(data_path).st_mtime
     return cache_time > source_time
