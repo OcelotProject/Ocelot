@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-from ..filesystem import get_base_output_directory
+from ..filesystem import get_output_directory
 import os
 import shutil
 import time
 
 
 def cleanup_data_directory():
-    base_dir = get_base_output_directory()
+    base_dir = get_output_directory()
     one_week, now, to_delete = 7 * 24 * 60 * 60, time.time(), []
 
     print("\nCleaning up data directory {}".format(base_dir))

@@ -8,30 +8,31 @@ import tempfile
 import uuid
 
 
-class MockOutputDir(object):
-    """Test mock that uses a tempfile directory, and deletes it after test runs"""
-    def __init__(self, *args, **kwargs):
-        self.report_id = uuid.uuid4().hex
-        self.directory = tempfile.mkdtemp()
-        print("Created:")
-        print(self.directory)
-        print(os.path.exists(self.directory))
-
 def do_nothing(*args, **kwargs):
     """Mock for `HTMLReport` that doesn't do anything"""
     pass
 
 
 def passthrough(obj):
-    """Mock for `extract_directory` that doesn't do anything"""
+    """Mock for ``extract_directory`` that returns the initial input"""
     return obj
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def fake_report(monkeypatch):
+    tempdir = tempfile.mkdtemp()
+    get_fake_directory = lambda : tempdir
     monkeypatch.setattr(
-        'ocelot.model.OutputDir',
-        MockOutputDir
+        'ocelot.filesystem.get_base_directory',
+        get_fake_directory
+    )
+    monkeypatch.setattr(
+        'ocelot.model.check_cache_directory',
+        lambda x: False
+    )
+    monkeypatch.setattr(
+        'ocelot.model.cache_data',
+        lambda x, y: None
     )
     monkeypatch.setattr(
         'ocelot.model.extract_directory',
