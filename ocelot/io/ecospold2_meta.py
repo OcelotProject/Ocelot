@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import re
+
 SPECIAL_ACTIVITY_TYPE = {
     "0": "transforming activity",
     "1": "market activity",
@@ -39,13 +41,13 @@ OUTPUT_GROUPS = {
     "5": "stock addition"
 }
 
-PEDIGREE_LABELS = [
-    "reliability",
-    "completeness",
-    "temporalCorrelation",
-    "geographicalCorrelation",
-    "furtherTechnologyCorrelation"
-]
+PEDIGREE_LABELS = {
+    "reliability": 'reliability',
+    "completeness": 'completeness',
+    "temporalCorrelation": 'temporal correlation',
+    "geographicalCorrelation": 'geographical correlation',
+    "furtherTechnologyCorrelation": 'further technology correlation'
+}
 
 UNCERTAINTY_MAPPING = {
     # Translate some ecoinvent terms to their actual names
@@ -53,4 +55,31 @@ UNCERTAINTY_MAPPING = {
     'meanValue': 'mean',
     'minValue': 'minimum',
     'mostLikelyValue': 'mode',
+    'mostFrequentValue': 'mode',
+    'varianceWithPedigreeUncertainty': 'variance with pedigree uncertainty',
+    'standardDeviation95': 'standard deviation 95%'
 }
+
+ACCESS_RESTRICTED = {
+    '0': 'public',
+    '1': 'licensees',
+    '2': 'results only',
+    '3': 'restricted'
+ }
+
+BYPRODUCT_CLASSIFICATION = {
+    'allocatable product': 'allocatable',
+    'Waste': 'waste',
+    'Recyclable': 'recyclable'
+}
+
+UUID_REGULAR_EXPRESSION = '\w{8}-\w{4}-\w{4}-\w{4}-\w{12}'
+
+REF_REGULAR_EXPRESSIONS = [
+    # exchange amount and parameters
+    re.compile("Ref\(\'%s\'\)" % UUID_REGULAR_EXPRESSION),
+    # production volume
+    re.compile("Ref\(\'%s\'[,]\s'ProductionVolume'\)" % (UUID_REGULAR_EXPRESSION)),
+    # property
+    re.compile("Ref\(\'%s\'[,]\s\'%s\'\)" % (UUID_REGULAR_EXPRESSION, UUID_REGULAR_EXPRESSION))
+]}
