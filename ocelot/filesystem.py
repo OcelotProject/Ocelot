@@ -60,7 +60,9 @@ def get_cache_directory():
     """Return base directory where cache data (already extracted datasets) are saved.
 
     Creates directory if it is not already present."""
-    return create_dir(os.path.join(get_base_directory(), "cache"))
+    dp = create_dir(os.path.join(get_base_directory(), "cache"))
+    assert check_dir(dp), "Can't use cache directory:\n{}".format(dp)
+    return dp
 
 
 def get_base_directory():
@@ -86,10 +88,8 @@ def check_cache_directory(data_path):
     Returns a boolean."""
     assert os.path.isdir(data_path), "Invalid path for ``data_path``: {}".format(data_path)
     cache_fp = get_cache_filepath_for_data_path(data_path)
-    if not os.path.exists(cache_fp):
-        return False
     cache_time = os.stat(cache_fp).st_mtime
-    source_time = os.state(data_path).st_mtime
+    source_time = os.stat(data_path).st_mtime
     return cache_time > source_time
 
 
@@ -97,10 +97,7 @@ def get_from_cache(data_path):
     """Return cached extracted data from directory ``data_path``.
 
     This function only loads the pickled cache data; use ``check_cache_directory`` to make sure cache is not expired."""
-    return pickle.load(
-        open(get_cache_filepath_for_data_path(data_path), "rb"),
-        protocol=pickle.HIGHEST_PROTOCOL
-    )
+    return pickle.load(open(get_cache_filepath_for_data_path(data_path), "rb"))
 
 
 def cache_data(data, data_path):
