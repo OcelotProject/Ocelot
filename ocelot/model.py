@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 from .configuration import default_configuration
-from .filesystem import safe_filename, OutputDir
+from .filesystem import (
+    check_cache_directory,
+    get_from_cache,
+    OutputDir,
+    safe_filename,
+)
 from .io import extract_directory
 from .logger import create_log
 from .report import HTMLReport
@@ -47,7 +52,7 @@ def apply_transformation(function, counter, data, output_dir):
         return data
 
 
-def system_model(data_path, config=None, show=False):
+def system_model(data_path, config=None, show=False, use_cache=True):
     """A system model is a set of assumptions and modeling choices that define how to take a list of unlinked and unallocated datasets, and transform these datasets into a new list of datasets which are linked and each have a single reference product.
 
     The system model itself is a list of functions. The definition of this list - which functions are included, and in which order - is defined by the input parameter ``config``, which can be a list of functions or a :ref:`configuration` object. The ``system_model`` does the following:
@@ -65,7 +70,10 @@ def system_model(data_path, config=None, show=False):
     print("Starting Ocelot model run")
     try:
         config = config or default_configuration
-        data = extract_directory(data_path)
+        if use_cache and check_cache_directory(data_path):
+            data = get_from_cache(data_path)
+        else:
+            data = extract_directory(data_path)
         output_manager = OutputDir()
         counter = itertools.count()
         logfile_path = create_log(output_manager.directory)

@@ -2,6 +2,7 @@
 import appdirs
 import hashlib
 import os
+import pickle
 import re
 import unicodedata
 import uuid
@@ -45,7 +46,7 @@ def check_dir(directory):
 def get_output_directory():
     """Get base directory for model run.
 
-    Try the environment variable OCELOT_OUTPUT first, fall back to `appdirs <https://pypi.python.org/pypi/appdirs>`__"""
+    Try the environment variable OCELOT_OUTPUT first, fall back to the base directory plus ``model-runs``."""
     try:
         env_var = create_dir(os.environ['OCELOT_OUTPUT'])
         assert env_var
@@ -56,17 +57,56 @@ def get_output_directory():
 
 
 def get_cache_directory():
-    """Get base directory where cache data (already extracted datasets) are saved.
+    """Return base directory where cache data (already extracted datasets) are saved.
 
-    Creates directory is not already present."""
+    Creates directory if it is not already present."""
     return create_dir(os.path.join(get_base_directory(), "cache"))
 
 
 def get_base_directory():
-    """Get base directory where cache and output data are saved.
+    """Return base directory where cache and output data are saved.
 
-    Creates directory is not already present."""
-    return create_dir(appdirs.user_data_dir("Ocelot", "ocelot_runs"))
+    Creates directory if it is not already present."""
+    return create_dir(appdirs.user_data_dir("Ocelot", "ocelot_project"))
+
+
+def get_cache_filepath_for_data_path(data_path):
+    """Return the cache directory for source directory ``data_path``.
+
+    The cache filepath is in the directory returned by ``get_cache_directory``. The file name is the MD5 hash of the string ``data_path`` plus ``".pickle"``"""
+    return os.path.join(
+        get_cache_directory(),
+        hashlib.md5(data_path.encode("utf-8")).hexdigest() + ".pickle"
+    )
+
+
+def check_cache_directory(data_path):
+    """Check that the data in the cache directory for source directory ``data_path`` is still fresh.
+
+    Returns a boolean."""
+    assert os.path.isdir(data_path), "Invalid path for ``data_path``: {}".format(data_path)
+    cache_fp = get_cache_filepath_for_data_path(data_path)
+    if not os.path.exists(cache_fp):
+        return False
+    cache_time = os.stat(cache_fp).st_mtime
+    source_time = os.state(data_path).st_mtime
+    return cache_time > source_time
+
+
+def get_from_cache(data_path):
+    """Return cached extracted data from directory ``data_path``.
+
+    This function only loads the pickled cache data; use ``check_cache_directory`` to make sure cache is not expired."""
+    return pickle.load(
+        open(get_cache_filepath_for_data_path(data_path), "rb"),
+        protocol=pickle.HIGHEST_PROTOCOL
+    )
+
+
+def cache_data(data, data_path):
+    """Write extracted ``data`` from source directory ``data_path`` to cache directory for future use."""
+    with open(get_cache_filepath_for_data_path(data_path), "wb") as f:
+        pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 class OutputDir(object):
