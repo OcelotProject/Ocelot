@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+from .errors import OutputDirectoryError
 import appdirs
 import hashlib
 import os
 import re
 import unicodedata
 import uuid
+
 
 re_slugify = re.compile('[^\w\s-]', re.UNICODE)
 
