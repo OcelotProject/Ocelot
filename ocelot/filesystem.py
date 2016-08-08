@@ -42,14 +42,31 @@ def check_dir(directory):
     return os.path.isdir(directory) and os.access(directory, os.W_OK)
 
 
-def get_base_output_directory():
+def get_output_directory():
     """Get base directory for model run.
 
     Try the environment variable OCELOT_OUTPUT first, fall back to `appdirs <https://pypi.python.org/pypi/appdirs>`__"""
     try:
-        return create_dir(os.environ['OCELOT_OUTPUT'])
-    except KeyError:
-        return create_dir(appdirs.user_data_dir("Ocelot", "ocelot_runs"))
+        env_var = create_dir(os.environ['OCELOT_OUTPUT'])
+        assert env_var
+        print("Using environment variable OCELOT_OUTPUT:\n", env_var)
+        return env_var
+    except:
+        return create_dir(os.path.join(get_base_directory(), "model-runs"))
+
+
+def get_cache_directory():
+    """Get base directory where cache data (already extracted datasets) are saved.
+
+    Creates directory is not already present."""
+    return create_dir(os.path.join(get_base_directory(), "cache"))
+
+
+def get_base_directory():
+    """Get base directory where cache and output data are saved.
+
+    Creates directory is not already present."""
+    return create_dir(appdirs.user_data_dir("Ocelot", "ocelot_runs"))
 
 
 class OutputDir(object):
@@ -58,7 +75,7 @@ class OutputDir(object):
         """Create the job id and output directory"""
         self.report_id = uuid.uuid4().hex
         if dir_path is None:
-            dir_path = get_base_output_directory()
+            dir_path = get_output_directory()
         self.directory = os.path.join(dir_path, self.report_id)
         try:
             create_dir(self.directory)
