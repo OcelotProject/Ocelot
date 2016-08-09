@@ -20,9 +20,10 @@ def extract_directory(data_path, use_cache=True):
     if not use_cache:
         return extract_ecospold2_directory(data_path)
     elif check_cache_directory(data_path):
+        print("Using cached ecospold2 data")
         return get_from_cache(data_path)
     else:
-        data = extract_directory(data_path)
+        data = extract_ecospold2_directory(data_path)
         cache_data(data, data_path)
     return data
 
