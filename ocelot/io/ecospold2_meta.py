@@ -82,4 +82,4 @@ REF_REGULAR_EXPRESSIONS = [
     re.compile("Ref\(\'%s\'[,]\s'ProductionVolume'\)" % (UUID_REGULAR_EXPRESSION)),
     # property
     re.compile("Ref\(\'%s\'[,]\s\'%s\'\)" % (UUID_REGULAR_EXPRESSION, UUID_REGULAR_EXPRESSION))
-]}
+]

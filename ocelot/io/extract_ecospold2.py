@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
-from .ecospold2_meta import *
+from .ecospold2_meta import (
+    ACCESS_RESTRICTED,
+    BYPRODUCT_CLASSIFICATION,
+    INPUT_GROUPS,
+    OUTPUT_GROUPS,
+    PEDIGREE_LABELS,
+    SPECIAL_ACTIVITY_TYPE,
+    TECHNOLOGY_LEVEL,
+    UNCERTAINTY_MAPPING,
+)
 from lxml import objectify
 from time import time
 import multiprocessing
@@ -21,74 +30,66 @@ def is_combined_production(dataset):
                 if exc['type'] == "reference product"]) > 1
 
 
-def parameterize(elem, data):
-    parameters = [
-        obj for obj in elem.flowData.iterchildren()
-        if 'parameter' in obj.tag
-    ]
-    if not parameters:
-        return
-    else:
-        data['parameters'] = []
-    for param in parameters:
-        obj = {
-            'variable': param.get('variableName'),
-            'name': param.name.text,
-        }
-        if hasattr(param, "uncertainty"):
-            obj['uncertainty'] = extract_uncertainty(param.uncertainty)
-        formula = param.get('mathematicalRelation')
-        if formula:
-            obj['formula'] = formula
-        data['parameters'].append(obj)
+def extract_parameter(obj):
+    param = {'name': obj.name.text,
+         'id': obj.get('parameterId'),
+         'amount': float(obj.get('amount')),
+         'unit': obj.unitName.text if hasattr(obj, 'unitName') else "dimensionless"
+    }
+    if hasattr(obj, "uncertainty"):
+        param['uncertainty'] = extract_uncertainty(obj.uncertainty)
+    if obj.get('variableName'):
+        param['variable'] = obj.get('variableName').strip()
+    if obj.get('mathematicalRelation'):
+        param['formula'] = obj.get('mathematicalRelation').strip()
+    return param
 
 
 def extract_pedigree_matrix(elem):
-    try:
-        return tuple([
-            int(elem.pedigreeMatrix.get(label))
-            for label in PEDIGREE_LABELS
-        ])
-    except:
-        pass
+    if not hasattr(elem, "pedigreeMatrix"):
+        return {}
+    else:
+        return {value: int(elem.pedigreeMatrix.get(key))
+                for key, value in PEDIGREE_LABELS.items()}
 
 
 def extract_uncertainty(unc):
-    distribution_labels = ['lognormal', 'normal', 'triangular',
-                           'uniform', 'undefined']
+    """Extract uncertainty and pedigree matrix data.
+
+    Rather ugly code is needed to extract the uncertainty data because of the way it is nested. For example:
+
+    .. code-block:: xml
+
+        <uncertainty>
+            <lognormal meanValue="1" mu="-0.46" variance="0" varianceWithPedigreeUncertainty="0.0034" />
+            <pedigreeMatrix reliability="2" completeness="3" temporalCorrelation="2" geographicalCorrelation="5" furtherTechnologyCorrelation="1" />
+        </uncertainty>
+
+    """
+    distribution_labels = ['lognormal', 'normal', 'triangular', 'beta',
+                           'uniform', 'undefined', 'binomial', 'gamma']
     distribution = next((getattr(unc, label)
                          for label in distribution_labels
                          if hasattr(unc, label)))
-    data = {UNCERTAINTY_MAPPING.get(key, key): float(distribution.get(key)) for key in distribution.keys()}
+    data = {UNCERTAINTY_MAPPING.get(key, key): float(distribution.get(key))
+            for key in distribution.keys()}
     data.update({
         'type': _(distribution.tag),
+        'pedigree matrix': extract_pedigree_matrix(unc)
     })
-    pm = extract_pedigree_matrix(unc)
-    if pm:
-        data['pedigree matrix'] = pm
+    # TODO: Why is this necessary? Should be in undefined datasets...
+    if not data['pedigree matrix'] and data['type'] in ('lognormal', 'normal'):
+        data['pedigree matrix'] = {x: 5 for x in PEDIGREE_LABELS.values()}
     return data
 
 
-def extract_compartments(exc):
-    try:
-        return (
-            exc.compartment.compartment.text,
-            exc.compartment.subcompartment.text,
-        )
-    except:
-        pass
-
-
 def extract_production_volume(exc):
-    pv = exc.get('productionVolumeAmount')
-    if not pv:
-        return
-    data = {'amount': float(pv)}
+    data = {'amount': float(exc.get('productionVolumeAmount') or 0)}
     if hasattr(exc, "productionVolumeUncertainty"):
         data['uncertainty'] = extract_uncertainty(exc.productionVolumeUncertainty)
     formula = exc.get('productionVolumeMathematicalRelation')
     if formula:
-        data['formula'] = formula
+        data['formula'] = formula.strip()
     variable = exc.get('productionVolumeVariableName')
     if variable:
         data['variable'] = variable
@@ -100,17 +101,18 @@ def extract_property(prop):
         'id': prop.get('propertyId'),
         'amount': float(prop.get('amount')),
         'name': prop.name.text,
+        "unit": prop.unitName.text if hasattr(prop, 'unitName') else "dimensionless",
     }
     if hasattr(prop, "uncertainty"):
         data['uncertainty'] = extract_uncertainty(prop.uncertainty)
     if prop.get("variableName"):
         data['variable'] = prop.get("variableName")
     if prop.get("mathematicalRelation"):
-        data['formula'] = prop.get("mathematicalRelation")
+        data['formula'] = prop.get("mathematicalRelation").strip()
     return data
 
 
-def extract_minimal_exchange(exc):
+def extract_exchange(exc):
     # Basic data
     data = {
         'id': exc.get('id'),
@@ -123,63 +125,76 @@ def extract_minimal_exchange(exc):
                  else OUTPUT_GROUPS[exc.outputGroup.text]),
     }
 
-    # Variable and formula will be deleted if dataset is not multioutput
+    # Activity link, optional field
+    if exc.get('activityLinkId'):
+        data['activity link'] = exc.get("activityLinkId")
+
+    # Byproduct classification, optional field
+    byproduct = [obj.classificationValue.text
+                 for obj in exc.iterchildren()
+                 if (_(obj.tag) == 'classification'
+                 and obj.classificationSystem.text == 'By-product classification')]
+    assert len(set(byproduct)) < 2
+    if byproduct:
+        data['byproduct classification'] = BYPRODUCT_CLASSIFICATION[
+                byproduct[0]]
+
+    # Variable name and mathematical relation extraction
     if exc.get("variableName"):
         data['variable'] = exc.get("variableName")
     if exc.get("mathematicalRelation"):
-        data['formula'] = exc.get("mathematicalRelation")
+        data['formula'] = exc.get("mathematicalRelation").strip()
 
-    properties = [extract_property(obj)
-                  for obj in exc.iterchildren()
-                  if _(obj.tag) == 'property']
-    if properties:
-        data['properties'] = properties
+    data['properties'] = [extract_property(obj)
+                          for obj in exc.iterchildren()
+                          if _(obj.tag) == 'property']
 
     # Biosphere compartments
-    compartments = extract_compartments(exc)
-    if compartments:
-        data['compartments'] = compartments
+    if 'environment' in data['type']:
+        data['compartment'] = exc.compartment.compartment.text
+        data['subcompartment'] = exc.compartment.subcompartment.text
 
-    # Production volume & uncertainty
-    pv = extract_production_volume(exc)
-    if pv:
-        data['production volume'] = pv
+    # Production volume; only extracted when needed
+    if data['type'] in ('reference product', 'byproduct'):
+        data['production volume'] = extract_production_volume(exc)
 
     # Uncertainty
     if hasattr(exc, "uncertainty"):
         data['uncertainty'] = extract_uncertainty(exc.uncertainty)
 
+    # Conditional exchange
+    # TODO: Describe what this means
+    if 'environment' not in data['type']:
+        data['conditional exchange'] = (
+            'activity link' in data
+            and data['type'] == 'market activity'
+            and data['amount'] < 0
+        )
+
     return data
 
 
-def extract_minimal_ecospold2_info(elem, filepath):
+def extract_ecospold2_dataset(elem, filepath):
     data = {
         'filepath': filepath,
+        'id': elem.activityDescription.activity.get('id'),
         'name': elem.activityDescription.activity.activityName.text,
         'location': elem.activityDescription.geography.shortname.text,
         'type': SPECIAL_ACTIVITY_TYPE[elem.activityDescription.activity.get('specialActivityType')],
         'technology level': TECHNOLOGY_LEVEL[elem.activityDescription.technology.get('technologyLevel')],
-        'temporal': (
-            elem.activityDescription.timePeriod.get("startDate"),
-            elem.activityDescription.timePeriod.get("endDate")
-        ),
-        'economic': elem.activityDescription.macroEconomicScenario.name.text,
-        'exchanges': [extract_minimal_exchange(exc)
+        'start date': elem.activityDescription.timePeriod.get("startDate"),
+        'end date': elem.activityDescription.timePeriod.get("endDate"),
+        'economic scenario': elem.activityDescription.macroEconomicScenario.name.text,
+        'access restricted': ACCESS_RESTRICTED[elem.administrativeInformation.\
+            dataGeneratorAndPublication.get('accessRestrictedTo')],
+        'exchanges': [extract_exchange(exc)
                       for exc in elem.flowData.iterchildren()
-                      if 'Exchange' in exc.tag]
+                      if 'Exchange' in _(exc.tag)],
+        'parameters': [extract_parameter(exc)
+                       for exc in elem.flowData.iterchildren()
+                       if 'parameter' in _(exc.tag)],
     }
-    if is_combined_production(data):
-         # Dataset will require recalculation, so variableName
-         # and mathematicalRelation are necessary
-        data['combined production'] = True
-        parameterize(elem, data)
-    else:
-        # Don't need parameter or property data because no allocation
-        for exc in data['exchanges']:
-            if 'formula' in exc:
-                del exc['formula']
-            if 'properties' in exc:
-                del exc['properties']
+    data['combined production'] = is_combined_production(data)
     return data
 
 
@@ -187,7 +202,7 @@ def generic_extractor(filepath):
     with open(filepath, encoding='utf8') as f:
         try:
             root = objectify.parse(f).getroot()
-            data = [extract_minimal_ecospold2_info(child, filepath)
+            data = [extract_ecospold2_dataset(child, filepath)
                     for child in root.iterchildren()]
         except:
             print(filepath)
@@ -195,7 +210,7 @@ def generic_extractor(filepath):
     return data
 
 
-def extract_directory(dirpath, use_mp=True):
+def extract_ecospold2_directory(dirpath, use_mp=True):
     """Extract all the ``.spold`` files in the directory ``dirpath``.
 
     Use a multiprocessing pool if ``use_mp``, which is the default."""
