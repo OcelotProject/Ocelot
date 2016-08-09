@@ -2,7 +2,7 @@
 <ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold02">
   <childActivityDataset>
     <activityDescription>
-      <activity specialActivityType="0">
+      <activity specialActivityType="0" id="production-volume">
         <activityName>Jagger Lakin</activityName>
       </activity>
       <geography>
@@ -36,5 +36,8 @@
         <inputGroup>5</inputGroup>
       </intermediateExchange>
     </flowData>
+    <administrativeInformation>
+      <dataGeneratorAndPublication accessRestrictedTo="1" />
+    </administrativeInformation>
   </childActivityDataset>
 </ecoSpold>

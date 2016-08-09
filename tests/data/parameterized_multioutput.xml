@@ -2,7 +2,7 @@
 <ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold02">
   <activityDataset>
     <activityDescription>
-      <activity id="" specialActivityType="0">
+      <activity id="multioutput-process" specialActivityType="0">
         <activityName>Aliana Price</activityName>
       </activity>
       <geography>
@@ -52,5 +52,8 @@
         </uncertainty>
       </parameter>
     </flowData>
+    <administrativeInformation>
+      <dataGeneratorAndPublication accessRestrictedTo="1" />
+    </administrativeInformation>
   </activityDataset>
 </ecoSpold>
