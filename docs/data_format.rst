@@ -319,3 +319,12 @@ Function will also write log messages about individual changes. These messages h
         type: 'table element',
         data: list of data elements in same order as columns
     }
+
+If the logging information is better represented in a list, they will look like:
+
+.. code-block:: javascript
+
+    {
+        type: 'list element',
+        data: HTML string
+    }

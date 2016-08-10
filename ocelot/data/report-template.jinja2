@@ -49,7 +49,7 @@
             <li>Number of datasets after application: {{ func.count }}</li>
         </ul>
         <h3>Description</h3>
-        <p>{{ func.description }}</p>
+        <p>{{ func.description|safe }}</p>
         {% if func.table %}
         <h3>{{ func.table.title }}</h3>
         <table class="table" data-paging="true" data-filtering="true" data-sorting="true">
@@ -69,6 +69,11 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% else %}
+        <ul>
+          {% for elem in func.listdata %}<li>{{ elem|safe }}</li>
+          {% endfor %}
+        </ul>
         {% endif %}
       </div>
     {% endfor %}
