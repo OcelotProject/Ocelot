@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import test_data_dir
 from ocelot.io.extract_ecospold2 import generic_extractor
+from ocelot.io.validate_internal import dataset_schema
 import os
 
 # Tests for ecospold2 extraction
@@ -253,14 +254,21 @@ def test_basic_extraction():
     BASIC_REFERENCE[0]['filepath'] = fp
     assert generic_extractor(fp) == BASIC_REFERENCE
 
+def test_basic_validation():
+    assert dataset_schema(BASIC_REFERENCE[0])
 
 def test_production_volume_extraction():
     fp = os.path.join(test_data_dir, "prod_volume.xml")
     PROD_VOLUME_REFERENCE[0]['filepath'] = fp
     assert generic_extractor(fp) == PROD_VOLUME_REFERENCE
 
+def test_production_volume_validation():
+    assert dataset_schema(PROD_VOLUME_REFERENCE[0])
 
 def test_multioutput_extraction():
     fp = os.path.join(test_data_dir, "parameterized_multioutput.xml")
     MULTIOUTPUT_REFERENCE[0]['filepath'] = fp
     assert generic_extractor(fp) == MULTIOUTPUT_REFERENCE
+
+def test_multioutput_validation():
+    assert dataset_schema(MULTIOUTPUT_REFERENCE[0])
