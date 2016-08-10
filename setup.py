@@ -41,6 +41,7 @@ setup(
         'pyrsistent',
         'pytest',
         'toolz',
+        'voluptuous',
     ],
     url="https://ocelot.space/",
     long_description=open('README.rst').read(),

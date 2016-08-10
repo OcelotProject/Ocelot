@@ -8,3 +8,4 @@ pyprind
 pyrsistent
 pytest
 toolz
+voluptuous

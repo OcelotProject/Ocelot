@@ -71,12 +71,7 @@ def system_model(data_path, config=None, show=False, use_cache=True):
     print("Starting Ocelot model run")
     try:
         config = config or default_configuration
-        if use_cache and check_cache_directory(data_path):
-            data = get_from_cache(data_path)
-            print("Using cached ecospold2 data")
-        else:
-            data = extract_directory(data_path)
-            cache_data(data, data_path)
+        data = extract_directory(data_path, use_cache)
         output_manager = OutputDir()
         counter = itertools.count()
         logfile_path = create_log(output_manager.directory)

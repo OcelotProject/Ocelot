@@ -13,7 +13,7 @@ def do_nothing(*args, **kwargs):
     pass
 
 
-def passthrough(obj):
+def passthrough(obj, use_cache=True):
     """Mock for ``extract_directory`` that returns the initial input"""
     return obj
 

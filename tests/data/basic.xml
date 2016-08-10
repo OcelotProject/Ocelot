@@ -2,7 +2,7 @@
 <ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold02">
   <childActivityDataset>
     <activityDescription>
-      <activity id="" specialActivityType="0">
+      <activity id="basic-process" specialActivityType="0">
         <activityName>Miss Morgan Wolf</activityName>
       </activity>
       <geography>
@@ -24,7 +24,7 @@
           <lognormal meanValue="1" mu="2" variance="3" varianceWithPedigreeUncertainty="4" />
           <pedigreeMatrix reliability="1" completeness="2" temporalCorrelation="3" geographicalCorrelation="4" furtherTechnologyCorrelation="5" />
         </uncertainty>
-        <property amount="999">
+        <property propertyId="jarod" amount="999">
           <name>Jarod Kuhic</name>
           <unitName>kg</unitName>
         </property>
@@ -44,5 +44,8 @@
         <outputGroup>4</outputGroup>
       </elementaryExchange>
     </flowData>
+    <administrativeInformation>
+      <dataGeneratorAndPublication accessRestrictedTo="1" />
+    </administrativeInformation>
   </childActivityDataset>
 </ecoSpold>

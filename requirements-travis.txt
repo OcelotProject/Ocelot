@@ -10,3 +10,4 @@ pytest
 pytest-cov
 python-coveralls
 toolz
+voluptuous
