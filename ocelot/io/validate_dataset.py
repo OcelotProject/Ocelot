@@ -3,6 +3,7 @@ import re
 from .. import utils
 import pandas as pd
 import os
+import numpy as np
 
 def dummy():
     return ''
@@ -182,13 +183,13 @@ def find_selected_type(s):
     
     #transforms a string into a type
     if s == 'str':
-        expected_type = str
+        expected_type = [str]
     elif s == 'dict':
-        expected_type = dict
+        expected_type = [dict]
     elif s == 'list':
-        expected_type = list
+        expected_type = [list]
     elif s == 'float':
-        expected_type = float
+        expected_type = [float, np.float64]
     elif s == 'int':
         expected_type = int
     else:
@@ -204,7 +205,7 @@ def validate(element, sel, local_report, element_type):
         if sel['mandatory/optional'] == 'mandatory':
             1/0 #missing field
 
-    elif type(element[field]) != find_selected_type(sel['type']):
+    elif type(element[field]) not in find_selected_type(sel['type']):
         #wrong type of content
         1/0 #wrong type
         

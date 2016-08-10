@@ -31,13 +31,17 @@ def extract_excel(dirpath, data_format):
         #loading the quantitative and dispatching in different data frames for convenience
         df = pd.read_excel(os.path.join(dirpath, filename), 'quantitative')
         exchanges = df[df['data type'] == 'exchanges']
+        del exchanges['data type']
         PVs = df[df['data type'] == 'production volume'].set_index('exchange id')
         properties = df[df['data type'] == 'properties'].set_index('exchange id')
-        for col in ['unit', 'byproduct classification', 'data type', 'name', 'exchange type']:
-            del PVs[col]
-        for col in ['unit', 'byproduct classification', 'data type', 'exchange type']:
-            del properties[col]
+        if len(PVs) > 0:
+            for col in ['unit', 'byproduct classification', 'data type', 'name', 'exchange type']:
+                del PVs[col]
+        if len(properties) > 0:
+            for col in ['byproduct classification', 'data type', 'exchange type']:
+                del properties[col]
         parameters = df[df['data type'] == 'parameters']
+        del parameters['data type']
         
         #adding exchanges
         dataset = add_exchanges(dataset, exchanges, properties, PVs, data_format)
@@ -94,7 +98,6 @@ def add_parameters(dataset, parameters, data_format):
     if len(parameters) > 0:
         #only if some parameters are in the quantitative data frame
         dataset['parameters'] = []
-        del parameters['data type']
         
         for index in parameters.index:
             #getting rid of empty fields and mapping to field names in internal format
@@ -131,6 +134,10 @@ def add_exchanges(dataset, exchanges, properties, PVs, data_format):
         sel = sel[~sel[index].apply(utils.is_empty)]
         sel = sel.join(data_format.loc['exchanges'][['in dataset']])
         exc = dict(zip(list(sel['in dataset']), list(sel[index])))
+        if 'environment' in exc['type']:
+            exc['tag'] = 'elementaryExchange'
+        else:
+            exc['tag'] = 'intermediateExchange'
         
         #adding PV, if any
         exc = add_PV(exc, PVs, data_format)
