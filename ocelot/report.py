@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 from . import data_dir
+from docutils.core import publish_parts
 import jinja2
 import json
 import os
 import pathlib
 import shutil
 import webbrowser
+
+
+to_html = lambda x: publish_parts(x, writer_name='html')['html_body']
 
 
 def read_json_log(fp):
@@ -91,6 +95,8 @@ class HTMLReport(object):
             }
             if line['table']:
                 data['functions'][self.index]['tabledata'] = []
+            else:
+                data['functions'][self.index]['listdata'] = []
         elif line['type'] == 'function end':
             data['counts'].append((line['name'], line['count']))
             data['times'].append((line['name'], line['time']))
@@ -100,9 +106,11 @@ class HTMLReport(object):
                 'count': line['count'],
                 'name': line['name'],
                 'id': 'function{}'.format(self.index),
-                'description': line['description'],
+                'description': to_html(line['description']),
                 'table': line['table'],
             })
         elif line['type'] == 'table element':
             data['functions'][self.index]['tabledata'].append(line['data'])
+        elif line['type'] == 'list element':
+            data['functions'][self.index]['listdata'].append(line['data'])
 
