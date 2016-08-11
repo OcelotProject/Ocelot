@@ -5,27 +5,28 @@ from .filesystem import (
     check_cache_directory,
     get_from_cache,
     OutputDir,
-    safe_filename,
+    save_intermediate_result,
 )
 from .io import extract_directory
 from .logger import create_log
 from .report import HTMLReport
+from .results import SaveStrategy
 from .utils import get_function_meta
 from collections.abc import Iterable
 from time import time
 import itertools
 import logging
 import os
-import pickle
 import shutil
 import sys
 
 
-def apply_transformation(function, counter, data, output_dir):
+def apply_transformation(function, counter, data, output_dir, save_strategy):
     # A `function` can be a list of functions
     if isinstance(function, Iterable):
         for obj in function:
-            data = apply_transformation(obj, counter, data, output_dir)
+            data = apply_transformation(obj, counter, data,
+                                        output_dir, save_strategy)
         return data
     else:
         metadata = get_function_meta(function)
@@ -39,21 +40,18 @@ def apply_transformation(function, counter, data, output_dir):
 
         print("Applying transformation {}".format(metadata['name']))
         data = function(data)
-        dump_fp = os.path.join(
-            output_dir,
-            "{}.".format(index) + safe_filename(metadata['name']) + ".pickle"
-        )
-        with open(dump_fp, "wb") as f:
-            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
         metadata.update(
             type="function end",
             count=len(data)
         )
+
+        if save_strategy(index):
+            save_intermediate_result(output_dir, index, data, metadata['name'])
         logging.info(metadata)
         return data
 
 
-def system_model(data_path, config=None, show=False, use_cache=True):
+def system_model(data_path, config=None, show=False, use_cache=True, save_strategy=None):
     """A system model is a set of assumptions and modeling choices that define how to take a list of unlinked and unallocated datasets, and transform these datasets into a new list of datasets which are linked and each have a single reference product.
 
     The system model itself is a list of functions. The definition of this list - which functions are included, and in which order - is defined by the input parameter ``config``, which can be a list of functions or a :ref:`configuration` object. The ``system_model`` does the following:
@@ -83,9 +81,15 @@ def system_model(data_path, config=None, show=False, use_cache=True):
             'count': len(data),
         })
 
+        save_strategy = SaveStrategy(save_strategy)
+
         for obj in config:
             data = apply_transformation(obj, counter, data,
-                                        output_manager.directory)
+                                        output_manager.directory,
+                                        save_strategy)
+
+        print("Saving final results")
+        save_intermediate_result(output_manager.directory, "final-results", data)
 
         logging.info({'type': 'report end'})
 
