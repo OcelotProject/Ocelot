@@ -67,6 +67,15 @@ Functions take two input arguments: The input ``data``, and the ``logger``. Func
         'data': [data in same order as columns]
     })
 
+Log messages that provide data in a list format look like this:
+
+.. code-block:: python
+
+    logger.log({
+        'type': 'list element',
+        'data': HTML string
+    })
+
 If you need to initialize functions using `functools.partial <https://docs.python.org/3.5/library/functools.html#functools.partial>`__, the report generator will still get the correct function metadata. Other forms of currying are not supported.
 
 .. _logger:

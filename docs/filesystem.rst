@@ -42,3 +42,10 @@ Model run output
 Model runs are stored in a subdirectory of the base directory called ``"model-runs"``. However, a custom location for storing model run outputs can be specified in the environment variable ``OCELOT_OUTPUT``. The environment variable will always take precedence over the default location. See your operating system manual for instructions on setting environment variables.
 
 .. autofunction:: ocelot.filesystem.get_output_directory
+
+Writing intermediate results
+============================
+
+As a typical system model will include tens of transformation functions, intermediate results are not saved after every function. Instead, the default saving strategy to is save intermediate results after every five transformation functions. You can specify an alternative strategy in the ``system_model`` function (parameter ``save_strategy``).
+
+.. autoclass:: ocelot.results.SaveStrategy

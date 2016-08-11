@@ -10,13 +10,13 @@ class SaveStrategy(object):
     * ``None``: Use the default value (every five transformation functions).
     * ``a`` (where ``a`` is an integer): Save every ``a`` transformation functions.
     * ``a:b`` (a, b are integers): Save every intermediate result between transformation function number ``a`` and ``b`` (inclusive of ``a`` and ``b``).
-    * ``a:b:c`` (a, b, c are integers): Save every ``c``th intermediate result between transformation function number ``a`` and ``b`` (inclusive of ``a`` and ``b``). For example, an input of ``2:8:3`` would save results after functions ``2``, ``5``, and ``8``.
+    * ``a:b:c`` (a, b, c are integers): Save every ``c`` intermediate result between transformation function number ``a`` and ``b`` (inclusive of ``a`` and ``b``). For example, an input of ``2:8:3`` would save results after functions ``2``, ``5``, and ``8``.
 
     Usage:
 
     .. code-block:: python
 
-        >>> strat = SaveStrategy()
+        >>> strat = SaveStrategy()  # same as SaveStrategy(5), default value
         >>> strat(4)
         False
         >>> strat(5)
