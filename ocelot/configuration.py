@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from .transformations import (
-    dummy_transformation,
+    fix_known_ecoinvent_issues,
     parameterization_validity_checks,
     relabel_global_to_row,
 )
@@ -15,9 +15,9 @@ class Configuration(object):
         return iter(self.functions)
 
 
-# Default config for now is 3.2 cutoff
+# Default config for now is cutoff
 default_configuration = [
+    fix_known_ecoinvent_issues,
     parameterization_validity_checks,
     relabel_global_to_row,
-    dummy_transformation,
 ]

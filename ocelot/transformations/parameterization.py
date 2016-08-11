@@ -25,5 +25,5 @@ def parameter_names_are_unique(data):
 
 parameterization_validity_checks = Collection(
     # every_exchange_with_formula_has_a_variable_name,
-    parameter_names_are_unique
+    # parameter_names_are_unique
 )

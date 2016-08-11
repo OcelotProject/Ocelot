@@ -34,6 +34,7 @@ setup(
         'appdirs',
         'arrow',
         'docopt',
+        'docutils',
         'jinja2',
         'lxml',
         'psutil',
