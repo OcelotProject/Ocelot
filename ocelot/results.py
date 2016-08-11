@@ -37,11 +37,11 @@ class SaveStrategy(object):
         return self.func(index)
 
     def parse(self, arg):
-        if not arg:
+        if arg is None:
             return lambda x: not x % self.DEFAULT
-        elif ":" not in arg:
+        elif ":" not in str(arg):
             try:
-                int(arg)
+                arg = int(arg)
             except:
                 raise ValueError("Can't parse {} as integer".format(arg))
             if arg < 1:
