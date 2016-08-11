@@ -5,7 +5,7 @@ from .filesystem import (
     check_cache_directory,
     get_from_cache,
     OutputDir,
-    safe_filename,
+    save_intermediate_result,
 )
 from .io import extract_directory
 from .logger import create_log
@@ -16,7 +16,6 @@ from time import time
 import itertools
 import logging
 import os
-import pickle
 import shutil
 import sys
 
@@ -39,12 +38,7 @@ def apply_transformation(function, counter, data, output_dir):
 
         print("Applying transformation {}".format(metadata['name']))
         data = function(data)
-        dump_fp = os.path.join(
-            output_dir,
-            "{}.".format(index) + safe_filename(metadata['name']) + ".pickle"
-        )
-        with open(dump_fp, "wb") as f:
-            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+        save_intermediate_result(output_dir, index, data, metadata['name'])
         metadata.update(
             type="function end",
             count=len(data)
@@ -86,6 +80,8 @@ def system_model(data_path, config=None, show=False, use_cache=True):
         for obj in config:
             data = apply_transformation(obj, counter, data,
                                         output_manager.directory)
+
+        save_intermediate_result(output_manager.directory, "final-results", data)
 
         logging.info({'type': 'report end'})
 

@@ -126,3 +126,16 @@ class OutputDir(object):
                 "Can't find or write to output directory:\n\t{}".format(
                 self.directory)
             )
+
+
+def save_intermediate_result(output_dir, index, data, func_name=None):
+    if func_name is None:
+        func_name = ""
+    else:
+        func_name = "." + safe_filename(func_name)
+    dump_fp = os.path.join(
+        output_dir,
+        str(index) + func_name + ".pickle"
+    )
+    with open(dump_fp, "wb") as f:
+        pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
