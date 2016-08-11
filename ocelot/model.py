@@ -81,10 +81,12 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
             'count': len(data),
         })
 
+        save_strategy = SaveStrategy(save_strategy)
+
         for obj in config:
             data = apply_transformation(obj, counter, data,
                                         output_manager.directory,
-                                        SaveStrategy(save_strategy))
+                                        save_strategy)
 
         print("Saving final results")
         save_intermediate_result(output_manager.directory, "final-results", data)
