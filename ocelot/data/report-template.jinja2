@@ -42,7 +42,7 @@
     <div id="countChart"></div>
     <h1>Transform functions</h1>
     {% for func in functions %}
-      <h2 id="{{ func.id }}">{{ func.name }} <span class="pure-button toggle-button">toggle</span></h2>
+      <h2 id="{{ func.id }}">{{ func.id }}: {{ func.name }} <span class="pure-button toggle-button">toggle</span></h2>
       <div id="{{ func.id }}-container">
         <ul>
             <li>Total time: {{ func.time|int }} seconds</li>
