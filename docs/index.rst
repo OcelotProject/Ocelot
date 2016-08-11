@@ -20,6 +20,7 @@ Contents:
    cli
    data_format
    foundation
+   transformation
    filesystem
    tests
    contributing
