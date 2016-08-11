@@ -32,3 +32,21 @@ drop_zero_pv_row_datasets.__table__ = {
     'title': 'Drop `RoW` datasets with zero production volumes',
     'columns': ["Name", "Product(s)"]
 }
+
+
+def deparameterize(dataset):
+    """Delete all variables and formulas from the dataset.
+
+    This takes an individual dataset as inputs, not the entire database!"""
+    if 'parameters' in dataset:
+        dataset['parameters'] = []
+    for exc in dataset['exchanges']:
+        for field in ('formula', 'variable'):
+            if field in exc:
+                del exc[field]
+            if 'production volume' in exc:
+                if field in exc['production volume']:
+                    del exc['production volume'][field]
+        if 'properties' in exc:
+            del exc['properties']
+    return dataset
