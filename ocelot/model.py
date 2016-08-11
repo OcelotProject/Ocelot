@@ -40,12 +40,13 @@ def apply_transformation(function, counter, data, output_dir, save_strategy):
 
         print("Applying transformation {}".format(metadata['name']))
         data = function(data)
-        if save_strategy(index):
-            save_intermediate_result(output_dir, index, data, metadata['name'])
         metadata.update(
             type="function end",
             count=len(data)
         )
+
+        if save_strategy(index):
+            save_intermediate_result(output_dir, index, data, metadata['name'])
         logging.info(metadata)
         return data
 
