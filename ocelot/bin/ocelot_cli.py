@@ -9,9 +9,11 @@ Commands:
   * validate: Extract the ecospold2 files in <dirpath> and make sure the extracted data meets the Ocelot internal format. This command doesn't use the extraction cache.
   * xsd: Validate the ecospold2 files in <dirpath> against the default XSD or another XSD specified in <schema>.
 
+See https://docs.ocelot.space/filesystem.html#writing-intermediate-results for information on saving strategies.
+
 Usage:
-  ocelot-cli run <dirpath> [--noshow]
-  ocelot-cli run <dirpath> <config> [--noshow]
+  ocelot-cli run <dirpath> [--noshow] [--save=<strategy>]
+  ocelot-cli run <dirpath> <config> [--noshow] [--save=<strategy>]
   ocelot-cli cleanup
   ocelot-cli validate <dirpath>
   ocelot-cli xsd <dirpath> <schema>
@@ -21,10 +23,11 @@ Usage:
   ocelot-cli --version
 
 Options:
-  --list        List the updates needed, but don't do anything
-  --noshow      Don't open HTML report in new web browser tab
-  -h --help     Show this screen.
-  --version     Show version.
+  --list             List the updates needed, but don't do anything
+  --noshow           Don't open HTML report in new web browser tab
+  --save=<strategy>  Strategy for which intermediate results to save.
+  -h --help          Show this screen.
+  --version          Show version.
 
 """
 from docopt import docopt
@@ -41,9 +44,9 @@ import sys
 
 def main():
     try:
-        args = docopt(__doc__, version='Ocelot open source linker CLI 0.1')
+        args = docopt(__doc__, version='Ocelot open source linker CLI 0.2')
         if args['run']:
-            system_model(args["<dirpath>"], args['<config>'], show=not args['--noshow'])
+            system_model(args["<dirpath>"], args['<config>'], show=not args['--noshow'], save_strategy=args['--save'])
         elif args['validate']:
             validate_directory(args['<dirpath>'])
         elif args['xsd']:
