@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from .. import toolz
-from ..utils import activity_grouper
+from .utils import activity_grouper
 import logging
 
 

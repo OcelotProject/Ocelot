@@ -1,0 +1,226 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold02">
+  <activityDataset>
+    <activityDescription>
+      <activity id="9f9dc412-531d-4143-806a-627e2a904e5f" activityNameId="9a869368-413c-4df0-8c6b-77236104a1a7" activityNameContextId="de659012-50c4-4e96-b54a-fc781bf987ab" inheritanceDepth="0" type="1" specialActivityType="0">
+        <activityName xml:lang="en">heat and power co-generation, natural gas, conventional power plant, 100MW electrical</activityName>
+      </activity>
+      <geography geographyId="34dbbff8-88ce-11de-ad60-0019e336be3a">
+        <shortname xml:lang="en">GLO</shortname>
+        <comment />
+      </geography>
+      <technology technologyLevel="3">
+      </technology>
+      <timePeriod startDate="1990-01-01" endDate="2015-12-31" isDataValidForEntirePeriod="true">
+      </timePeriod>
+      <macroEconomicScenario macroEconomicScenarioId="d9f57f0a-a01f-42eb-a57b-8f18d6635801">
+        <name xml:lang="en">Business-as-Usual</name>
+      </macroEconomicScenario>
+    </activityDescription>
+    <flowData>
+      <intermediateExchange id="1c0c37a4-2cdb-41b1-98ba-e6862aa79543" unitId="5b972631-34e3-4db7-a615-f6931770a0cb" variableName="gas_power_plant" amount="6.47766990291262E-10" isCalculatedAmount="true" mathematicalRelation="factor_MJ_kWh*0.0000000000556" intermediateExchangeId="f89244f2-c60e-455b-ba2a-6ed369955d60">
+        <name xml:lang="en">gas power plant, 100MW electrical</name>
+        <unitName xml:lang="en">unit</unitName>
+        <uncertainty>
+          <lognormal meanValue="6.47766990291262E-10" mu="-21.0589383934" variance="0.12" varianceWithPedigreeUncertainty="0.1327" />
+          <pedigreeMatrix reliability="3" completeness="3" temporalCorrelation="3" geographicalCorrelation="3" furtherTechnologyCorrelation="3" />
+        </uncertainty>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <inputGroup>5</inputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="8dced74b-0677-4388-9215-bb6d30b8b084" unitId="980b811e-3905-4797-82a5-173f5568bc7e" variableName="heat" amount="4.1" mathematicalRelation="" intermediateExchangeId="1125e767-7b5d-442e-81d6-9b0d3e1919ac" productionVolumeAmount="4439289063000" productionVolumeVariableName="heat_apv" productionVolumeMathematicalRelation="heat/electricity*electricity_apv">
+        <name xml:lang="en">heat, district or industrial, natural gas</name>
+        <unitName xml:lang="en">MJ</unitName>
+        <property propertyId="38f94dd1-d5aa-41b8-b182-c0c42985d9dc" amount="0.0106" mathematicalRelation="" unitId="7b75baf0-cbee-45e6-bf66-af119da06553">
+          <name xml:lang="en">price</name>
+          <unitName xml:lang="en">EUR2005</unitName>
+          <uncertainty>
+            <undefined minValue="0.0106" maxValue="0.0106" standardDeviation95="0" />
+            <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+          </uncertainty>
+        </property>
+        <property propertyId="7a3978ea-3e26-4329-bc8b-0915d58a7e6f" variableName="true_value_relation" amount="0.184213553594" isDefiningValue="true" mathematicalRelation="" unitId="577e242a-461f-44a7-922c-d8e1c3d2bf45">
+          <name xml:lang="en">true value relation</name>
+          <unitName xml:lang="en">dimensionless</unitName>
+          <uncertainty>
+            <undefined minValue="0.184213553594" maxValue="0.184213553594" standardDeviation95="0" />
+            <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+          </uncertainty>
+        </property>
+        <productionVolumeComment xml:lang="en">Calculated value</productionVolumeComment>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <outputGroup>0</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="e7896def-6d42-423e-84b4-7d2c29457cbf" unitId="77ae64fa-7e74-4252-9c3b-889c1cd20bfc" variableName="electricity" amount="1" mathematicalRelation="" intermediateExchangeId="66c93e71-f32b-4591-901c-55395db5c132" productionVolumeAmount="1082753430000" productionVolumeVariableName="electricity_apv" productionVolumeMathematicalRelation="gross_electricity* (1-losses_gross_net)">
+        <name xml:lang="en">electricity, high voltage</name>
+        <unitName xml:lang="en">kWh</unitName>
+        <uncertainty>
+          <undefined minValue="1" maxValue="1" standardDeviation95="0" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </uncertainty>
+        <property propertyId="38f94dd1-d5aa-41b8-b182-c0c42985d9dc" amount="0.0977" mathematicalRelation="" unitId="7b75baf0-cbee-45e6-bf66-af119da06553">
+          <name xml:lang="en">price</name>
+          <unitName xml:lang="en">EUR2005</unitName>
+          <uncertainty>
+            <undefined minValue="0.0977" maxValue="0.0977" standardDeviation95="0" />
+            <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+          </uncertainty>
+        </property>
+        <property propertyId="7a3978ea-3e26-4329-bc8b-0915d58a7e6f" amount="3.6" mathematicalRelation="" unitId="577e242a-461f-44a7-922c-d8e1c3d2bf45">
+          <name xml:lang="en">true value relation</name>
+          <unitName xml:lang="en">dimensionless</unitName>
+          <uncertainty>
+            <undefined minValue="3.6" maxValue="3.6" standardDeviation95="0" />
+            <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+          </uncertainty>
+          <comment xml:lang="en">property to calculate 'true value' from</comment>
+        </property>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <outputGroup>2</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="e6114fa3-4d5a-432e-bab7-918dc07fedcc" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" variableName="cooling_tower_residue" amount="1.16504854368932E-05" isCalculatedAmount="true" mathematicalRelation="factor_MJ_kWh*0.000001" intermediateExchangeId="cbe9c9dc-9b5e-40c0-a513-2db2d42e1b1f" productionVolumeAmount="12614603.0679612" productionVolumeMathematicalRelation="cooling_tower_residue/electricity* electricity_apv">
+        <name xml:lang="en">residue from cooling tower</name>
+        <unitName xml:lang="en">kg</unitName>
+        <uncertainty>
+          <lognormal meanValue="1.16504854368932E-05" mu="-11.2616110367" variance="1.05" varianceWithPedigreeUncertainty="1.0747" />
+          <pedigreeMatrix reliability="4" completeness="3" temporalCorrelation="4" geographicalCorrelation="3" furtherTechnologyCorrelation="3" />
+        </uncertainty>
+        <classification classificationId="ee3238ec-ca7a-4ddc-af1b-e7c35957b9b6">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">Waste</classificationValue>
+        </classification>
+        <outputGroup>2</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="24251b22-d699-4ef4-af0f-c72931624ab2" unitId="de5b3c87-0e35-4fb0-9765-4f3ba34c99e5" variableName="natural_gas" amount="0.298730395817774" isCalculatedAmount="true" mathematicalRelation="factor_MJ_kWh/ natural_gas_Net_Heat_Value" intermediateExchangeId="a9007f10-7e39-4d50-8f4a-d6d03ce3d673">
+        <name xml:lang="en">natural gas, high pressure</name>
+        <unitName xml:lang="en">m3</unitName>
+        <comment xml:lang="en">Calculated value</comment>
+        <uncertainty>
+          <lognormal meanValue="0.298730395817774" mu="-1.10966212486" variance="0" varianceWithPedigreeUncertainty="0" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </uncertainty>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <inputGroup>5</inputGroup>
+      </intermediateExchange>
+      <elementaryExchange id="a53649d4-01ac-4eab-a04d-ca3815a9dd91" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" variableName="carbon_dioxide_fossil" casNumber="000124-38-9" amount="0.622135922330097" isCalculatedAmount="true" mathematicalRelation="factor_MJ_kWh*0.0534" elementaryExchangeId="aa7cac3a-3625-41d4-bc54-33e2cf11ec46">
+        <name xml:lang="en">Carbon dioxide, fossil</name>
+        <unitName xml:lang="en">kg</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.622135922330097" mu="-0.376045011742" variance="0.0006" varianceWithPedigreeUncertainty="0.0193" />
+          <pedigreeMatrix reliability="3" completeness="3" temporalCorrelation="4" geographicalCorrelation="3" furtherTechnologyCorrelation="3" />
+        </uncertainty>
+        <compartment subcompartmentId="be7e06e9-0bf5-462e-99dc-fe4aee383c48">
+          <compartment xml:lang="en">air</compartment>
+          <subcompartment xml:lang="en">non-urban air or from high stacks</subcompartment>
+        </compartment>
+        <outputGroup>4</outputGroup>
+      </elementaryExchange>
+      <parameter parameterId="2d5204d9-296d-4858-bd9e-3d7276481bc3" variableName="WConsumption_EP_NG_onceT_andCP_CS" mathematicalRelation="" amount="0.0005">
+        <name xml:lang="en">water consumption, electricity production from NG, once-T and coolingP CS</name>
+        <unitName xml:lang="en">m3/kWh</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.0005" mu="-7.60090245954" variance="0.04" varianceWithPedigreeUncertainty="0.092025" />
+          <pedigreeMatrix reliability="4" completeness="4" temporalCorrelation="3" geographicalCorrelation="2" furtherTechnologyCorrelation="4" />
+        </uncertainty>
+        <comment xml:lang="en">Estimated based on literature (Scown, 2011, Water Footprint of U.S. Transportation Fuels, SI).
+nan</comment>
+      </parameter>
+      <parameter parameterId="b7e87ab1-d4af-4b4e-8b28-a4797252c930" variableName="recirculating_CS_fraction_from_allCS" mathematicalRelation="" amount="0.375">
+        <name xml:lang="en">recirculating cooling system as a fraction of all cooling systems</name>
+        <unitName xml:lang="en">dimensionless</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.375" mu="-0.980829253012" variance="0.04" varianceWithPedigreeUncertainty="0.092025" />
+          <pedigreeMatrix reliability="4" completeness="4" temporalCorrelation="3" geographicalCorrelation="2" furtherTechnologyCorrelation="4" />
+        </uncertainty>
+        <comment xml:lang="en">Calculated as an average of data available for Europe (Floerke, 2008, Future changes of freshwater needs in the electricity production sector) and USA (NERL, 2011, Estimating freshwater needs to meet future thermoelectric generation requirements).
+nan</comment>
+      </parameter>
+      <parameter parameterId="b6eb2cfd-83ee-4544-951f-ab4b0c39484f" variableName="WConsumption_EP_NG_recirculatingCS" mathematicalRelation="" amount="0.0018">
+        <name xml:lang="en">water consumption, electricity production from NG, recirculating CS</name>
+        <unitName xml:lang="en">m3/kWh</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.0018" mu="-6.31996861408" variance="0.04" varianceWithPedigreeUncertainty="0.092025" />
+          <pedigreeMatrix reliability="4" completeness="4" temporalCorrelation="3" geographicalCorrelation="2" furtherTechnologyCorrelation="4" />
+        </uncertainty>
+        <comment xml:lang="en">Estimated based on literature (Scown, 2011, Water Footprint of U.S. Transportation Fuels, SI).
+nan</comment>
+      </parameter>
+      <parameter parameterId="16aa4f41-5159-440f-8148-e3cf5a875e4d" variableName="WWithdrawal_EP_NG_recirculating_CS" mathematicalRelation="" amount="0.0021">
+        <name xml:lang="en">water withdrawal, electricity production from NG, recirculating CS</name>
+        <unitName xml:lang="en">m3/kWh</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.0021" mu="-6.16581793425" variance="0.04" varianceWithPedigreeUncertainty="0.092025" />
+          <pedigreeMatrix reliability="4" completeness="4" temporalCorrelation="3" geographicalCorrelation="2" furtherTechnologyCorrelation="4" />
+        </uncertainty>
+        <comment xml:lang="en">Estimated based on literature (Scown, 2011, Water Footprint of U.S. Transportation Fuels, SI).
+nan</comment>
+      </parameter>
+      <parameter parameterId="daadf2d4-7bbb-4f69-8ab5-58df4c1685eb" variableName="fraction_PW_to_air" mathematicalRelation="" amount="0.15">
+        <name xml:lang="en">fraction, process water, to air</name>
+        <unitName xml:lang="en">dimensionless</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.15" mu="-1.89711998489" variance="0.04" varianceWithPedigreeUncertainty="0.092025" />
+          <pedigreeMatrix reliability="4" completeness="4" temporalCorrelation="3" geographicalCorrelation="2" furtherTechnologyCorrelation="4" />
+        </uncertainty>
+        <comment xml:lang="en">Literature value. In case when no industry/process specific data are available, default evaporation fraction value is used. This value is 15% and is based on literature (Statistics Canada, 2007 &amp; Shaffer, K.H., 2008, Consumptive water use in the Great Lakes Basin, USGS &amp; Shiklomanov, 2003, World Water Resources at the Beginning of the 21st Century) and has been approved by an expert.
+nan</comment>
+      </parameter>
+      <parameter parameterId="a6208a3b-d42f-476b-b52d-f12a68ecb755" variableName="fraction_WCS_to_air" mathematicalRelation="fraction_PW_to_air" isCalculatedAmount="true" amount="0.15">
+        <name xml:lang="en">fraction, water, completely softened, to air</name>
+        <uncertainty>
+          <lognormal meanValue="0.15" mu="-1.89711998489" variance="0.04" varianceWithPedigreeUncertainty="0.092025" />
+          <pedigreeMatrix reliability="4" completeness="4" temporalCorrelation="3" geographicalCorrelation="2" furtherTechnologyCorrelation="4" />
+        </uncertainty>
+        <comment xml:lang="en">Calculated value. See comment in the other parametres present in this dataset. Water, completely softened is considered to be always used as process water, thus process water fractions to air are applied to all water, completely softened input flows to calculate the amount of water consumed in the processes.
+nan</comment>
+      </parameter>
+      <parameter parameterId="6a0165c7-0fd7-47d6-bfbf-e3fee9aacc42" variableName="efficiency" mathematicalRelation="" amount="0.309">
+        <name xml:lang="en">efficiency</name>
+        <unitName xml:lang="en">dimensionless</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.309" mu="-1.17441400208" variance="0.0006" varianceWithPedigreeUncertainty="0.017225" />
+          <pedigreeMatrix reliability="4" completeness="3" temporalCorrelation="1" geographicalCorrelation="2" furtherTechnologyCorrelation="3" />
+        </uncertainty>
+      </parameter>
+      <parameter parameterId="ec714add-6ec4-45ee-b96c-97a442e646e7" variableName="factor_MJ_kWh" mathematicalRelation="1*3.6/efficiency" isCalculatedAmount="true" amount="11.6504854368932">
+        <name xml:lang="en">factor: input of MJ for the production of 1 kWh</name>
+        <unitName xml:lang="en">MJ/kWh</unitName>
+        <uncertainty>
+          <lognormal meanValue="11.6504854368932" mu="2.38959646998" variance="0.0006" varianceWithPedigreeUncertainty="0.0532" />
+          <pedigreeMatrix reliability="4" completeness="4" temporalCorrelation="3" geographicalCorrelation="4" furtherTechnologyCorrelation="4" />
+        </uncertainty>
+      </parameter>
+      <parameter parameterId="8ce7c260-eef4-467b-833a-7754240d2626" variableName="gross_electricity" mathematicalRelation="" amount="1164251000000">
+        <name xml:lang="en">gross electricity production</name>
+        <unitName xml:lang="en">kWh</unitName>
+        <uncertainty>
+          <lognormal meanValue="1164251000000" mu="27.7858679856" variance="0.0006" varianceWithPedigreeUncertainty="0.0033" />
+          <pedigreeMatrix reliability="3" completeness="2" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="2" />
+        </uncertainty>
+      </parameter>
+      <parameter parameterId="22325219-5239-4f09-a250-5b20c7fe50d2" variableName="losses_gross_net" mathematicalRelation="" amount="0.07">
+        <name xml:lang="en">losses from gross electricity production</name>
+        <unitName xml:lang="en">dimensionless</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.07" mu="-2.65926003693" variance="0.0006" varianceWithPedigreeUncertainty="0.017225" />
+          <pedigreeMatrix reliability="4" completeness="3" temporalCorrelation="1" geographicalCorrelation="2" furtherTechnologyCorrelation="3" />
+        </uncertainty>
+      </parameter>
+    </flowData>
+    <administrativeInformation>
+      <dataGeneratorAndPublication accessRestrictedTo="1" />
+    </administrativeInformation>
+  </activityDataset>
+</ecoSpold>
