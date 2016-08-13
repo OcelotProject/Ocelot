@@ -12,3 +12,4 @@ pytest-cov
 python-coveralls
 toolz
 voluptuous
+wrapt

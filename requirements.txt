@@ -10,3 +10,4 @@ pyrsistent
 pytest
 toolz
 voluptuous
+wrapt

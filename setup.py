@@ -43,6 +43,7 @@ setup(
         'pytest',
         'toolz',
         'voluptuous',
+        'wrapt',
     ],
     url="https://ocelot.space/",
     long_description=open('README.rst').read(),
