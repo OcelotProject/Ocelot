@@ -12,7 +12,7 @@ from ..utils import (
 def economic_allocation(dataset, use_true_value=True):
     """Perform economic allocation on a dataset.
 
-    Returns a numpy array of allocation factors with shape (number of new datasets, number of exchanges).
+    Wrapped by ``needs_allocation``, this function returns a list of datasets.
 
     Economic allocation uses revenue (price times the amount of the exchange) to calculate the allocation factors.
 
