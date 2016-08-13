@@ -1,4 +1,4 @@
 Cutoff system model
 ===================
 
-.. autofunction:: ocelot.transformations.cutoff.economic.true_value_allocation
+.. autofunction:: ocelot.transformations.cutoff.economic.economic_allocation

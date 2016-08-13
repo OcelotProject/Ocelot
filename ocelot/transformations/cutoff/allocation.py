@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from ...errors import InvalidMultioutputDataset
+from .economic import economic_allocation
+import itertools
 
 
 def choose_allocation_method(dataset):
@@ -8,16 +10,15 @@ def choose_allocation_method(dataset):
     * combined production with byproducts
     * combined production without byproducts
     * constrained market
-    * economic
+    * economic (including true value allocation)
     * recycling
-    * true value
     * waste treatment
 
     TODO: Do we need to check for non-zero amounts for all exchanges use for flags below?
 
     TODO: It feels strange to get reference product classification from the byproduct classification... this should at least be described a bit.
 
-    The chosen method is returned as a string. Can also return ``None``.
+    The chosen allocation function is returned. For functions which don't need (all functions must return a list for consistency reasons). Can also return ``None``.
 
     """
     reference_product_classifications = [exc['byproduct classification']
@@ -32,10 +33,6 @@ def choose_allocation_method(dataset):
                                  if exc['type'] == 'byproduct'
                                  and exc['byproduct classification'] == 'allocatable'
                                  and exc['amount'] != 0)
-    true_value = any(1 for exc in dataset['exchanges']
-                     for prop in exc.get('properties', {})
-                     if exc['amount'] != 0
-                     and prop.get('name') == 'true value relation')
     has_conditional_exchange = any(1 for exc in dataset['exchanges']
                                    if exc['type'] == 'byproduct'
                                    and exc['amount'] != 0
@@ -71,4 +68,8 @@ def choose_allocation_method(dataset):
         else:
             return "recycling"
     else:
-        return "true value" if true_value else 'economic allocation'
+        return economic_allocation
+
+
+def cutoff_allocation(data):
+    pass

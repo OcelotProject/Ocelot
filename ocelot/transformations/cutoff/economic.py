@@ -1,19 +1,24 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-from .utils import (
-    production_exchanges,
+from .utils import needs_allocation
+from ..utils import (
+    allocatable_production,
     get_numerical_property,
+    exchanges_as_dataframe,
 )
 
 
-def true_value_allocation(dataset):
-    """Perform true value allocation on a dataset.
+@needs_allocation
+def economic_allocation(dataset, use_true_value=True):
+    """Perform economic allocation on a dataset.
 
     Returns a numpy array of allocation factors with shape (number of new datasets, number of exchanges).
 
-    The idea of 'true value allocation' is that prices are sometimes stupid, or, in the language of the `data quality guidelines <http://www.ecoinvent.org/files/dataqualityguideline_ecoinvent_3_20130506.pdf>`__, "prices may be influenced by market imperfections or regulation that distorts markets, resulting in relative prices that have very little to do with the true, functional value of the products." (p. 131).
+    Economic allocation uses revenue (price times the amount of the exchange) to calculate the allocation factors.
 
-    So, for exchanges that have the property ``true value relation``, we use this instead of the price. However, not all outputs will have this property, and we only want to change the weight of the exchanges which have ``true value relation`` **relative to each other** - so the formula gets a bit tricky. In the following, :math:`i` is an individual exchange and :math:`j` is the set of all exchanges, :math:`i \in j`. :math:`t` is the set of all exchanges which have ``true value relation``, and :math:`n` is the set of exchanges which don't, :math:`t \cup n = j`.
+    However, sometimes prices are silly, or, in the language of the `data quality guidelines <http://www.ecoinvent.org/files/dataqualityguideline_ecoinvent_3_20130506.pdf>`__, "prices may be influenced by market imperfections or regulation that distorts markets, resulting in relative prices that have very little to do with the true, functional value of the products" (p. 131). In this case `true value allocation` is performed.
+
+    True value allocation is always used when an exchange has the property ``true value relation``. However, not all outputs will have this property, and we only want to change the weight of the exchanges which have ``true value relation`` **relative to other true value exchanges** - so the formula gets a bit tricky. In the following, :math:`i` is an individual exchange and :math:`j` is the set of all exchanges, :math:`i \in j`. :math:`t` is the set of all exchanges which have ``true value relation``, and :math:`n` is the set of exchanges which don't, :math:`t \cup n = j`.
 
     .. math::
 
@@ -21,30 +26,28 @@ def true_value_allocation(dataset):
 
         true\_value_{i \in t} = true\_value\_relation_{i} * amount_{i}
 
-        true\_value\_scaling = \\frac{\sum_{t} revenue}{\sum_{t} true\_value}
-
     The allocation factor :math:`\\theta` for an exchange with has ``true value relation`` would be:
 
     .. math::
 
-        \\theta_{i \in t} = \\frac{true\_value_{i}}{\sum_{t} true\_value} true\_value\_scaling
+        \\theta_{i \in t} = \\frac{true\_value_{i}}{\sum_{t} true\_value} \\frac{\sum_{t} revenue}{\sum_{j} revenue}
 
     And the allocation factor :math:`\\theta` for exchange without ``true value relation`` would be:
 
     .. math::
 
-        \\theta_{i \in n} = \\frac{revenue_{i}}{\sum_{n} revenue}
+        \\theta_{i \in n} = \\frac{revenue_{i}}{\sum_{j} revenue}
 
     """
-    factors = np.zeros((
-        len(production_exchanges(dataset)),
-        len(dataset['exchanges'])
-    ))
-    revenue = np.array([
-        get_numerical_property(exc, 'price') or 0 * exc['amount']
-        for exc in dataset['exchanges']
-    ])
-    true_values = np.array([
-        get_numerical_property(exc, 'true value relation') or 0 * exc['amount']
-        for exc in dataset['exchanges']
-    ])
+    df = exchanges_as_dataframe(dataset)
+    factors = df['revenue'] / df['revenue'].sum()
+    if use_true_value:
+        mask = df['has true value']
+        true_value = (df['true value'] * df['amount'])
+        true_value_revenue_fraction = (
+            df['revenue'][mask].sum() /
+            df['revenue'].sum()
+        )
+        true_value = true_value / true_value.sum() * true_value_revenue_fraction
+        factors[mask] = true_value[mask]
+    return dataset, zip(factors.tolist(), allocatable_production(dataset))

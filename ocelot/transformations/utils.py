@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pandas as pd
 
 
 def extract_products_as_tuple(dataset):
@@ -18,10 +19,13 @@ def iterate_exchanges(datasets):
             yield exc
 
 
-def production_exchanges(dataset):
-    """Return exchanges whose type is ``reference product`` or ``byproduct``"""
+def allocatable_production(dataset):
+    """Return exchanges whose type is ``reference product``, or ``byproduct`` and whose ``byproduct classification`` is ``allocatable``."""
     for exc in dataset['exchanges']:
-        if exc['type'] in ('reference product', 'byproduct'):
+        if exc['type'] =='reference product':
+            yield exc
+        elif (exc['type'] == 'byproduct' and
+              exc['byproduct classification'] == 'allocatable'):
             yield exc
 
 
@@ -32,3 +36,31 @@ def get_numerical_property(exchange, property_name):
     for prop in exchange.get("properties", []):
         if prop['name'] == property_name:
             return prop['amount']
+
+
+def get_property_by_name(exchange, name):
+    for prop in exchange.get("properties", []):
+        if prop['name'] == name:
+            return prop
+    return {}
+
+
+def exchanges_as_dataframe(dataset):
+    data = []
+    for exc in allocatable_production(dataset):
+        data.append({
+            'name': exc['name'],
+            'amount': exc['amount'],
+            'type': exc['type'],
+            'price': get_property_by_name(exc, 'price').get('amount', 0),
+            'has true value': bool(get_property_by_name(exc, 'true value relation')),
+            'true value': get_property_by_name(exc, 'true value relation').get(
+                'amount', 0),
+        })
+    df = pd.DataFrame(data)
+    df['revenue'] = df['price'] * df['amount']
+    return df
+
+
+def update_amounts_from_dataframe(dataset, df, field="amount"):
+    pass
