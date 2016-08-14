@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ..errors import InvalidMultioutputDataset, ZeroProduction
+from ..uncertainty import scale_exchange
 import hashlib
 import pandas as pd
 import pprint
@@ -108,6 +109,18 @@ def get_single_reference_product(dataset):
     return products[0]
 
 
+def normalize_reference_production_amount(dataset):
+    """Scale the exchange amounts so the reference product exchange has an amount of 1 or -1"""
+    product = get_single_reference_product(dataset)
+    if not product['amount']:
+        message = "Zero production amount for dataset:\n{}"
+        raise ZeroProduction(message.format(pprint.pformat(dataset)))
+    factor = 1 / abs(ref['amount'])
+    # TODO: Skip if close to one?
+    if factor != 1:
+        for exchange in dataset['exchanges']:
+            scale_exchange(exchange, factor)
+    return dataset
 
 
 def activity_hash(dataset):
