@@ -1,13 +1,26 @@
 # -*- coding: utf-8 -*-
 
+class OcelotError(Exception):
+    """Base for custom ocelot errors"""
+    pass
 
-class InvalidMultioutputDataset(Exception):
+class ZeroProduction(OcelotError):
+    """Reference production exchange has amount of zero"""
     pass
 
 
-class OutputDirectoryError(Exception):
+class InvalidMultioutputDataset(OcelotError):
     pass
 
 
-class ParameterizationError(Exception):
+class OutputDirectoryError(OcelotError):
+    pass
+
+
+class ParameterizationError(OcelotError):
+    pass
+
+
+class UnsupportedDistribution(OcelotError):
+    """Manipulation of this uncertainty type is not supported"""
     pass
