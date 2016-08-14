@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ..errors import InvalidMultioutputDataset, ZeroProduction
+import hashlib
 import pandas as pd
 import pprint
 
@@ -105,6 +106,34 @@ def get_single_reference_product(dataset):
         message = "Found no reference products in dataset:\n{}"
         raise ValueError(message.format(pprint.pformat(dataset)))
     return products[0]
+
+
+
+
+def activity_hash(dataset):
+    """Return the hash string that uniquely identifies an activity.
+
+    Uses the following fields, in order:
+        * name
+        * reference product
+        * unit
+        * location
+        * start date
+        * end date
+
+    An empty string is used if a field isn't present. All fields are cast to lower case.
+
+    """
+    fields = (
+        "name",
+        "reference product",
+        "unit",
+        "location",
+        "start date",
+        "end date",
+    )
+    string = "".join(dataset.get(field, '').lower() for field in fields)
+    return hashlib.md5(string.encode('utf-8')).hexdigest()
 
 
 def label_reference_product(dataset):
