@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from ..errors import InvalidMultioutputDataset, ZeroProduction
 import pandas as pd
+import pprint
 
 
 def iterate_exchanges(data):
@@ -89,3 +91,25 @@ def exchanges_as_dataframe(dataset):
 
 def update_amounts_from_dataframe(dataset, df, field="amount"):
     pass
+
+
+def get_single_reference_product(dataset):
+    """Return reference product exchange for dataset ``dataset``.
+
+    Raises ``InvalidMultioutputDataset`` if multiple reference products were found, ``ValueError`` if no reference product was found."""
+    products = [exc for exc in dataset if exc['type'] == 'reference product']
+    if len(products) > 1:
+        message = "Found multiple reference products in dataset:\n{}"
+        raise InvalidMultioutputDataset(message.format(pprint.pformat(dataset)))
+    elif not products:
+        message = "Found no reference products in dataset:\n{}"
+        raise ValueError(message.format(pprint.pformat(dataset)))
+    return products[0]
+
+
+def label_reference_product(dataset):
+    """Set ``reference product`` key for ``dataset``.
+
+    Uses ``get_single_reference_product``."""
+    dataset['reference product'] = get_single_reference_product(dataset)['name']
+    return dataset
