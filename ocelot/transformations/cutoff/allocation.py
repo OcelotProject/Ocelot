@@ -14,11 +14,11 @@ def choose_allocation_method(dataset):
     * recycling
     * waste treatment
 
-    TODO: Do we need to check for non-zero amounts for all exchanges use for flags below?
+    TODO: Do we need to check for non-zero amounts for all exchanges used for counting exchanges below?
 
     TODO: It feels strange to get reference product classification from the byproduct classification... this should at least be described a bit.
 
-    The chosen allocation function is returned. For functions which don't need (all functions must return a list for consistency reasons). Can also return ``None``.
+    The chosen allocation function is returned. For functions which don't need allocation, a dummy (which does nothing) function is returned. Note that all functions returned by this function must return a list of datasets.
 
     """
     reference_product_classifications = [exc['byproduct classification']
@@ -45,13 +45,13 @@ def choose_allocation_method(dataset):
 
     # No allocation needed
     if dataset['type'] == 'market group':
-        return None
+        return lambda x: [x]
     elif number_reference_products == 1 and not allocatable_byproducts:
-        return None
+        return lambda x: [x]
     elif dataset['type'] == 'market activity' and not has_conditional_exchange:
         # TODO: Why is there no allocation here? Still have more than one
         # reference product, or some byproducts?
-        return None
+        return lambda x: [x]
 
     # Choose between available methods
     if dataset['type'] == 'market activity' and has_conditional_exchange:

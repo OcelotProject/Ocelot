@@ -91,10 +91,6 @@ def exchanges_as_dataframe(dataset):
     return df
 
 
-def update_amounts_from_dataframe(dataset, df, field="amount"):
-    pass
-
-
 def get_single_reference_product(dataset):
     """Return reference product exchange for dataset ``dataset``.
 
