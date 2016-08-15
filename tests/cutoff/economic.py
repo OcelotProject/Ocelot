@@ -3,9 +3,6 @@
 def test_normal_economic_allocation():
     pass
 
-def test_economic_allocation_no_price():
-    pass
-
 def test_economic_allocation_negative_price():
     pass
 
