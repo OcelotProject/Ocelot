@@ -25,6 +25,7 @@ def flip_non_allocatable_byproducts(dataset):
         if exc['type'] == 'byproduct' and exc['byproduct classification'] != 'allocatable':
             # TODO: Also need to change uncertainty?
             exc['type'] = 'from technosphere'
+            del exc['byproduct classification']
             exc['amount'] = -1 * exc['amount']
             if 'formula' in exc:
                 exc['formula'] = '-1 * ({})'.format(exc['formula'])
