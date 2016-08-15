@@ -46,6 +46,7 @@ function_mapping = {
     'triangular': scale_triangular,
     'uniform': scale_uniform,
     'undefined': scale_undefined,
+    None: lambda x, y: x
 }
 
 

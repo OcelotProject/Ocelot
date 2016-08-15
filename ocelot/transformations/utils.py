@@ -42,15 +42,6 @@ def activity_grouper(dataset):
     return (dataset['name'], extract_products_as_tuple(dataset))
 
 
-def get_numerical_property(exchange, property_name):
-    """Get ``amount`` value for property ``property_name`` in exchange ``exchange``.
-
-    Returns a float or ``None``."""
-    for prop in exchange.get("properties", []):
-        if prop['name'] == property_name:
-            return prop['amount']
-
-
 def get_property_by_name(exchange, name):
     """Get property object with name ``name`` from exchange ``exchange``.
 
@@ -59,6 +50,13 @@ def get_property_by_name(exchange, name):
         if prop['name'] == name:
             return prop
     return {}
+
+
+def get_numerical_property(exchange, name):
+    """Get ``amount`` value for property ``property_name`` in exchange ``exchange``.
+
+    Returns a float or ``None``."""
+    return get_property_by_name(exchange, name).get('amount')
 
 
 def exchanges_as_dataframe(dataset):
@@ -95,7 +93,8 @@ def get_single_reference_product(dataset):
     """Return reference product exchange for dataset ``dataset``.
 
     Raises ``InvalidMultioutputDataset`` if multiple reference products were found, ``ValueError`` if no reference product was found."""
-    products = [exc for exc in dataset if exc['type'] == 'reference product']
+    products = [exc for exc in dataset['exchanges']
+                if exc['type'] == 'reference product']
     if len(products) > 1:
         message = "Found multiple reference products in dataset:\n{}"
         raise InvalidMultioutputDataset(message.format(pformat(dataset)))
@@ -111,8 +110,8 @@ def normalize_reference_production_amount(dataset):
     if not product['amount']:
         message = "Zero production amount for dataset:\n{}"
         raise ZeroProduction(message.format(pformat(dataset)))
-    factor = 1 / abs(ref['amount'])
-    # TODO: Skip if close to one?
+    factor = 1 / abs(product['amount'])
+    # TODO: Skip if very close to one?
     if factor != 1:
         for exchange in dataset['exchanges']:
             scale_exchange(exchange, factor)
