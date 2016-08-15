@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from ..errors import InvalidMultioutputDataset, ZeroProduction
 from ..uncertainty import scale_exchange
+from pprint import pformat
 import hashlib
 import pandas as pd
-import pprint
 
 
 def iterate_exchanges(data):
@@ -98,10 +98,10 @@ def get_single_reference_product(dataset):
     products = [exc for exc in dataset if exc['type'] == 'reference product']
     if len(products) > 1:
         message = "Found multiple reference products in dataset:\n{}"
-        raise InvalidMultioutputDataset(message.format(pprint.pformat(dataset)))
+        raise InvalidMultioutputDataset(message.format(pformat(dataset)))
     elif not products:
         message = "Found no reference products in dataset:\n{}"
-        raise ValueError(message.format(pprint.pformat(dataset)))
+        raise ValueError(message.format(pformat(dataset)))
     return products[0]
 
 
@@ -110,7 +110,7 @@ def normalize_reference_production_amount(dataset):
     product = get_single_reference_product(dataset)
     if not product['amount']:
         message = "Zero production amount for dataset:\n{}"
-        raise ZeroProduction(message.format(pprint.pformat(dataset)))
+        raise ZeroProduction(message.format(pformat(dataset)))
     factor = 1 / abs(ref['amount'])
     # TODO: Skip if close to one?
     if factor != 1:
