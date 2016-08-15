@@ -5,6 +5,27 @@ import copy
 import pytest
 import os
 
+### Test artificial cases
+
+# def test_normal_economic_allocation():
+#     pass
+
+# def test_economic_allocation_no_price():
+#     pass
+
+# def test_economic_allocation_negative_price():
+#     pass
+
+# def test_economic_allocation_negative_amount():
+#     pass
+
+# def test_economic_allocation_zero_amount():
+#     pass
+
+# def test_economic_allocation_zero_price():
+#     pass
+
+### Test real test data
 
 @pytest.fixture(scope="module")
 def cogen():
@@ -15,3 +36,6 @@ def cogen():
 
 def test_load_validate_cogeneration_dataset(cogen):
     assert dataset_schema(cogen)
+
+def test_allocate_cogeneration_dataset(cogen):
+    pass
