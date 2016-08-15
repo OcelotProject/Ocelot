@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from .utils import needs_allocation
+from .validation import valid_economic_activity
 from ..utils import (
     allocatable_production,
     get_numerical_property,
@@ -9,6 +10,7 @@ from ..utils import (
 
 
 @needs_allocation
+@valid_economic_activity
 def economic_allocation(dataset, use_true_value=True):
     """Perform economic allocation on a dataset.
 

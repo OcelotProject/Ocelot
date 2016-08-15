@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from ..errors import InvalidExchange
-from ..utils import get_single_reference_product
+from ..utils import (
+    allocatable_production,
+    get_numerical_property,
+    get_single_reference_product,
+)
 from pprint import pformat
 import wrapt
 
@@ -22,4 +26,18 @@ def valid_recycling_activity(wrapped, instance, args, kwargs):
                exc['byproduct classification'] == 'allocatable'):
         message = "No allocatable byproducts in recycling activity:\n{}"
         raise InvalidExchange(message.format(pformat(dataset)))
+    return wrapped(*args, **kwargs)
+
+
+def valid_economic_activity(wrapped, instance, args, kwargs):
+    """Check to make sure the activity meets the assumptions for economic allocation.
+
+    * All allocatable products must have a price.
+
+    """
+    dataset = kwargs.get('dataset') or args[0]
+    for exc in allocatable_production(dataset):
+        if get_numerical_property(exc, 'price') is None:
+            message = "No price given for exchange:\n{}\nIn dataset:\n{}"
+            raise InvalidExchange(message.format(pformat(exchange), pformat(dataset)))
     return wrapped(*args, **kwargs)
