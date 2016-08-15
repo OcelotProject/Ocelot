@@ -24,3 +24,8 @@ class ParameterizationError(OcelotError):
 class UnsupportedDistribution(OcelotError):
     """Manipulation of this uncertainty type is not supported"""
     pass
+
+
+class InvalidExchange(OcelotError):
+    """This exchange in invalid in the given system model"""
+    pass

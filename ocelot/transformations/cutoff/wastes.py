@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from ..utils import get_single_reference_product
 from .economic import economic_allocation
+from .validation import valid_recycling_activity
 
 
+@valid_recycling_activity
 def recycling_allocation(dataset):
     """Allocate a recycling activity.
 
