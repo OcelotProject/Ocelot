@@ -37,6 +37,7 @@ setup(
         'docutils',
         'jinja2',
         'lxml',
+        'pandas',
         'psutil',
         'pyprind',
         'pyrsistent',
