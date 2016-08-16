@@ -167,18 +167,21 @@ def test_economic_allocation_zero_amount():
 def test_economic_allocation_zero_price():
     pass
 
+
 ### Test real test data
 
-
 @pytest.fixture(scope="module")
-def cogen():
+def cardboard():
     fp = os.path.join(os.path.dirname(__file__), "..", "data",
                       "corrugated-board.spold")
     return generic_extractor(fp)[0]
 
+def test_load_validate_cardboard_dataset(cardboard):
+    assert dataset_schema(cardboard)
 
-def test_load_validate_cogeneration_dataset(cogen):
-    assert dataset_schema(cogen)
+def test_choice_allocation_method(cardboard):
+    assert choose_allocation_method(cardboard) == economic_allocation
 
-def test_choice_allocation_method(cogen):
-    assert choose_allocation_method(cogen) == economic_allocation
+def test_allocation_function_output_valid(cardboard):
+    for new_ds in economic_allocation(cardboard):
+        assert dataset_schema(new_ds)

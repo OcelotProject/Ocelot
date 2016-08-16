@@ -6,7 +6,6 @@ from ocelot.transformations.cutoff.validation import (valid_recycling_activity,
 import pytest
 
 
-
 def test_recycling_activity_validation_errors():
     @valid_recycling_activity
     def f(dataset):

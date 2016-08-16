@@ -7,7 +7,9 @@ from ocelot.transformations.cutoff.wastes import waste_treatment_allocation
 import os
 import pytest
 
+
 ### Test artificial cases
+
 
 ### Test real test data
 
@@ -16,7 +18,6 @@ def paper():
     fp = os.path.join(os.path.dirname(__file__), "..", "data",
                       "treatment-waste-graphical-paper.spold")
     return generic_extractor(fp)[0]
-
 
 def test_load_validate_paper_dataset(paper):
     assert dataset_schema(paper)
