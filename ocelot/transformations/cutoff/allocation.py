@@ -14,11 +14,9 @@ def choose_allocation_method(dataset):
     * recycling
     * waste treatment
 
-    TODO: Do we need to check for non-zero amounts for all exchanges used for counting exchanges below?
-
     TODO: It feels strange to get reference product classification from the byproduct classification... this should at least be described a bit.
 
-    The chosen allocation function is returned. For functions which don't need allocation, a dummy (which does nothing) function is returned. Note that all functions returned by this function must return a list of datasets.
+    The chosen allocation function is returned. For functions which don't need allocation, a dummy function (which does nothing) is returned. Note that all functions returned by this function must return a list of datasets.
 
     """
     reference_product_classifications = [exc['byproduct classification']
@@ -69,7 +67,3 @@ def choose_allocation_method(dataset):
             return "recycling"
     else:
         return economic_allocation
-
-
-def cutoff_allocation(data):
-    pass

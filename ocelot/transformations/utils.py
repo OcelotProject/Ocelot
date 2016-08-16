@@ -7,6 +7,36 @@ import hashlib
 import pandas as pd
 
 
+### Activity identifiers
+
+def activity_hash(dataset):
+    """Return the hash string that uniquely identifies an activity.
+
+    Uses the following fields, in order:
+        * name
+        * reference product
+        * unit
+        * location
+        * start date
+        * end date
+
+    An empty string is used if a field isn't present. All fields are cast to lower case.
+
+    """
+    fields = (
+        "name",
+        "reference product",
+        "unit",
+        "location",
+        "start date",
+        "end date",
+    )
+    string = "".join(dataset.get(field, '').lower() for field in fields)
+    return hashlib.md5(string.encode('utf-8')).hexdigest()
+
+
+### Exchange iterators and accessors
+
 def iterate_exchanges(data):
     """Return generator of all exchanges in a database"""
     return (exc for ds in data for exc in ds['exchanges'])
@@ -47,6 +77,23 @@ def nonproduction_exchanges(dataset):
         yield exc
 
 
+def get_single_reference_product(dataset):
+    """Return reference product exchange for dataset ``dataset``.
+
+    Raises ``InvalidMultioutputDataset`` if multiple reference products were found, ``ValueError`` if no reference product was found."""
+    products = [exc for exc in dataset['exchanges']
+                if exc['type'] == 'reference product']
+    if len(products) > 1:
+        message = "Found multiple reference products in dataset:\n{}"
+        raise InvalidMultioutputDataset(message.format(pformat(dataset)))
+    elif not products:
+        message = "Found no reference products in dataset:\n{}"
+        raise ValueError(message.format(pformat(dataset)))
+    return products[0]
+
+
+### Exchange groupers
+
 def extract_products_as_tuple(dataset):
     """Return names of all products as a sorted tuple.
 
@@ -60,6 +107,8 @@ def activity_grouper(dataset):
     Products are chosen using ``extract_products_as_tuple``."""
     return (dataset['name'], extract_products_as_tuple(dataset))
 
+
+### Property accessors
 
 def get_property_by_name(exchange, name):
     """Get property object with name ``name`` from exchange ``exchange``.
@@ -77,6 +126,8 @@ def get_numerical_property(exchange, name):
     Returns a float or ``None``."""
     return get_property_by_name(exchange, name).get('amount')
 
+
+### Data extractors
 
 def allocatable_production_as_dataframe(dataset):
     """Return an pandas dataframe which describes the exchanges in dataset ``dataset``.
@@ -108,20 +159,7 @@ def allocatable_production_as_dataframe(dataset):
     return df
 
 
-def get_single_reference_product(dataset):
-    """Return reference product exchange for dataset ``dataset``.
-
-    Raises ``InvalidMultioutputDataset`` if multiple reference products were found, ``ValueError`` if no reference product was found."""
-    products = [exc for exc in dataset['exchanges']
-                if exc['type'] == 'reference product']
-    if len(products) > 1:
-        message = "Found multiple reference products in dataset:\n{}"
-        raise InvalidMultioutputDataset(message.format(pformat(dataset)))
-    elif not products:
-        message = "Found no reference products in dataset:\n{}"
-        raise ValueError(message.format(pformat(dataset)))
-    return products[0]
-
+### Exchange modifiers
 
 def normalize_reference_production_amount(dataset):
     """Scale the exchange amounts so the reference product exchange has an amount of 1 or -1"""
@@ -135,32 +173,6 @@ def normalize_reference_production_amount(dataset):
         for exchange in dataset['exchanges']:
             scale_exchange(exchange, factor)
     return dataset
-
-
-def activity_hash(dataset):
-    """Return the hash string that uniquely identifies an activity.
-
-    Uses the following fields, in order:
-        * name
-        * reference product
-        * unit
-        * location
-        * start date
-        * end date
-
-    An empty string is used if a field isn't present. All fields are cast to lower case.
-
-    """
-    fields = (
-        "name",
-        "reference product",
-        "unit",
-        "location",
-        "start date",
-        "end date",
-    )
-    string = "".join(dataset.get(field, '').lower() for field in fields)
-    return hashlib.md5(string.encode('utf-8')).hexdigest()
 
 
 def label_reference_product(dataset):
