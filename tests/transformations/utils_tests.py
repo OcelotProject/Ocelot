@@ -207,3 +207,11 @@ def test_choose_reference_product_exchange(no_normalization):
     for one, two in zip(given['exchanges'], answer['exchanges']):
         # Check for copy
         assert one is not two
+
+def test_choose_reference_product_exchange_zero_production(no_normalization):
+    given = {'exchanges': [{
+        'type': 'reference product',
+        'amount': 0
+    }]}
+    with pytest.raises(ZeroProduction):
+        choose_reference_product_exchange(given, given['exchanges'][0])

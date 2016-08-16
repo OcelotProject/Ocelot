@@ -219,7 +219,10 @@ def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
     * ``production volume`` is deleted if present.
 
     """
-    obj= deepcopy(dataset)
+    obj = deepcopy(dataset)
+    if not exchange['amount']:
+        message = "Zero production amount for new reference product exchange:\n{}\nIn dataset:\n{}"
+        raise ZeroProduction(message.format(pformat(exchange), pformat(dataset)))
     obj['exchanges'] = [
         remove_exchange_uncertainty(deepcopy(exchange))
     ] + [
