@@ -208,24 +208,33 @@ def nonreference_product(exchange):
 def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
     """Return a copy of ``dataset`` where ``exchange`` is the reference product.
 
-    ``exchange`` can be any allocatable product exchange.
+    ``exchange`` can be any allocatable product exchange. It is normally in ``dataset``, but does not have to be.
 
     All other exchanges are re-scaled by ``allocation_factor``. The allocation factors for a multioutput process should sum to one. We no longer have the ability to allocate groups of exchanges separately. Then, all exchanges are normalized so that the reference product exchange value is one.
 
-    The chosen product exchange is modified to remove uncertainty information. Production exchanges by definition cannot have uncertainty. Non-chosen product exchanges are also modified:
+    The chosen product exchange is modified:
+
+    * Uncertainty is set to ``undefined`` and made perfectly certain. Production exchanges by definition cannot have uncertainty.
+    * ``byproduct classification`` is deleted if present
+    * ``type`` is set to ``reference product``
+
+    Non-chosen product exchanges are also modified:
 
     * ``amount`` is set to zero
     * ``type`` is changed to ``dropped product``.
     * ``production volume`` is deleted if present.
 
     """
+    # TODO: Make sure exchange in allocatable_production(dataset)?
     obj = deepcopy(dataset)
     if not exchange['amount']:
         message = "Zero production amount for new reference product exchange:\n{}\nIn dataset:\n{}"
         raise ZeroProduction(message.format(pformat(exchange), pformat(dataset)))
-    obj['exchanges'] = [
-        remove_exchange_uncertainty(deepcopy(exchange))
-    ] + [
+    rp = remove_exchange_uncertainty(deepcopy(exchange))
+    rp['type'] = 'reference product'
+    if 'byproduct classification' in rp:
+        del rp['byproduct classification']
+    obj['exchanges'] = [rp] + [
         nonreference_product(deepcopy(exc))
         for exc in allocatable_production(dataset)
         if exc != exchange

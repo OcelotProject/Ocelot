@@ -208,6 +208,42 @@ def test_choose_reference_product_exchange(no_normalization):
         # Check for copy
         assert one is not two
 
+def test_choose_reference_product_exchange_byproducts(no_normalization):
+    given = {'exchanges': [{
+        'type': 'byproduct',
+        'byproduct classification': "allocatable",
+        'amount': 42
+    }, {
+        'type': 'reference product',
+        'amount': 20,
+        'production volume': None
+    }, {
+        'type': 'other thing',
+        'amount': 100
+    }]}
+    expected = {'exchanges': [{
+        'amount': 42,
+        'type': 'reference product',
+        'uncertainty': {
+            'minimum': 42,
+            'maximum': 42,
+            'pedigree matrix': {},
+            'standard deviation 95%': 0,
+            'type': 'undefined'
+        }
+    }, {
+        'type': 'dropped product',
+        'amount': 0
+    }, {
+        'type': 'other thing',
+        'amount': 10
+    }]}
+    answer = choose_reference_product_exchange(given, given['exchanges'][0], 0.1)
+    assert answer == expected
+    for one, two in zip(given['exchanges'], answer['exchanges']):
+        # Check for copy
+        assert one is not two
+
 def test_choose_reference_product_exchange_zero_production(no_normalization):
     given = {'exchanges': [{
         'type': 'reference product',
