@@ -5,7 +5,7 @@ from .validation import valid_economic_activity
 from ..utils import (
     allocatable_production,
     get_numerical_property,
-    exchanges_as_dataframe,
+    allocatable_production_as_dataframe,
 )
 
 
@@ -41,7 +41,7 @@ def economic_allocation(dataset, use_true_value=True):
         \\theta_{i \in n} = \\frac{revenue_{i}}{\sum_{j} revenue}
 
     """
-    df = exchanges_as_dataframe(dataset)
+    df = allocatable_production_as_dataframe(dataset)
     factors = df['revenue'] / df['revenue'].sum()
     if use_true_value:
         mask = df['has true value']

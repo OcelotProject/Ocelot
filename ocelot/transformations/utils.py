@@ -59,7 +59,7 @@ def get_numerical_property(exchange, name):
     return get_property_by_name(exchange, name).get('amount')
 
 
-def exchanges_as_dataframe(dataset):
+def allocatable_production_as_dataframe(dataset):
     """Return an pandas dataframe which describes the exchanges in dataset ``dataset``.
 
     The dataframe has the following columns:
