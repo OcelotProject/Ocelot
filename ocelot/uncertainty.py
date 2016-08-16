@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from .errors import UnsupportedDistribution
 import math
+
 
 # TODO: Dummy function for now
 # Will be new pull request
@@ -17,7 +19,7 @@ def scale_fields(exchange, fields, factor):
 def scale_lognormal(exchange, factor):
     # TODO: Fails for mean < 1
     exchange['uncertainty']['mean'] *= factor
-    exchange['uncertainty']['mu'] = math.log(exchange['mean'])
+    exchange['uncertainty']['mu'] = math.log(exchange['uncertainty']['mean'])
     return exchange
 
 
