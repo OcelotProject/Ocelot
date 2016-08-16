@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from ...errors import InvalidMultioutputDataset
 from .economic import economic_allocation
+from .wastes import waste_treatment_allocation, recycling_allocation
 import itertools
 
 
@@ -66,8 +67,8 @@ def choose_allocation_method(dataset):
     elif negative_reference_production:
         assert len(set(reference_product_classifications)) == 1
         if reference_product_classifications[0] == 'waste':
-            return 'waste treatment'
+            return waste_treatment_allocation
         else:
-            return "recycling"
+            return recycling_allocation
     else:
         return economic_allocation

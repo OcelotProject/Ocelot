@@ -10,6 +10,21 @@ import wrapt
 
 
 @wrapt.decorator
+def valid_economic_activity(wrapped, instance, args, kwargs):
+    """Check to make sure the activity meets the assumptions for economic allocation.
+
+    * All allocatable products must have a price.
+
+    """
+    dataset = kwargs.get('dataset') or args[0]
+    for exchange in allocatable_production(dataset):
+        if get_numerical_property(exchange, 'price') is None:
+            message = "No price given for exchange:\n{}\nIn dataset:\n{}"
+            raise InvalidExchange(message.format(pformat(exchange), pformat(dataset)))
+    return wrapped(*args, **kwargs)
+
+
+@wrapt.decorator
 def valid_recycling_activity(wrapped, instance, args, kwargs):
     """Check to make sure the activity meets the assumptions for recycling allocation.
 
@@ -31,15 +46,20 @@ def valid_recycling_activity(wrapped, instance, args, kwargs):
 
 
 @wrapt.decorator
-def valid_economic_activity(wrapped, instance, args, kwargs):
-    """Check to make sure the activity meets the assumptions for economic allocation.
+def valid_waste_treatment_activity(wrapped, instance, args, kwargs):
+    """Check to make sure the activity meets the assumptions for waste treatment allocation.
 
-    * All allocatable products must have a price.
+    * There is a single reference product exchange with a negative amount and ``byproduct classification`` of ``waste``.
 
     """
     dataset = kwargs.get('dataset') or args[0]
-    for exchange in allocatable_production(dataset):
-        if get_numerical_property(exchange, 'price') is None:
-            message = "No price given for exchange:\n{}\nIn dataset:\n{}"
-            raise InvalidExchange(message.format(pformat(exchange), pformat(dataset)))
+    rp = get_single_reference_product(dataset)
+    if rp.get('byproduct classification') != 'waste':
+        message = ("Wrong byproduct classification for waste treatment "
+            "reference product:\n{}\nIn dataset:\n{}")
+        raise InvalidExchange(message.format(pformat(exchange), pformat(dataset)))
+    if not rp['amount'] < 0:
+        message = ("Waste treatment ref. product exchange amount must be "
+            "negative:\n{}\nIn dataset:\n{}")
+        raise InvalidExchange(message.format(pformat(exchange), pformat(dataset)))
     return wrapped(*args, **kwargs)
