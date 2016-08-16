@@ -37,11 +37,6 @@ def activity_hash(dataset):
 
 ### Exchange iterators and accessors
 
-def iterate_exchanges(data):
-    """Return generator of all exchanges in a database"""
-    return (exc for ds in data for exc in ds['exchanges'])
-
-
 def allocatable_production(dataset):
     """Return generator of production exchanges for a dataset.
 

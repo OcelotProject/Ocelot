@@ -54,6 +54,8 @@ def scale_exchange(exchange, factor):
     """Scale an ``exchange`` and its uncertainty by a constant ``factor``.
 
     Modifies the exchange in place. Returns the modified exchange."""
+    if factor == 1:
+        return exchange
     try:
         exchange = function_mapping[uncertainty_type(exchange)](exchange, factor)
         exchange['amount'] *= factor

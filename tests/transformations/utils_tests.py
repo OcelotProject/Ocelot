@@ -118,3 +118,92 @@ def test_normalize_reference_production_amount_zero_amount():
     ]}
     with pytest.raises(ZeroProduction):
         normalize_reference_production_amount(given)
+
+def test_activity_grouper():
+    given = {
+        'name': 'foo',
+        'exchanges': []
+    }
+    assert activity_grouper(given) == ('foo', ())
+    given = {
+        'name': 'bar',
+        'exchanges': [{
+            'type': 'reference product',
+            'name': 'b'
+        }, {
+            'type': 'reference product',
+            'name': 'a'
+        }]
+    }
+    assert activity_grouper(given) == ('bar', ('a', 'b'))
+
+def test_label_reference_product():
+    given = {'exchanges': [{
+        'type': 'reference product',
+        'name': 'foo'
+    }]}
+    assert label_reference_product(given)['reference product'] == 'foo'
+
+def test_remove_uncertainty():
+    expected = {
+        'amount': 42,
+        'uncertainty': {
+        'minimum': 42,
+            'maximum': 42,
+            'pedigree matrix': {},
+            'standard deviation 95%': 0,
+            'type': 'undefined'
+        }
+    }
+    assert remove_exchange_uncertainty({'amount': 42}) == expected
+
+def test_nonreference_product():
+    given = {'production volume': None}
+    expected = {
+        'type': 'dropped product',
+        'amount': 0
+    }
+    assert nonreference_product(given) == expected
+
+
+@pytest.fixture(scope="function")
+def no_normalization(monkeypatch):
+    monkeypatch.setattr(
+        'ocelot.transformations.utils.normalize_reference_production_amount',
+        lambda x: x
+    )
+
+def test_choose_reference_product_exchange(no_normalization):
+    given = {'exchanges': [{
+        'type': 'reference product',
+        'amount': 42
+    }, {
+        'type': 'reference product',
+        'amount': 20,
+        'production volume': None
+    }, {
+        'type': 'other thing',
+        'amount': 100
+    }]}
+    expected = {'exchanges': [{
+        'amount': 42,
+        'type': 'reference product',
+        'uncertainty': {
+            'minimum': 42,
+            'maximum': 42,
+            'pedigree matrix': {},
+            'standard deviation 95%': 0,
+            'type': 'undefined'
+        }
+    }, {
+        'type': 'dropped product',
+        'amount': 0
+    }, {
+        'type': 'other thing',
+        'amount': 10
+    }]}
+    answer = choose_reference_product_exchange(given, given['exchanges'][0], 0.1)
+    assert answer == expected
+    for one, two in zip(given['exchanges'], answer['exchanges']):
+        # Check for copy
+        assert one is not two
