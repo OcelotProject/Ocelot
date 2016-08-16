@@ -184,7 +184,7 @@ def remove_exchange_uncertainty(exchange):
         'maximum': exchange['amount'],
         'minimum': exchange['amount'],
         'pedigree matrix': {},
-        'standard deviation 95%': 0,
+        'standard deviation 95%': 0.,
         'type': 'undefined',
     }
     return exchange
@@ -199,7 +199,7 @@ def nonreference_product(exchange):
 
     """
     exchange['type'] = 'dropped product'
-    exchange['amount'] = 0
+    exchange['amount'] = 0.
     if 'production volume' in exchange:
         del exchange['production volume']
     return exchange
