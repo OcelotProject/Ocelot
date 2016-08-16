@@ -6,6 +6,7 @@ import os
 import pytest
 import tempfile
 import uuid
+import wrapt
 
 
 def do_nothing(*args, **kwargs):
@@ -16,6 +17,11 @@ def do_nothing(*args, **kwargs):
 def passthrough(obj, use_cache=True):
     """Mock for ``extract_directory`` that returns the initial input"""
     return obj
+
+
+@wrapt.decorator
+def fake_decorator(wrapped, instance, args, kwargs):
+    return wrapped(*args, **kwargs)
 
 
 @pytest.fixture(scope="function")
