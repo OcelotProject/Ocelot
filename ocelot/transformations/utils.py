@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from ..errors import InvalidMultioutputDataset, ZeroProduction
 from ..uncertainty import scale_exchange
+from copy import deepcopy
 from pprint import pformat
 import hashlib
 import pandas as pd
@@ -168,3 +169,58 @@ def label_reference_product(dataset):
     Uses ``get_single_reference_product``."""
     dataset['reference product'] = get_single_reference_product(dataset)['name']
     return dataset
+
+
+def remove_exchange_uncertainty(exchange):
+    """Remove uncertainty from the given ``exchange``"""
+    exchange['uncertainty'] = {
+        'maximum': exchange['amount'],
+        'minimum': exchange['amount'],
+        'pedigree matrix': {},
+        'standard deviation 95%': 0,
+        'type': 'undefined',
+    }
+    return exchange
+
+
+def nonreference_product(exchange):
+    """Mark exchange as a unselected production exchange.
+
+    * ``amount`` is set to zero
+    * ``type`` is changed to ``dropped product``.
+    * ``production volume`` is deleted if present.
+
+    """
+    exchange['type'] = 'dropped product'
+    exchange['amount'] = 0
+    if 'production volume' in exchange:
+        del exchange['production volume']
+    return exchange
+
+
+def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
+    """Return a copy of ``dataset`` where ``exchange`` is the reference product.
+
+    ``exchange`` can be any allocatable product exchange.
+
+    All other exchanges are re-scaled by ``allocation_factor``. The allocation factors for a multioutput process should sum to one. We no longer have the ability to allocate groups of exchanges separately. Then, all exchanges are normalized so that the reference product exchange value is one.
+
+    The chosen product exchange is modified to remove uncertainty information. Production exchanges by definition cannot have uncertainty. Non-chosen product exchanges are also modified:
+
+    * ``amount`` is set to zero
+    * ``type`` is changed to ``dropped product``.
+    * ``production volume`` is deleted if present.
+
+    """
+    obj= deepcopy(dataset)
+    obj['exchanges'] = [
+        remove_exchange_uncertainty(deepcopy(exchange))
+    ] + [
+        nonreference_product(deepcopy(exc))
+        for exc in allocatable_production(dataset)
+        if exc != exchange
+    ] + [
+        scale_exchange(deepcopy(exc), allocation_factor)
+        for exc in nonproduction_exchanges(dataset)
+    ]
+    return normalize_reference_production_amount(obj)
