@@ -35,7 +35,7 @@ def scale_uniform(exchange, factor):
     return scale_fields(exchange, ('minimum', 'maximum'), factor)
 
 
-def scale_undefined(exchanges, factor):
+def scale_undefined(exchange, factor):
     # TODO: How to handle `standard deviation 95%`?
     return scale_fields(exchange, ('minimum', 'maximum'), factor)
 
