@@ -55,7 +55,7 @@ def test_recycling_activity_validation():
         },
         {
             'type': 'byproduct',
-            'byproduct classification': 'allocatable'
+            'byproduct classification': 'allocatable product'
         }
     ]}
     assert f(correct) is correct

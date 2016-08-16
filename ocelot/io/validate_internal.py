@@ -16,7 +16,7 @@ valid_allocation_method = Any(
     'true value allocation',
     'waste treatment',
 )
-valid_byproducts = Any('allocatable', 'waste', 'recyclable')
+valid_byproducts = Any('allocatable product', 'waste', 'recyclable')
 valid_technology_levels = Any(*list(TECHNOLOGY_LEVEL.values()))
 
 # Uncertainty distribution schemas

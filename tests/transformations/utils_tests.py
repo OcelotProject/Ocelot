@@ -8,9 +8,9 @@ def test_allocatable_production():
     exchanges = [
         {'type': 'reference product'},
         {'type': 'not reference product'},
-        {'type': 'byproduct', 'byproduct classification': 'allocatable'},
+        {'type': 'byproduct', 'byproduct classification': 'allocatable product'},
         {'type': 'byproduct', 'byproduct classification': 'cat'},
-        {'type': 'byproduct', 'byproduct classification': 'allocatable'},
+        {'type': 'byproduct', 'byproduct classification': 'allocatable product'},
     ]
     dataset = {'exchanges': exchanges}
     for x, y in zip(allocatable_production(dataset), exchanges[0:5:2]):
@@ -21,9 +21,9 @@ def test_nonproduction_exchanges():
     exchanges = [
         {'type': 'reference product'},
         {'type': 'not reference product'},
-        {'type': 'byproduct', 'byproduct classification': 'allocatable'},
+        {'type': 'byproduct', 'byproduct classification': 'allocatable product'},
         {'type': 'byproduct', 'byproduct classification': 'cat'},
-        {'type': 'byproduct', 'byproduct classification': 'allocatable'},
+        {'type': 'byproduct', 'byproduct classification': 'allocatable product'},
     ]
     dataset = {'exchanges': exchanges}
     for x, y in zip(nonproduction_exchanges(dataset), exchanges[1:4:2]):
@@ -61,7 +61,7 @@ def test_single_reference_product():
         },
         {
             'type': 'byproduct',
-            'byproduct classification': 'allocatable',
+            'byproduct classification': 'allocatable product',
             'name': 'should be skipped'
         },
     ]}
@@ -211,7 +211,7 @@ def test_choose_reference_product_exchange(no_normalization):
 def test_choose_reference_product_exchange_byproducts(no_normalization):
     given = {'exchanges': [{
         'type': 'byproduct',
-        'byproduct classification': "allocatable",
+        'byproduct classification': "allocatable product",
         'amount': 42
     }, {
         'type': 'reference product',

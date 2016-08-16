@@ -68,7 +68,7 @@ ACCESS_RESTRICTED = {
  }
 
 BYPRODUCT_CLASSIFICATION = {
-    'allocatable product': 'allocatable',
+    'allocatable product': 'allocatable product',
     'Waste': 'waste',
     'Recyclable': 'recyclable'
 }

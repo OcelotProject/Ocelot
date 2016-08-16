@@ -23,7 +23,7 @@ def flip_non_allocatable_byproducts(dataset):
 
     Change something from an output to an input requires flipping the sign of any numeric fields."""
     for exc in dataset['exchanges']:
-        if exc['type'] == 'byproduct' and exc['byproduct classification'] != 'allocatable':
+        if exc['type'] == 'byproduct' and exc['byproduct classification'] != 'allocatable product':
             # TODO: Also need to change uncertainty?
             exc['type'] = 'from technosphere'
             del exc['byproduct classification']

@@ -43,14 +43,14 @@ def allocatable_production(dataset):
     Production exchanges either:
 
     * Have type ``reference product``, or
-    * Have type ``byproduct`` and ``byproduct classification`` is ``allocatable``
+    * Have type ``byproduct`` and ``byproduct classification`` is ``allocatable product``
 
     """
     for exc in dataset['exchanges']:
         if exc['type'] =='reference product':
             yield exc
         elif (exc['type'] == 'byproduct' and
-              exc['byproduct classification'] == 'allocatable'):
+              exc['byproduct classification'] == 'allocatable product'):
             yield exc
 
 
@@ -60,14 +60,14 @@ def nonproduction_exchanges(dataset):
     Non-production exchanges must meet both criteria:
 
     * Not have type ``reference product``, or
-    * Not have type ``byproduct`` and ``byproduct classification`` ``allocatable``
+    * Not have type ``byproduct`` and ``byproduct classification`` ``allocatable product``
 
     """
     for exc in dataset['exchanges']:
         if exc['type'] =='reference product':
             continue
         elif (exc['type'] == 'byproduct' and
-              exc['byproduct classification'] == 'allocatable'):
+              exc['byproduct classification'] == 'allocatable product'):
             continue
         yield exc
 

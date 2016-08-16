@@ -12,7 +12,7 @@ def test_flip_non_allocatable_byproducts():
         },
         {
             'type': 'byproduct',
-            'byproduct classification': 'allocatable',
+            'byproduct classification': 'allocatable product',
             'amount': 2,
         },
         {
@@ -36,7 +36,7 @@ def test_flip_non_allocatable_byproducts():
         },
         {
             'type': 'byproduct',
-            'byproduct classification': 'allocatable',
+            'byproduct classification': 'allocatable product',
             'amount': 2,
         },
         {

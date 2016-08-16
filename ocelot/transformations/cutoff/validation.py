@@ -24,7 +24,7 @@ def valid_recycling_activity(wrapped, instance, args, kwargs):
         raise InvalidExchange(message.format(pformat(dataset)))
     if not any(exc for exc in dataset['exchanges']
                if exc['type'] == 'byproduct'
-               and exc['byproduct classification'] == 'allocatable'):
+               and exc['byproduct classification'] == 'allocatable product'):
         message = "No allocatable byproducts in recycling activity:\n{}"
         raise InvalidExchange(message.format(pformat(dataset)))
     return wrapped(*args, **kwargs)

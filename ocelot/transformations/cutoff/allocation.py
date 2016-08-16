@@ -29,7 +29,7 @@ def choose_allocation_method(dataset):
                                         and exc['amount'] < 0)
     allocatable_byproducts = any(1 for exc in dataset['exchanges']
                                  if exc['type'] == 'byproduct'
-                                 and exc['byproduct classification'] == 'allocatable'
+                                 and exc['byproduct classification'] == 'allocatable product'
                                  and exc['amount'] != 0)
     has_conditional_exchange = any(1 for exc in dataset['exchanges']
                                    if exc['type'] == 'byproduct'

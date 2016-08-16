@@ -145,7 +145,7 @@ Some fields can only take certain values. The activity dataset, for example, ref
         'waste treatment',
     )
 
-    valid_byproducts = Any('allocatable', 'waste', 'recyclable')
+    valid_byproducts = Any('allocatable product', 'waste', 'recyclable')
 
     valid_technology_levels = Any("undefined", "new", "modern",
                                   "current", "old", "outdated")
