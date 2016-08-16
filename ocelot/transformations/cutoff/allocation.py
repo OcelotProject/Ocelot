@@ -4,6 +4,10 @@ from .economic import economic_allocation
 import itertools
 
 
+def no_allocation(dataset):
+    return [dataset]
+
+
 def choose_allocation_method(dataset):
     """Choose from among the following allocation methods:
 
@@ -43,13 +47,13 @@ def choose_allocation_method(dataset):
 
     # No allocation needed
     if dataset['type'] == 'market group':
-        return lambda x: [x]
+        return no_allocation
     elif number_reference_products == 1 and not allocatable_byproducts:
-        return lambda x: [x]
+        return no_allocation
     elif dataset['type'] == 'market activity' and not has_conditional_exchange:
         # TODO: Why is there no allocation here? Still have more than one
         # reference product, or some byproducts?
-        return lambda x: [x]
+        return no_allocation
 
     # Choose between available methods
     if dataset['type'] == 'market activity' and has_conditional_exchange:
