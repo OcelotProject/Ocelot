@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-from .utils import needs_allocation
+from .utils import apply_allocation_factors
 from .validation import valid_economic_activity
 from ..utils import (
     allocatable_production,
@@ -9,7 +9,6 @@ from ..utils import (
 )
 
 
-@needs_allocation
 @valid_economic_activity
 def economic_allocation(dataset, use_true_value=True):
     """Perform economic allocation on a dataset.
@@ -52,4 +51,7 @@ def economic_allocation(dataset, use_true_value=True):
         )
         true_value = true_value / true_value.sum() * true_value_revenue_fraction
         factors[mask] = true_value[mask]
-    return dataset, zip(factors.tolist(), allocatable_production(dataset))
+    return apply_allocation_factors(
+        dataset,
+        zip(factors.tolist(), allocatable_production(dataset))
+    )

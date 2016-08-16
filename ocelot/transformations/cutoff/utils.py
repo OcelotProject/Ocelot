@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from ..utils import choose_reference_product_exchange
-import wrapt
 
 
 def apply_allocation_factors(dataset, factors):
@@ -13,12 +12,6 @@ def apply_allocation_factors(dataset, factors):
         choose_reference_product_exchange(dataset, exc, scale)
         for scale, exc in factors
     ]
-
-
-@wrapt.decorator
-def needs_allocation(wrapped, instance, args, kwargs):
-    dataset, factors = wrapped(*args, **kwargs)
-    return apply_allocation_factors(dataset, factors)
 
 
 def flip_non_allocatable_byproducts(dataset):

@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 import pytest
-from ..mocks import fake_decorator
 from ocelot.transformations.cutoff.economic import economic_allocation
 
 
 @pytest.fixture(scope="function")
 def no_allocation(monkeypatch):
     monkeypatch.setattr(
-        'ocelot.transformations.cutoff.economic.needs_allocation',
-        fake_decorator
+        'ocelot.transformations.cutoff.economic.apply_allocation_factors',
+        lambda x, y: (x, y)
     )
 
 
