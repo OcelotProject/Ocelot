@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ...errors import InvalidMultioutputDataset
+from ..validation import check_single_output_activity
 from .economic import economic_allocation
 from .wastes import waste_treatment_allocation, recycling_allocation
 import itertools
@@ -72,3 +73,10 @@ def choose_allocation_method(dataset):
             return recycling_allocation
     else:
         return economic_allocation
+
+
+def cutoff_allcation(data):
+    """Do cutoff system model allocation."""
+    return [check_single_output_activity(result)
+            for ds in data
+            for result in choose_allocation_method(ds)(ds)]
