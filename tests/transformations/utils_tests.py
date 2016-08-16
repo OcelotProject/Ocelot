@@ -17,6 +17,19 @@ def test_allocatable_production():
         assert x == y
     assert len(list(allocatable_production(dataset))) == 3
 
+def test_nonproduction_exchanges():
+    exchanges = [
+        {'type': 'reference product'},
+        {'type': 'not reference product'},
+        {'type': 'byproduct', 'byproduct classification': 'allocatable'},
+        {'type': 'byproduct', 'byproduct classification': 'cat'},
+        {'type': 'byproduct', 'byproduct classification': 'allocatable'},
+    ]
+    dataset = {'exchanges': exchanges}
+    for x, y in zip(nonproduction_exchanges(dataset), exchanges[1:4:2]):
+        assert x == y
+    assert len(list(nonproduction_exchanges(dataset))) == 2
+
 def test_get_property_by_name():
     given = {'properties': [{'name': 'foo', 'amount': 42}]}
     assert get_property_by_name(given, "foo") == {'name': 'foo', 'amount': 42}

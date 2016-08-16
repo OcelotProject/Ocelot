@@ -28,6 +28,24 @@ def allocatable_production(dataset):
             yield exc
 
 
+def nonproduction_exchanges(dataset):
+    """Return generator of non-production exchanges for a dataset.
+
+    Non-production exchanges must meet both criteria:
+
+    * Not have type ``reference product``, or
+    * Not have type ``byproduct`` and ``byproduct classification`` ``allocatable``
+
+    """
+    for exc in dataset['exchanges']:
+        if exc['type'] =='reference product':
+            continue
+        elif (exc['type'] == 'byproduct' and
+              exc['byproduct classification'] == 'allocatable'):
+            continue
+        yield exc
+
+
 def extract_products_as_tuple(dataset):
     """Return names of all products as a sorted tuple.
 
