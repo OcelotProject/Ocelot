@@ -3,6 +3,7 @@ from ocelot.errors import MultipleGlobalDatasets
 from ocelot.transformations.locations import (
     check_single_global_dataset,
     relabel_global_to_row,
+    Topology,
 )
 from copy import deepcopy
 import pytest
@@ -113,3 +114,12 @@ def test_multiple_global_datasets():
     }]
     with pytest.raises(MultipleGlobalDatasets):
         relabel_global_to_row(given)
+
+def test_topology():
+    topo = Topology()
+    assert len(topo.data) > 400
+    assert topo('RU') == {'Russia (Asia)', 'Russia (Europe)'}
+    assert topo('GLO') is None
+    assert topo('IAI Area 8')
+    with pytest.raises(KeyError):
+        topo('foo')
