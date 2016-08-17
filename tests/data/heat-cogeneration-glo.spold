@@ -79,24 +79,10 @@
             <undefined minValue="3.6" maxValue="3.6" standardDeviation95="0" />
             <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
           </uncertainty>
-          <comment xml:lang="en">property to calculate 'true value' from</comment>
         </property>
         <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
           <classificationSystem xml:lang="en">By-product classification</classificationSystem>
           <classificationValue xml:lang="en">allocatable product</classificationValue>
-        </classification>
-        <outputGroup>2</outputGroup>
-      </intermediateExchange>
-      <intermediateExchange id="e6114fa3-4d5a-432e-bab7-918dc07fedcc" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" variableName="cooling_tower_residue" amount="1.16504854368932E-05" isCalculatedAmount="true" mathematicalRelation="factor_MJ_kWh*0.000001" intermediateExchangeId="cbe9c9dc-9b5e-40c0-a513-2db2d42e1b1f" productionVolumeAmount="12614603.0679612" productionVolumeMathematicalRelation="cooling_tower_residue/electricity* electricity_apv">
-        <name xml:lang="en">residue from cooling tower</name>
-        <unitName xml:lang="en">kg</unitName>
-        <uncertainty>
-          <lognormal meanValue="1.16504854368932E-05" mu="-11.2616110367" variance="1.05" varianceWithPedigreeUncertainty="1.0747" />
-          <pedigreeMatrix reliability="4" completeness="3" temporalCorrelation="4" geographicalCorrelation="3" furtherTechnologyCorrelation="3" />
-        </uncertainty>
-        <classification classificationId="ee3238ec-ca7a-4ddc-af1b-e7c35957b9b6">
-          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
-          <classificationValue xml:lang="en">Waste</classificationValue>
         </classification>
         <outputGroup>2</outputGroup>
       </intermediateExchange>
