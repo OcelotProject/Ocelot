@@ -31,5 +31,6 @@ class InvalidExchange(OcelotError):
     pass
 
 
-class MultipleGlobalDatasets(Exception):
+class MultipleGlobalDatasets(OcelotError):
+    """Multiple global datasets for the same activity name and reference product are not allowed"""
     pass
