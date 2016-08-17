@@ -36,25 +36,6 @@
         </classification>
         <outputGroup>2</outputGroup>
       </intermediateExchange>
-      <intermediateExchange id="77448453-009b-49fb-a7ba-cc45ad98e22e" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" variableName="organicSludgesAmount" amount="1.6" sourceId="f2b8a3d1-3d7d-4478-a877-6a512c093107" sourceYear="2009" sourceFirstAuthor="FEFCO" intermediateExchangeId="e72f7aa8-2369-4498-992e-9db51852afc6" productionVolumeAmount="201148800" productionVolumeMathematicalRelation="corrugatedBoardProductionVolume * organicSludgesAmount / corrugatedBoardAmount">
-        <name xml:lang="en">sludge from pulp and paper production</name>
-        <unitName xml:lang="en">kg</unitName>
-        <uncertainty>
-          <lognormal meanValue="1.6" mu="0.47" variance="0.0006" varianceWithPedigreeUncertainty="0.0032" />
-          <pedigreeMatrix reliability="1" completeness="3" temporalCorrelation="1" geographicalCorrelation="5" furtherTechnologyCorrelation="1" />
-          <comment xml:lang="en"></comment>
-        </uncertainty>
-        <productionVolumeUncertainty>
-          <lognormal meanValue="201150000" mu="-6.25" variance="0" varianceWithPedigreeUncertainty="0" />
-          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
-          <comment xml:lang="en">Calculated variable. Uncertainty will be determined from propagation of uncertainty factors of underlying variables.</comment>
-        </productionVolumeUncertainty>
-        <classification classificationId="ee3238ec-ca7a-4ddc-af1b-e7c35957b9b6">
-          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
-          <classificationValue xml:lang="en">Waste</classificationValue>
-        </classification>
-        <outputGroup>2</outputGroup>
-      </intermediateExchange>
       <intermediateExchange id="d16e0e2a-ee7c-4b67-8e2d-10350169b2e3" unitId="de5b3c87-0e35-4fb0-9765-4f3ba34c99e5" amount="19.9481865284974" isCalculatedAmount="true" mathematicalRelation="770/38.6" sourceId="f2b8a3d1-3d7d-4478-a877-6a512c093107" sourceYear="2009" sourceFirstAuthor="FEFCO" intermediateExchangeId="609fae33-2e89-4b99-8129-b1f80a6dda33">
         <name xml:lang="en">natural gas, low pressure</name>
         <unitName xml:lang="en">m3</unitName>
