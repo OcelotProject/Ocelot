@@ -5,8 +5,8 @@ import functools
 
 def extract_products_as_tuple(dataset):
     return tuple(sorted([exc['name']
-                  for exc in dataset['exchanges']
-                  if exc['type'] == 'reference product']))
+                         for exc in dataset['exchanges']
+                         if exc['type'] == 'reference product']))
 
 
 def activity_grouper(dataset):

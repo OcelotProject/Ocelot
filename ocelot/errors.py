@@ -7,3 +7,7 @@ class OutputDirectoryError(Exception):
 
 class ParameterizationError(Exception):
     pass
+
+
+class MultipleGlobalDatasets(Exception):
+    pass
