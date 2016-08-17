@@ -66,7 +66,7 @@ def valid_waste_treatment_activity(wrapped, instance, args, kwargs):
 
 
 def ready_for_market_linking(data):
-    """All transforming activities must have a one reference product.
+    """All transforming activities must have exactly one reference product.
 
     * Datasets must have the attribute ``reference product``
     * Datasets must have one reference product exchange.
