@@ -29,3 +29,7 @@ class UnsupportedDistribution(OcelotError):
 class InvalidExchange(OcelotError):
     """This exchange in invalid in the given system model"""
     pass
+
+
+class MultipleGlobalDatasets(Exception):
+    pass

@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
 from .. import toolz
 from .utils import activity_grouper
+from ..errors import MultipleGlobalDatasets
 import logging
+
+
+def check_single_global_dataset(datasets):
+    """Raises ``MultipleGlobalDatasets`` if more than one global dataset is present."""
+    if len([ds for ds in datasets if ds['location'] == 'GLO']) > 1:
+        raise MultipleGlobalDatasets
 
 
 def relabel_global_to_row(data):
@@ -9,6 +16,7 @@ def relabel_global_to_row(data):
     processed = []
     for key, datasets in toolz.groupby(activity_grouper, data).items():
         if len(datasets) > 1:
+            check_single_global_dataset(datasets)
             for ds in datasets:
                 if ds['location'] == 'GLO':
                     ds['location'] = 'RoW'
