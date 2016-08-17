@@ -77,6 +77,6 @@ def ready_for_market_linking(data):
     for ds in data:
         if ds['type'] == 'transforming activity':
             assert get_single_reference_product(ds)
-            if ds.get('reference product'):
+            if not ds.get('reference product'):
                 raise ValueError("Dataset doesn't have ``reference product``")
     return data
