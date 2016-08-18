@@ -9,6 +9,10 @@ class ZeroProduction(OcelotError):
     pass
 
 
+class IdenticalVariables(OcelotError):
+    """The same variable name is used twice"""
+    pass
+
 class InvalidMultioutputDataset(OcelotError):
     pass
 
