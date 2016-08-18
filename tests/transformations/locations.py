@@ -115,11 +115,26 @@ def test_multiple_global_datasets():
     with pytest.raises(MultipleGlobalDatasets):
         relabel_global_to_row(given)
 
-def test_topology():
-    topo = Topology()
+@pytest.fixture(scope="module")
+def topo():
+    return Topology()
+
+def test_topology_loading(topo):
     assert len(topo.data) > 400
-    assert topo('RU') == {'Russia (Asia)', 'Russia (Europe)'}
-    assert topo('GLO') is None
-    assert topo('IAI Area 8')
+
+def test_topology_contained(topo):
+    assert topo.contained('RU') == {'Russia (Asia)', 'Russia (Europe)'}
+    assert topo.contained('GLO') is None
+    # Test compatibility labels
+    assert topo.contained('IAI Area 8')
     with pytest.raises(KeyError):
-        topo('foo')
+        topo.contained('foo')
+
+def test_topology_intersects(topo):
+    assert 'UN-EUROPE' in topo.intersects('DE')
+    assert 'RER w/o AT+BE+CH+DE+FR+IT' not in topo.intersects('CH')
+    assert topo.intersects('GLO') is None
+    # Test compatibility labels
+    assert topo.intersects('IAI Area 8')
+    with pytest.raises(KeyError):
+        topo.intersects('foo')

@@ -58,7 +58,7 @@ class Topology(object):
             self.data[old] = self.data[fixed]
 
     @functools.lru_cache(maxsize=512)
-    def __call__(self, location):
+    def contained(self, location):
         if location == 'GLO':
             return
         faces = self.data[location]
@@ -67,3 +67,12 @@ class Topology(object):
                 if key != location
                 and not value.difference(faces)}
 
+    @functools.lru_cache(maxsize=512)
+    def intersects(self, location):
+        if location == 'GLO':
+            return
+        faces = self.data[location]
+        return {key
+                for key, value in self.data.items()
+                if key != location
+                and value.intersection(faces)}
