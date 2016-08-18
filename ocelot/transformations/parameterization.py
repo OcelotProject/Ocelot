@@ -4,8 +4,8 @@ from ..errors import ParameterizationError, IdenticalVariables
 from ..io.ecospold2_meta import REFERENCE_REGULAR_EXPRESSIONS
 from asteval import Interpreter
 from bw2parameters import ParameterSet
-import logging
 import itertools
+import logging
 
 
 def every_exchange_with_formula_has_a_variable_name(data):
@@ -49,25 +49,85 @@ def iterate_all_parameters(dataset):
             yield parameter
 
 
-def find_implicit_variables(formula):
-    """Find ``Ref(`` implicit variables in ``formula``.
+def get_exchange_reference(formula):
+    """Return list of ``(full_reference_strings, uuid)`` from string ``formula``.
 
-    Returns ``None``, or a dictionary with the following form. All keys are optional, and each list can have multiple values.
+    Finds ``Ref(`` implicit variables."""
+    re = REFERENCE_REGULAR_EXPRESSIONS['exchange']
+    match = re.search(formula)
+    if not match:
+        return []
+    return zip(
+        itertools.repeat(match.group(0)),
+        [match.group('uuid') for match in re.finditer(formula)]
+    )
 
-    .. code-block:: python
 
-        {
-            'exchange': [{'uuid': 'some uuid'}],
-            'pv': [{'uuid': 'some uuid'}],
-            'property': [{'first': 'some uuid', 'second': 'some uuid'}]
-        }
+def get_production_volume_reference(formula):
+    """Return list of ``(full_reference_strings, uuid)`` from string ``formula``.
 
-    """
-    finder = lambda x: [match.groupdict() for match in x.finditer(formula)]
-    found = {key: finder(reg_exp)
-             for key, reg_exp in REFERENCE_REGULAR_EXPRESSIONS.items()
-             if reg_exp.search(formula)}
-    return found or None
+    Finds ``Ref(`` implicit variables."""
+    re = REFERENCE_REGULAR_EXPRESSIONS['pv']
+    match = re.search(formula)
+    if not match:
+        return []
+    return zip(
+        itertools.repeat(match.group(0)),
+        [match.group('uuid') for match in re.finditer(formula)]
+    )
+
+
+def find_exchange_or_parameter_by_id(dataset, uuid):
+    """Find exchange or parameter in ``dataset`` with id ``uuid``.
+
+    Raises ``ValueError`` if not found in dataset."""
+    for exc in dataset['exchanges']:
+        if exc['id'] == uuid:
+            return exc
+    for param in dataset.get('parameters', []):
+        if param['id'] == uuid:
+            return param
+    raise ValueError("Exchange id {} not found in dataset".format(uuid))
+
+
+def find_production_volume_by_id(dataset, uuid):
+    """Find production volume in ``dataset`` with id ``uuid``.
+
+    Raises ``ValueError`` if ``uuid`` not found in dataset, or if the found exchange does not have a production volume."""
+    for exc in dataset['exchanges']:
+        if exc['id'] == uuid:
+            if 'production volume' not in exc:
+                raise ValueError("Referenced exchange does not have a prod. volume")
+            return exc['production volume']
+    raise ValueError("Exchange id {} not found in dataset".format(uuid))
+
+
+def replace_implicit_references(data):
+    """Replace ``Ref(`` with actual variables."""
+    for ds in data:
+        for obj in iterate_all_parameters(dataset):
+            if 'formula' not in obj:
+                continue
+
+            for string, uuid in get_exchange_reference(obj['formula']):
+                reference = find_exchange_or_parameter_by_id(ds, uuid)
+                if 'variable' in reference:
+                    variable = reference['variable']
+                else:
+                    # TODO: Check to make sure variable names are unique?
+                    variable = "ref_replacement_{}".format(uuid.replace("-", ""))
+                    reference['variable'] = variable
+                obj['formula'] = obj['formula'].replace(string, variable)
+
+            for string, uuid in get_production_volume_reference(obj['formula']):
+                reference = find_production_volume_by_id(ds, uuid)
+                if 'variable' in reference:
+                    variable = reference['variable']
+                else:
+                    variable = "ref_pv_replacement_{}".format(uuid.replace("-", ""))
+                    reference['variable'] = variable
+                obj['formula'] = obj['formula'].replace(string, variable)
+    return data
 
 
 class ParameterizedDataset(object):
@@ -91,6 +151,8 @@ class ParameterizedDataset(object):
     * ``Ref('some id', 'ProductionVolume')``: Get production volume for exchange with id ``some id``.
     * ``Ref('some id', 'some other id')``: Get ``amount`` for property with id ``some other id`` in exchange ``some id``. This isn't used in ecoinvent 3.2 or 3.3, and isn't supported here.
 
+    These implicit references should be substituted by the function ``replace_implicit_references`` before this class is used.
+
     """
     def __init__(self, dataset):
         self.dataset = dataset
@@ -112,12 +174,6 @@ class ParameterizedDataset(object):
                 for exc in iterate_all_parameters(dataset)
                 if 'variable' in exc}
         # return self.substitue_references(dataset)
-
-    def find_implicit_variables(self, dataset):
-        pass
-
-    def substitute_references(self, dataset):
-        pass
 
     def update_dataset(self):
         # Set up an Interpreter with each variable name and its value
