@@ -65,13 +65,16 @@ def test_update_dataset():
         }, {
             'variable': 'circle',
             'formula': 'pie * radius ** 2',
+            'amount': 3.1415926535 * (17 * 42) ** 2,
             'properties': [{
                 'variable': 'radius',
+                'amount': 17 * 42,
                 'formula': 'blueberry_size * number_blueberries'
             }]
         }],
         'parameters': [{
             'variable': 'blueberry_size',
+            'amount': 17,
             'formula': 'blueberry_density * blueberry_volume'
         }, {
             'variable': 'blueberry_density',
