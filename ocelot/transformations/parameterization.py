@@ -105,7 +105,7 @@ def find_production_volume_by_id(dataset, uuid):
 def replace_implicit_references(data):
     """Replace ``Ref(`` with actual variables."""
     for ds in data:
-        for obj in iterate_all_parameters(dataset):
+        for obj in iterate_all_parameters(ds):
             if 'formula' not in obj:
                 continue
 
