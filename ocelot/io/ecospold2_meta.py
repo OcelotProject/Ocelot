@@ -77,9 +77,9 @@ UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 
 REFERENCE_REGULAR_EXPRESSIONS = {
     # Exchange amount and parameters
-    'exchange': re.compile("Ref\('{uuid}'\)".format(uuid=UUID)),
+    'exchange': re.compile("Ref\('(?P<uuid>{uuid})'\)".format(uuid=UUID)),
     # Exchange production volume
-    'pv': re.compile("Ref\('{uuid}', 'ProductionVolume'\)".format(uuid=UUID)),
+    'pv': re.compile("Ref\('(?P<uuid>{uuid})', 'ProductionVolume'\)".format(uuid=UUID)),
     # Exchange property
-    'property': re.compile("Ref\('{uuid}', '{uuid}'\)".format(uuid=UUID)),
+    'property': re.compile("Ref\('(?P<first>{uuid})', '(?P<second>{uuid})'\)".format(uuid=UUID)),
 }
