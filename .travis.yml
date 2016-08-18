@@ -18,7 +18,7 @@ before_install:
   - echo $(python --version)
 install: "pip install -r requirements-travis.txt"
 script:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pwd; ls; py.test --cov=ocelot; python setup.py install; python tests/manual/run_all_ci.py; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then py.test tests; python tests/manual/run_all_ci.py; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pwd; ls; py.test --cov=ocelot; python setup.py install -q; python tests/manual/run_all_ci.py; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then py.test tests; python3 setup.py install -q; python3 tests/manual/run_all_ci.py; fi
 after_success:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then coveralls; fi
