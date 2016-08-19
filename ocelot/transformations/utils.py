@@ -195,14 +195,17 @@ def nonreference_product(exchange):
 
     * ``amount`` is set to zero
     * ``type`` is changed to ``dropped product``.
+    * ``formula`` is deleted if present (amount can't change on recalculation).
     * ``production volume`` is deleted if present.
 
     """
     exchange['type'] = 'dropped product'
     exchange['amount'] = 0.
+    if 'formula' in exchange:
+        del exchange['formula']
     if 'production volume' in exchange:
         del exchange['production volume']
-    return exchange
+    return remove_exchange_uncertainty(exchange)
 
 
 def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):

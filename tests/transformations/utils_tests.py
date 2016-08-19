@@ -158,10 +158,20 @@ def test_remove_uncertainty():
     assert remove_exchange_uncertainty({'amount': 42}) == expected
 
 def test_nonreference_product():
-    given = {'production volume': None}
+    given = {
+        'production volume': 'delete me',
+        'formula': 'delete me too'
+    }
     expected = {
         'type': 'dropped product',
-        'amount': 0
+        'amount': 0,
+        'uncertainty': {
+            'minimum': 0,
+            'maximum': 0,
+            'pedigree matrix': {},
+            'standard deviation 95%': 0,
+            'type': 'undefined'
+        }
     }
     assert nonreference_product(given) == expected
 
@@ -180,7 +190,8 @@ def test_choose_reference_product_exchange(no_normalization):
     }, {
         'type': 'reference product',
         'amount': 20,
-        'production volume': None
+        'formula': 'delete me',
+        'production volume': 'delete me too',
     }, {
         'type': 'other thing',
         'amount': 100
@@ -197,7 +208,14 @@ def test_choose_reference_product_exchange(no_normalization):
         }
     }, {
         'type': 'dropped product',
-        'amount': 0
+        'amount': 0,
+        'uncertainty': {
+            'minimum': 0,
+            'maximum': 0,
+            'pedigree matrix': {},
+            'standard deviation 95%': 0,
+            'type': 'undefined'
+        }
     }, {
         'type': 'other thing',
         'amount': 10
@@ -216,7 +234,8 @@ def test_choose_reference_product_exchange_byproducts(no_normalization):
     }, {
         'type': 'reference product',
         'amount': 20,
-        'production volume': None
+        'production volume': 'delete me',
+        'formula': 'delete me too',
     }, {
         'type': 'other thing',
         'amount': 100
@@ -233,7 +252,14 @@ def test_choose_reference_product_exchange_byproducts(no_normalization):
         }
     }, {
         'type': 'dropped product',
-        'amount': 0
+        'amount': 0,
+        'uncertainty': {
+            'minimum': 0,
+            'maximum': 0,
+            'pedigree matrix': {},
+            'standard deviation 95%': 0,
+            'type': 'undefined'
+        }
     }, {
         'type': 'other thing',
         'amount': 10
