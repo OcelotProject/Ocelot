@@ -117,4 +117,4 @@ def combined_production_with_byproducts(dataset):
     new_datasets = [ds
                     for subdivided in combined_production(dataset)
                     for ds in economic_allocation(subdivided)]
-    return list(merge_byproducts(new_datsets))
+    return list(merge_byproducts(new_datasets))
