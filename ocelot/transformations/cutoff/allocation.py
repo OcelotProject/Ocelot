@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from ...errors import InvalidMultioutputDataset
 from ..validation import check_single_output_activity
-from .combined import combined_production
+from .combined import combined_production, combined_production_with_byproducts
 from .economic import economic_allocation
 from .wastes import waste_treatment_allocation, recycling_allocation
 import itertools
@@ -63,7 +63,7 @@ def choose_allocation_method(dataset):
         return 'constrained market'
     elif number_reference_products > 1:
         if allocatable_byproducts:
-            return "combined production with byproducts"
+            return combined_production_with_byproducts
         else:
             return combined_production
     elif negative_reference_production:

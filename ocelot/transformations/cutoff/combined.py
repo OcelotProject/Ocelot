@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+from ... import toolz
 from ..utils import (
+    activity_grouper,
     allocatable_production,
+    get_single_reference_product,
     nonreference_product,
     remove_exchange_uncertainty,
 )
@@ -8,7 +11,6 @@ from ..parameterization import recalculate
 from .economic import economic_allocation
 from .validation import valid_combined_production_activity
 from copy import deepcopy
-import itertools
 
 
 def nonzero_reference_product_exchanges(dataset):
@@ -28,13 +30,6 @@ def selected_product(exc):
     if 'formula' in exc:
         del exc['formula']
     return remove_exchange_uncertainty(exc)
-
-
-# def allocate_if_needed(ds):
-#     if len(allocatable_production) > 1:
-#         return economic_allocation(ds)
-#     else:
-#         return [ds]
 
 
 @valid_combined_production_activity
@@ -69,3 +64,46 @@ def combined_production(dataset):
              if obj['type'] != 'reference product']
         new_datasets.append(recalculate(new_ds))
     return new_datasets
+
+
+def add_exchanges(to_dataset, from_dataset):
+    """Add exchange amounts in ``from_dataset`` to ``to_dataset``.
+
+    Uses ``id`` to uniquely identify each exchange.
+
+    Returns a modified ``to_dataset``."""
+    lookup = {exc['id']: exc['amount']
+              for exc in from_dataset['exchanges']
+              if exc['type'] != 'reference product'}
+    for exc in to_dataset['exchanges']:
+        exc['amount'] += lookup.get(exc['id'], 0)
+    return to_dataset
+
+
+def merge_byproducts(datasets):
+    """Generator which merges datasets which have the same reference product.
+
+    Add exchange values together.
+
+    TODO: Handle uncertainty by creating new parameters and adding them in exchange formulas?
+
+    TODO: Parameter value can be different, but can't just be added.
+
+    Yields a new dataset."""
+    for group in toolz.groupby(activity_grouper, data).values():
+        parent = group[0]
+        for child in group[1:]:
+            parent = add_exchanges(parent, child)
+        yield parent
+
+
+def combined_production_with_byproducts(dataset):
+    """Subdivide, allocate, and then merge combined production datasets with byproducts.
+
+    If a dataset has two reference products, A and B, and a byproduct C, then subdivision will create two new datasets, A' and B'. Each of these will have C as a byproduct, so economic allocation is performed on both A' and B', giving a total of four datasets: A', B', C1 (from A'), and C2 (from B'). However, C1 and C2 are producing the same product, so they need to be merged to make one C dataset.
+
+    Returns a list of new datasets."""
+    new_datasets = [ds
+                    for subdivided in combined_production(dataset)
+                    for ds in economic_allocation(subdivided)]
+    return list(merge_byproducts(new_datsets))
