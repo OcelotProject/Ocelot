@@ -87,6 +87,21 @@ def get_single_reference_product(dataset):
     return products[0]
 
 
+def iterate_all_parameters(dataset):
+    """Generator that returns all parameterized objects in a dataset."""
+    for exc in dataset['exchanges']:
+        if "variable" in exc or "formula" in exc:
+            yield exc
+        pv = exc.get("production volume", {})
+        if "variable" in pv or "formula" in pv:
+            yield pv
+        for prop in exc.get('properties', []):
+            if "variable" in prop or "formula" in prop:
+                yield prop
+    for parameter in dataset.get('parameters', []):
+        if "variable" in parameter or "formula" in parameter:
+            yield parameter
+
 ### Exchange groupers
 
 def extract_products_as_tuple(dataset):

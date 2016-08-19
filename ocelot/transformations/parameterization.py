@@ -2,6 +2,7 @@
 from ..collection import Collection
 from ..errors import ParameterizationError, IdenticalVariables
 from ..io.ecospold2_meta import REFERENCE_REGULAR_EXPRESSIONS
+from .utils import iterate_all_parameters
 from asteval import Interpreter
 from bw2parameters import ParameterSet
 import itertools
@@ -31,22 +32,6 @@ parameterization_validity_checks = Collection(
     # every_exchange_with_formula_has_a_variable_name,
     # parameter_names_are_unique
 )
-
-
-def iterate_all_parameters(dataset):
-    """Generator that returns all parameterized objects in a dataset."""
-    for exc in dataset['exchanges']:
-        if "variable" in exc or "formula" in exc:
-            yield exc
-        pv = exc.get("production volume", {})
-        if "variable" in pv or "formula" in pv:
-            yield pv
-        for prop in exc.get('properties', []):
-            if "variable" in prop or "formula" in prop:
-                yield prop
-    for parameter in dataset.get('parameters', []):
-        if "variable" in parameter or "formula" in parameter:
-            yield parameter
 
 
 def get_exchange_reference(formula):
@@ -165,8 +150,7 @@ def extract_named_parameters(dataset):
     Returns a dictionary with form: ``{'name': {'amount': number, 'formula': string}}``.
 
     """
-    _ = lambda x: x.strip() if isinstance(x, str) else x
-    return {exc['variable']: {key: _(exc[key])
+    return {exc['variable']: {key: exc[key]
                               for key in ('amount', 'formula')
                               if exc.get(key) is not None}
             for exc in iterate_all_parameters(dataset)
