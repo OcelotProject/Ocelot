@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from ...errors import InvalidMultioutputDataset
 from ..validation import check_single_output_activity
+from .combined import combined_production
 from .economic import economic_allocation
 from .wastes import waste_treatment_allocation, recycling_allocation
 import itertools
@@ -62,9 +63,9 @@ def choose_allocation_method(dataset):
         return 'constrained market'
     elif number_reference_products > 1:
         if allocatable_byproducts:
-            return 'combined production with byproducts'
+            return "combined production with byproducts"
         else:
-            return 'combined production without byproducts'
+            return combined_production
     elif negative_reference_production:
         assert len(set(reference_product_classifications)) == 1
         if reference_product_classifications[0] == 'waste':
@@ -75,7 +76,7 @@ def choose_allocation_method(dataset):
         return economic_allocation
 
 
-def cutoff_allcation(data):
+def cutoff_allocation(data):
     """Do cutoff system model allocation."""
     return [check_single_output_activity(result)
             for ds in data
