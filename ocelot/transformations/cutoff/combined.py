@@ -13,6 +13,14 @@ from .validation import valid_combined_production_activity
 from copy import deepcopy
 
 
+###
+### Note: Recalculation of parameters must be manually tested
+### py.test and asteval both mess with the AST, leading to recursion errors
+### Run `python tests/manual/run_all_ci.py` to test parameter recalculation
+### The CI systems run the manual tests as well
+###
+
+
 def nonzero_reference_product_exchanges(dataset):
     """Return generator of all nonzero reference product exchanges"""
     return (exc for exc in dataset['exchanges']
