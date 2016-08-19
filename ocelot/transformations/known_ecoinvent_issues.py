@@ -1,143 +1,179 @@
 # -*- coding: utf-8 -*-
 from ..collection import Collection
+from ..errors import UnparsableFormula
+from .utils import iterate_all_parameters
+from copy import deepcopy
+import ast
 import logging
+import re
 
 
-def fix_formulas(data):
-    """Fix some special cases in formulas needed for correct parsing.
+KNOWN_MATH_SUBSTITUTIONS = (
+    # bad string, replacement
+    ("ABS(", "abs("),
+    ("%", "e-2"),
+    ("^", "**"),
+    ("\r\n", " "),
+)
 
-    * ``ABS`` -> ``abs``
-    * ``%`` -> ``e-2``
-    * ``^`` -> ``**``
+RESERVED_WORDS = {
+    "and", "as", "assert", "break", "class", "continue", "def", "del",
+    "elif", "else", "except", "False", "finally", "for", "from", "global",
+    "if", "import", "in", "is", "lambda", "None", "nonlocal", "not", "or",
+    "pass", "raise", "return", "True", "try", "while", "with", "yield"
+}
 
-    """
-    _ = lambda x: x.replace("ABS(", "abs(").replace('%', "e-2").replace("^", "**")
+RESERVED_WORDS_RE = [(word, re.compile("(^|[^a-zA-Z_]){}($|[^a-zA-Z_])".format(word)))
+                     for word in RESERVED_WORDS]
 
-    for dataset in data:
-        for exc in dataset['exchanges']:
+RESERVED_WORDS_STARTING = [(word, re.compile("{}[^a-zA-Z_]".format(word)))
+                           for word in RESERVED_WORDS]
+
+
+def fix_math_formulas(data):
+    """Fix some special cases in formulas needed for correct parsing."""
+    for ds in data:
+        for exc in iterate_all_parameters(ds):
+            if 'formula' not in exc:
+                continue
+            for bad, good in KNOWN_MATH_SUBSTITUTIONS:
+                if bad in exc['formula']:
+                    logging.info({
+                        'type': 'table element',
+                        'data': (ds['name'], exc['formula'], bad, good)
+                    })
+                    exc['formula'] = exc['formula'].replace(bad, good)
+    return data
+
+fix_math_formulas.__table__ = {
+    'title': 'Replace unparsable math elements with their python equivalents',
+    'columns': ["Activity name", "Formula", "Old element", "New element"]
+}
+
+
+def lowercase_all_parameters(data):
+    """Convert all formulas and parameters to lower case.
+
+    Ecoinvent formulas and variables names are case-insensitive, and often provided in many variants, e.g. ``clinker_PV`` and ``clinker_pv``. There are too many of these to fix manually, so we use a sledgehammer."""
+    for ds in data:
+        for exc in iterate_all_parameters(ds):
             if 'formula' in exc:
-                exc['formula'] = _(exc['formula'])
-            if 'formula' in exc.get('production volume', {}):
-                exc['production volume']['formula'] = \
-                    _(exc['production volume']['formula'])
-            for p in exc.get('properties', []):
-                if 'formula' in p:
-                    p['formula'] = _(p['formula'])
-        for p in dataset['parameters']:
-            if 'formula' in p:
-                p['formula'] = _(p['formula'])
+                exc['formula'] = exc['formula'].lower()
+            if 'variable' in exc:
+                exc['variable'] = exc['variable'].lower()
     return data
 
 
-def fix_clinker_pv_variable_name(data):
-    """Change ``clinker_PV`` to ``clinker_pv`` in variable names and formulas.
+class NameFinder(ast.NodeVisitor):
+    """Find all symbol names used by a parsed node.
 
-    Both ``clinker_PV`` and ``clinker_pv`` are used in the dataset. Needed for consistency in case-sensitive formula parsing."""
-    for dataset in data:
-        if dataset['name'] == 'clinker production':
-            for exc in dataset['exchanges']:
-                if 'production volume' in exc:
-                    if 'clinker_PV' in exc['production volume'].get('formula', ''):
-                        exc['production volume']['formula'] = \
-                            exc['production volume']['formula'].\
-                            replace('clinker_PV', 'clinker_pv')
-                        message = ("{} ({}): Changed `clinker_PV` to "
-                                   "`clinker_pv` in formula `{}`")
-                        logging.info({
-                            'type': 'list element',
-                            'data': message.format(
-                                dataset['name'],
-                                dataset['location'],
-                                exc['production volume']['formula']
-                            )
-                        })
-                    if exc['production volume'].get('variable') == 'clinker_PV':
-                        exc['production volume']['variable'] = 'clinker_pv'
-                        message = "{} ({}): Changed variable `clinker_PV` to `clinker_pv`"
-                        logging.info({
-                            'type': 'list element',
-                            'data': message.format(dataset['name'], dataset['location'])
-                        })
+    Code for this class and subsequent function from asteval (https://newville.github.io/asteval/)."""
+    def __init__(self):
+        self.names = []
+        ast.NodeVisitor.__init__(self)
+
+    def generic_visit(self, node):
+        if node.__class__.__name__ == 'Name':
+            if node.ctx.__class__ == ast.Load and node.id not in self.names:
+                self.names.append(node.id)
+        ast.NodeVisitor.generic_visit(self, node)
+
+
+def get_ast_names(string):
+    """Returns symbol names from an AST node"""
+    finder = NameFinder()
+    try:
+        finder.generic_visit(ast.parse(string))
+    except:
+        raise UnparsableFormula
+    return finder.names
+
+
+def check_and_fix_formula(ds, string):
+    """Check if the formula is usable in ``asteval``.
+
+    First, check to make sure that the formula doesn't start with a reserved word that would be valid python but wouldn't produce meaningful results. For example, ``yield - fair * knight`` will be parsable, but yield is treated as a command instead of a variable.
+
+    Next, we check if the formula is parsable. If it isn't, we search for reserved words in the formula, using a regular expression like ``[^a-zA-Z_]?yield[^a-zA-Z_]?``. The regular expression is necessary to avoid find reserved words inside longer variable names like ``yield_management``, which are valid and should be left alone.
+
+    In either case, if reserved words are found, they are replaced with their uppercase equivalents.
+
+    If the formula can't be repaired, it is returned in its original form; otherwise the new formula is returned."""
+    updated = deepcopy(string)
+    for word, reg_exp in RESERVED_WORDS_STARTING:
+        if reg_exp.match(updated):
+            updated = updated.replace(word, word.upper())
+            logging.info({
+                'type': 'table element',
+                'data': (ds['name'], word, string)
+            })
+
+    try:
+        get_ast_names(updated)
+        return updated
+    except UnparsableFormula:
+        found = []
+        for word, reg_exp in RESERVED_WORDS_RE:
+            if reg_exp.search(updated):
+                updated = updated.replace(word, word.upper())
+                found.append(word)
+        try:
+            get_ast_names(updated)
+            logging.info({
+                'type': 'table element',
+                'data': (ds['name'], ";".join(found), string)
+            })
+            return updated
+        except UnparsableFormula:
+            return string
+
+
+def replace_reserved_words(data):
+    """Replace python reserved words in variable names and formulas.
+
+    For variable names, this is relatively simple - we just and see of the variable name is a python reserved word. For formulas, we use the ``check_and_fix_formula`` function.
+
+    Changes datasets in place."""
+    for ds in data:
+        for exc in iterate_all_parameters(ds):
+            if 'variable' in exc and exc['variable'] in RESERVED_WORDS:
+                logging.info({
+                    'type': 'table element',
+                    'data': (ds['name'], exc['variable'], exc['variable'])
+                })
+                exc['variable'] = exc['variable'].upper()
+            if 'formula' in exc:
+                exc['formula'] = check_and_fix_formula(ds, exc['formula'])
     return data
 
+replace_reserved_words.__table__ = {
+    'title': 'Uppercase reserved python words like `yield` to avoid parsing errors.',
+    'columns': ["Activity name", "Reserved word(s)", "Problem element"]
+}
 
-def fix_cement_production_variable_name(data):
-    """Change ``ggbfs`` to ``GGBFS`` in variable names and formulas.
 
-    Needed for consistency in case-sensitive formula parsing."""
-    for dataset in data:
-        if dataset['name'] == 'cement production, alternative constituents 6-20%':
-            for exc in dataset['exchanges']:
-                if 'ggbfs' in exc.get('formula', ''):
-                    exc['formula'] = exc['formula'].replace('ggbfs', 'GGBFS')
-                    message = "{} ({}): Changed `ggbfs` to `GGBFS` in formula `{}`"
+def delete_unparsable_formulas(data):
+    """Uses AST parser to find unparsable formulas, which are deleted"""
+    # Introduce breaks in formulas for nicer displays
+    _ = lambda s: " ".join([s[i:i+40] for i in range(0, len(s), 40)])
+
+    for ds in data:
+        for exc in iterate_all_parameters(ds):
+            if 'formula' in exc:
+                try:
+                    elements = get_ast_names(exc['formula'])
+                except UnparsableFormula:
                     logging.info({
-                        'type': 'list element',
-                        'data': message.format(
-                            dataset['name'],
-                            dataset['location'],
-                            exc['formula']
-                        )
+                        'type': 'table element',
+                        'data': (ds['name'], _(exc['formula']))
                     })
-                if exc.get('variable') == 'ggbfs':
-                    message = "{} ({}): Changed variable `ggbfs` to `GGBFS`"
-                    logging.info({
-                        'type': 'list element',
-                        'data': message.format(dataset['name'], dataset['location'])
-                    })
-                    exc['variable'] = 'GGBFS'
+                    del exc['formula']
     return data
 
-
-def fix_ethylene_glycol_uses_yield(data):
-    """Change ``yield`` to ``Yield`` to avoid Python reserved word."""
-    for dataset in data:
-        if dataset['name'] == 'ethylene glycol production':
-            for p in dataset['parameters']:
-                if p.get('variable') == 'yield':
-                    p['variable'] = 'Yield'
-                    message = "{} ({}): Changed variable `yield` to `Yield`"
-                    logging.info({
-                        'type': 'list element',
-                        'data': message.format(dataset['name'], dataset['location'])
-                    })
-            for exc in dataset['exchanges']:
-                if 'yield' in exc.get('formula', ''):
-                    exc['formula'] = exc['formula'].replace('yield', 'Yield')
-                    message = "{} ({}): Changed `yield` to `Yield` in formula `{}`"
-                    logging.info({
-                        'type': 'list element',
-                        'data': message.format(
-                            dataset['name'],
-                            dataset['location'],
-                            exc['formula']
-                        )
-                    })
-
-    return data
-
-
-def fix_offshore_petroleum_variable_name(data):
-    """Change ``petroleum_APV`` to ``petroleum_apv`` in variable names and formulas.
-
-    Needed for consistency in case-sensitive formula parsing."""
-    for dataset in data:
-        if dataset['name'] == 'petroleum and gas production, off-shore':
-            for exc in dataset['exchanges']:
-                if 'petroleum_APV' in exc.get('formula', ''):
-                    exc['formula'] = exc['formula'].replace('petroleum_APV', 'petroleum_apv')
-                    message = "{} ({}): Changed `petroleum_APV` to `petroleum_apv` in formula `{}`"
-                    logging.info({
-                        'type': 'list element',
-                        'data': message.format(
-                            dataset['name'],
-                            dataset['location'],
-                            exc['formula']
-                        )
-                    })
-                if '\r\n' in exc.get('formula', ''):
-                    exc['formula'] = exc['formula'].replace('\r\n', '')
-    return data
+delete_unparsable_formulas.__table__ = {
+    'title': 'Delete unparsable formulas.',
+    'columns': ["Activity name", "Formula"]
+}
 
 
 def fix_benzene_chlorination_unit(data):
@@ -166,10 +202,9 @@ def fix_benzene_chlorination_unit(data):
 
 
 fix_known_ecoinvent_issues = Collection(
-    fix_formulas,
-    fix_clinker_pv_variable_name,
-    fix_cement_production_variable_name,
-    fix_ethylene_glycol_uses_yield,
-    fix_offshore_petroleum_variable_name,
+    fix_math_formulas,
+    lowercase_all_parameters,
+    replace_reserved_words,
+    delete_unparsable_formulas,
     fix_benzene_chlorination_unit,
 )

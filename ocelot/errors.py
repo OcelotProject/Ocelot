@@ -38,3 +38,8 @@ class InvalidExchange(OcelotError):
 class MultipleGlobalDatasets(OcelotError):
     """Multiple global datasets for the same activity name and reference product are not allowed"""
     pass
+
+
+class UnparsableFormula(OcelotError):
+    """Formula contains elements that can't be parsed"""
+    pass

@@ -3,19 +3,21 @@ from ocelot.transformations.known_ecoinvent_issues import *
 import copy
 
 
-def test_fix_formulas():
+def test_fix_math_formulas():
     bad, switched = "ABS() % ^", "abs() e-2 **"
     data = [{
+        'name': 'a name',
         'exchanges': [{'formula': copy.copy(bad)}],
         'parameters': []
     }]
     expected = copy.deepcopy(data)
     expected[0]['exchanges'][0]['formula'] = switched
-    assert fix_formulas(data) == expected
+    assert fix_math_formulas(data) == expected
 
-def test_fix_formulas_production_volume():
+def test_fix_math_formulas_production_volume():
     bad, switched = "ABS() % ^", "abs() e-2 **"
     data = [{
+        'name': 'a name',
         'exchanges': [{
             'formula': '',
             'production volume': {'formula': copy.copy(bad)},
@@ -24,11 +26,12 @@ def test_fix_formulas_production_volume():
     }]
     expected = copy.deepcopy(data)
     expected[0]['exchanges'][0]['production volume']['formula'] = switched
-    assert fix_formulas(data) == expected
+    assert fix_math_formulas(data) == expected
 
-def test_fix_formulas_properties():
+def test_fix_math_formulas_properties():
     bad, switched = "ABS() % ^", "abs() e-2 **"
     data = [{
+        'name': 'a name',
         'exchanges': [{
             'formula': '',
             'properties': [{'formula': copy.copy(bad)}]
@@ -37,17 +40,18 @@ def test_fix_formulas_properties():
     }]
     expected = copy.deepcopy(data)
     expected[0]['exchanges'][0]['properties'][0]['formula'] = switched
-    assert fix_formulas(data) == expected
+    assert fix_math_formulas(data) == expected
 
-def test_fix_formulas_parameters():
+def test_fix_math_formulas_parameters():
     bad, switched = "ABS() % ^", "abs() e-2 **"
     data = [{
+        'name': 'a name',
         'exchanges': [{'formula': ''}],
         'parameters': [{'formula': copy.copy(bad)}]
     }]
     expected = copy.deepcopy(data)
     expected[0]['parameters'][0]['formula'] = switched
-    assert fix_formulas(data) == expected
+    assert fix_math_formulas(data) == expected
 
 def test_fix_clinker_pv():
     data = [{
@@ -64,14 +68,14 @@ def test_fix_clinker_pv():
             'formula': '1 * clinker_pv / everything',
             'variable': 'clinker_pv'
     }}]}]
-    assert fix_clinker_pv_variable_name(data) == expected
+    assert lowercase_all_parameters(data) == expected
 
 def test_fix_cement():
     data = [{
         'name': 'cement production, alternative constituents 6-20%',
         'location': 'nowhere',
         'exchanges': [{
-            'formula': 'frogs + ggbfs',
+            'formula': 'frogs + GGBFS',
             'variable': 'ggbfs',
         }]
     }]
@@ -79,26 +83,26 @@ def test_fix_cement():
         'name': 'cement production, alternative constituents 6-20%',
         'location': 'nowhere',
         'exchanges': [{
-            'formula': 'frogs + GGBFS',
-            'variable': 'GGBFS'
+            'formula': 'frogs + ggbfs',
+            'variable': 'ggbfs'
         }]
     }]
-    assert fix_cement_production_variable_name(data) == expected
+    assert lowercase_all_parameters(data) == expected
 
 def test_fix_ethylene():
     data = [{
         'name': 'ethylene glycol production',
         'location': 'nowhere',
-        'exchanges': [{'formula': 'yield fair knight'}],
+        'exchanges': [{'formula': 'yield + fair * knight'}],
         'parameters': [{'variable': 'yield'}]
     }]
     expected = [{
         'name': 'ethylene glycol production',
         'location': 'nowhere',
-        'exchanges': [{'formula': 'Yield fair knight'}],
-        'parameters': [{'variable': 'Yield'}]
+        'exchanges': [{'formula': 'YIELD + fair * knight'}],
+        'parameters': [{'variable': 'YIELD'}]
     }]
-    assert fix_ethylene_glycol_uses_yield(data) == expected
+    assert replace_reserved_words(data) == expected
 
 def test_petroleum():
     data = [{
@@ -109,9 +113,9 @@ def test_petroleum():
     expected = [{
         'name': 'petroleum and gas production, off-shore',
         'location': 'nowhere',
-        'exchanges': [{'formula': 'HPV vaccination != petroleum_apv'}]
+        'exchanges': [{'formula': 'hpv vaccination != petroleum_apv'}]
     }]
-    assert fix_offshore_petroleum_variable_name(data) == expected
+    assert lowercase_all_parameters(data) == expected
 
 def test_fix_benzene():
     data = [{
