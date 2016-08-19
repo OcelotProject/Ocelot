@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from ocelot.transformations.parameterization import *
+from ocelot.transformations.parameterization import extract_named_parameters, recalculate
 from ocelot.errors import ParameterizationError
 from bw2parameters import ParameterSet
+from copy import deepcopy
 
 
 parameterized_ds = {
@@ -33,11 +34,8 @@ parameterized_ds = {
     }]
 }
 
-def test_valid_parameterized_ds():
-    assert ParameterizedDataset(parameterized_ds)
-
-def test_extracted_data():
-    ds = {
+def test_extract_named_parameters():
+    expected = {
         'radius': {'formula': 'blueberry_size * number_blueberries'},
         'pie': {'amount': 3.1415926535},
         'blueberry_volume': {'amount': 17},
@@ -46,9 +44,9 @@ def test_extracted_data():
         'number_blueberries': {'amount': 42},
         'blueberry_size': {'formula': 'blueberry_density * blueberry_volume'}
     }
-    assert ParameterSet(ds)
+    assert extract_named_parameters(deepcopy(parameterized_ds)) == expected
 
-def test_update_dataset():
+def test_recalculate():
     expected = {
         'exchanges': [{
             'amount': 3.1415926535,
@@ -80,11 +78,9 @@ def test_update_dataset():
             'amount': 1
         }]
     }
-    result = ParameterizedDataset(parameterized_ds).update_dataset()
-    assert result == expected
+    assert recalculate(deepcopy(parameterized_ds)) == expected
 
 
 def run_all_parameterization():
-    test_valid_parameterized_ds()
-    test_extracted_data()
-    test_update_dataset()
+    test_extract_named_parameters()
+    test_recalculate()
