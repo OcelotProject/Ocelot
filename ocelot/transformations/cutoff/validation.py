@@ -65,6 +65,11 @@ def valid_waste_treatment_activity(wrapped, instance, args, kwargs):
     return wrapped(*args, **kwargs)
 
 
+@wrapt.decorator
+def valid_combined_production_activity(wrapped, instance, args, kwargs):
+    return wrapped(*args, **kwargs)
+
+
 def ready_for_market_linking(data):
     """All transforming activities must have exactly one reference product.
 

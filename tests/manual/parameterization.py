@@ -34,8 +34,7 @@ parameterized_ds = {
 }
 
 def test_valid_parameterized_ds():
-    if not ParameterizedDataset(parameterized_ds):
-        raise ValueError
+    assert ParameterizedDataset(parameterized_ds)
 
 def test_extracted_data():
     ds = {
@@ -47,7 +46,7 @@ def test_extracted_data():
         'number_blueberries': {'amount': 42},
         'blueberry_size': {'formula': 'blueberry_density * blueberry_volume'}
     }
-    ParameterSet(ds)
+    assert ParameterSet(ds)
 
 def test_update_dataset():
     expected = {

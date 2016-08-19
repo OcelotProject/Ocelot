@@ -114,6 +114,13 @@ def test_normal_economic_allocation():
             'amount': 0.0,
             'name': 'second',
             'type': 'dropped product',
+            'uncertainty': {
+                'minimum': 0,
+                'maximum': 0,
+                'pedigree matrix': {},
+                'standard deviation 95%': 0,
+                'type': 'undefined'
+            },
             'properties': [{
                 'name': 'price',
                 'amount': 2
@@ -143,6 +150,13 @@ def test_normal_economic_allocation():
             'type': 'dropped product',
             'amount': 0.0,
             'name': 'first',
+            'uncertainty': {
+                'minimum': 0,
+                'maximum': 0,
+                'pedigree matrix': {},
+                'standard deviation 95%': 0,
+                'type': 'undefined'
+            },
             'properties': [{
                 'name': 'price',
                 'amount': 2.5
