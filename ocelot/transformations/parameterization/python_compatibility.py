@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from ..collection import Collection
-from ..errors import UnparsableFormula
-from .utils import iterate_all_parameters
+from ...errors import UnparsableFormula
+from ..utils import iterate_all_parameters
 from copy import deepcopy
 import ast
 import logging
@@ -174,37 +173,3 @@ delete_unparsable_formulas.__table__ = {
     'title': 'Delete unparsable formulas.',
     'columns': ["Activity name", "Formula"]
 }
-
-
-def fix_benzene_chlorination_unit(data):
-    """Change units in benzene chlorination to kilograms."""
-    message = ("{} ({}): Changed `UnitConversion(152000000, "
-               "'pound avoirdupois', 'kg')` to `68949040.24` in formula `{}`")
-
-    for dataset in data:
-        if dataset['name'] == 'benzene chlorination':
-            for exc in dataset['exchanges']:
-                if 'avoirdupois' in exc.get('production volume', {}).get('formula', ''):
-                    exc['production volume']['formula'] = \
-                        exc['production volume']['formula'].replace(
-                            "UnitConversion(152000000, 'pound avoirdupois', 'kg')",
-                            '68949040.24'
-                        )
-                    logging.info({
-                        'type': 'list element',
-                        'data': message.format(
-                            dataset['name'],
-                            dataset['location'],
-                            exc['production volume']['formula']
-                        )
-                    })
-    return data
-
-
-fix_known_ecoinvent_issues = Collection(
-    fix_math_formulas,
-    lowercase_all_parameters,
-    replace_reserved_words,
-    delete_unparsable_formulas,
-    fix_benzene_chlorination_unit,
-)

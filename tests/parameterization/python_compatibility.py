@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ocelot.transformations.known_ecoinvent_issues import *
+from ocelot.transformations.parameterization.python_compatibility import *
 import copy
 
 
@@ -116,18 +116,3 @@ def test_petroleum():
         'exchanges': [{'formula': 'hpv vaccination != petroleum_apv'}]
     }]
     assert lowercase_all_parameters(data) == expected
-
-def test_fix_benzene():
-    data = [{
-        'name': 'benzene chlorination',
-        'location': 'nowhere',
-        'exchanges': [{'production volume': {
-            'formula': '1 * UnitConversion(152000000, \'pound avoirdupois\', \'kg\')',
-    }}]}]
-    expected = [{
-        'name': 'benzene chlorination',
-        'location': 'nowhere',
-        'exchanges': [{'production volume': {
-            'formula': '1 * 68949040.24',
-    }}]}]
-    assert fix_benzene_chlorination_unit(data) == expected

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from .transformations import (
-    fix_known_ecoinvent_issues,
-    parameterization_validity_checks,
+    fix_ecoinvent_parameters,
+    # parameterization_validity_checks,
     relabel_global_to_row,
 )
 
@@ -17,7 +17,7 @@ class Configuration(object):
 
 # Default config for now is cutoff
 default_configuration = [
-    fix_known_ecoinvent_issues,
-    parameterization_validity_checks,
-    relabel_global_to_row,
+    fix_ecoinvent_parameters,
+    # parameterization_validity_checks,
+    # relabel_global_to_row,
 ]

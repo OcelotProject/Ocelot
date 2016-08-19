@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from ocelot.transformations.parameterization import extract_named_parameters, recalculate
+from ocelot.transformations.parameterization import recalculate
+from ocelot.transformations.parameterization.recalculation import extract_named_parameters
 from ocelot.errors import ParameterizationError
 from bw2parameters import ParameterSet
 from copy import deepcopy
