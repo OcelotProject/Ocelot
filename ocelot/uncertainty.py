@@ -17,7 +17,16 @@ def scale_fields(exchange, fields, factor):
 
 
 def scale_lognormal(exchange, factor):
-    # TODO: Fails for mean < 1
+    if factor < 1:
+        # TODO
+        return exchange
+    elif exchange['uncertainty']['mean'] <= 0:
+        if exchange['amount'] > 0:
+            exchange['uncertainty']['mean'] = exchange['mean']
+        else:
+            # TODO
+            return exchange
+
     exchange['uncertainty']['mean'] *= factor
     exchange['uncertainty']['mu'] = math.log(exchange['uncertainty']['mean'])
     return exchange
