@@ -130,7 +130,7 @@ def replace_implicit_references(data):
     return data
 
 
-class ParameterizedDataset(object):
+class ParameterizedDataset:
     """Datasets can be parameterized in several ways. This class extracts all the relevant variables and parameters for a dataset, and provides methods to manipulate them.
 
     Across a dataset, the following conventions are used:
@@ -154,39 +154,38 @@ class ParameterizedDataset(object):
     These implicit references should be substituted by the function ``replace_implicit_references`` before this class is used.
 
     """
-    def __init__(self, dataset):
-        self.dataset = dataset
-        self.parameters = self.extract_named_parameters(self.dataset)
-        self.parameter_set = ParameterSet(self.parameters)
+    pass
 
-    def extract_named_parameters(self, dataset):
-        """Extract named parameters from ``dataset``.
 
-        Each named parameter must have a name, and should have either a numeric value (``amount``) or a ``formula`` string. Parameters without names (``variable``) are not extracted, as don't contribute to dataset recalculation; they only get updated afterwards.
+def extract_named_parameters(dataset):
+    """Extract named parameters from ``dataset``.
 
-        Returns a dictionary with form: ``{'name': {'amount': number, 'formula': string}}``.
+    Each named parameter must have a name, and should have either a numeric value (``amount``) or a ``formula`` string. Parameters without names (``variable``) are not extracted, as don't contribute to dataset recalculation; they only get updated afterwards.
 
-        """
-        _ = lambda x: x.strip() if isinstance(x, str) else x
-        return {exc['variable']: {key: _(exc[key])
-                                  for key in ('amount', 'formula')
-                                  if exc.get(key) is not None}
-                for exc in iterate_all_parameters(dataset)
-                if 'variable' in exc}
-        # return self.substitue_references(dataset)
+    Returns a dictionary with form: ``{'name': {'amount': number, 'formula': string}}``.
 
-    def update_dataset(self):
-        # Set up an Interpreter with each variable name and its value
-        interpreter = Interpreter()
-        for key, value in self.parameter_set.evaluate().items():
-            interpreter.symtable[key] = value
+    """
+    _ = lambda x: x.strip() if isinstance(x, str) else x
+    return {exc['variable']: {key: _(exc[key])
+                              for key in ('amount', 'formula')
+                              if exc.get(key) is not None}
+            for exc in iterate_all_parameters(dataset)
+            if 'variable' in exc}
 
-        # Update each parameterized exchange
-        for exc in iterate_all_parameters(self.dataset):
-            if 'formula' in exc:
-                exc['amount'] = interpreter(exc['formula'])
-            elif 'variable' in exc:
-                exc['amount'] = interpreter.symtable[exc['variable']]
-            else:
-                raise ValueError
-        return self.dataset
+
+def recalculate(dataset):
+    # Set up an Interpreter with each variable name and its value
+    interpreter = Interpreter()
+    parameter_set = ParameterSet(extract_named_parameters(dataset))
+    for key, value in parameter_set.evaluate().items():
+        interpreter.symtable[key] = value
+
+    # Update each parameterized exchange
+    for exc in iterate_all_parameters(dataset):
+        if 'formula' in exc:
+            exc['amount'] = interpreter(exc['formula'])
+        elif 'variable' in exc:
+            exc['amount'] = interpreter.symtable[exc['variable']]
+        else:
+            raise ValueError
+    return dataset
