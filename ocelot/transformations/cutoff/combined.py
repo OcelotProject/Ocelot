@@ -65,7 +65,7 @@ def combined_production(dataset):
             [nonreference_product(obj)
              for obj in nonzero_reference_product_exchanges(new_ds)
              if obj != exc] + \
-            [obj for obj in new_ds['exchanges']
+            [deepcopy(obj) for obj in dataset['exchanges']
              if obj['type'] != 'reference product']
         new_datasets.append(recalculate(new_ds))
     return new_datasets
