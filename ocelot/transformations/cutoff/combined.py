@@ -80,11 +80,12 @@ def add_exchanges(to_dataset, from_dataset):
     Uses ``id`` to uniquely identify each exchange.
 
     Returns a modified ``to_dataset``."""
-    lookup = {exc['id']: exc['amount']
-              for exc in from_dataset['exchanges']
-              if exc['type'] != 'reference product'}
+    lookup = {exc['id']: exc['amount'] for exc in from_dataset['exchanges']}
     for exc in to_dataset['exchanges']:
         exc['amount'] += lookup.get(exc['id'], 0)
+        if exc['type'] == 'reference product':
+            # No uncertainty but still min and max should be updated
+            remove_exchange_uncertainty(exc)
     return to_dataset
 
 
@@ -93,12 +94,14 @@ def merge_byproducts(datasets):
 
     Add exchange values together.
 
-    TODO: Handle uncertainty by creating new parameters and adding them in exchange formulas?
+    Don't need to change reference production volumes because they are unchanged from the original multioutput dataset.
 
-    TODO: Parameter value can be different, but can't just be added.
+    TODO: Handle uncertainty for inputs by creating new parameters and adding them in exchange formulas?
+
+    TODO: Parameter values can be different in merged datasets, but can't just be added. Maybe also create new parameters (but not clear how)? Or easier just to delete all parameterization...
 
     Yields a new dataset."""
-    for group in toolz.groupby(activity_grouper, data).values():
+    for group in toolz.groupby(activity_grouper, datasets).values():
         parent = group[0]
         for child in group[1:]:
             parent = add_exchanges(parent, child)

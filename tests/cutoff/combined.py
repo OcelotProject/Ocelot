@@ -49,7 +49,6 @@ def test_selected_product():
     }
     assert selected_product(given) == expected
 
-
 @pytest.fixture(scope='function')
 def no_recalculate(monkeypatch):
     monkeypatch.setattr(
@@ -127,3 +126,128 @@ def test_combined_production(no_recalculate):
     original = deepcopy(given)
     assert combined_production(given) == expected
     assert original == given
+
+def test_add_exchanges():
+    first = {'exchanges': [
+        {'id': 1, 'amount': 1, 'type': 'reference product'},
+        {'id': 2, 'amount': 2, 'type': 'byproduct'},
+        {'id': 4, 'amount': 4, 'type': 'to environment'},
+    ]}
+    second = {'exchanges': [{
+        'id': 1,
+        'amount': 10,
+        'type': 'reference product',  # Need to add production amounts too
+    }, {
+        'id': 2,
+        'amount': 20,
+        'type': 'byproduct'
+    }, {
+        'id': 3,  # 4 not in first, 3 not in second, but no error
+        'amount': 30,
+        'type': 'to environment'
+    }]}
+    expected = {'exchanges': [
+        {
+            'id': 1,
+            'amount': 11,
+            'type': 'reference product',
+            'uncertainty': {
+                'minimum': 11,
+                'maximum': 11,
+                'pedigree matrix': {},
+                'standard deviation 95%': 0,
+                'type': 'undefined'
+            }
+        },
+        {'id': 2, 'amount': 22, 'type': 'byproduct'},
+        {'id': 4, 'amount': 4, 'type': 'to environment'},
+    ]}
+    assert add_exchanges(first, second) == expected
+
+def test_merge_byproducts():
+    given = [{
+        'name': 'first',
+        'exchanges': [{
+            'id': 1,
+            'type': 'reference product',
+            'name': 'first rp',
+            'amount': 1
+        }, {
+            'id': 2,
+            'type': 'to environment',
+            'name': 'emission',
+            'amount': 8
+        }]
+    }, {
+        'name': 'second',
+        'exchanges': [{
+            'id': 3,
+            'type': 'reference product',
+            'name': 'second rp',
+            'amount': 1
+        }, {
+            'id': 1,
+            'type': 'to environment',
+            'name': 'another emission',
+            'amount': 100
+        }]
+    }, {
+        'name': 'first',
+        'exchanges': [{
+            'id': 1,
+            'type': 'reference product',
+            'name': 'first rp',
+            'amount': 1
+        }, {
+            'id': 2,
+            'type': 'to environment',
+            'name': 'emission',
+            'amount': 2
+        }]
+    }]
+    expected = [{
+        'name': 'first',
+        'exchanges': [{
+            'id': 1,
+            'type': 'reference product',
+            'name': 'first rp',
+            'amount': 2,
+            'uncertainty': {
+                'minimum': 2,
+                'maximum': 2,
+                'pedigree matrix': {},
+                'standard deviation 95%': 0,
+                'type': 'undefined'
+            }
+        }, {
+            'id': 2,
+            'type': 'to environment',
+            'name': 'emission',
+            'amount': 10
+        }]
+    }, {
+        'name': 'second',
+        'exchanges': [{
+            'id': 3,
+            'type': 'reference product',
+            'name': 'second rp',
+            'amount': 1
+        }, {
+            'id': 1,
+            'type': 'to environment',
+            'name': 'another emission',
+            'amount': 100
+        }]
+    }]
+    for obj in merge_byproducts(given):
+        assert any(obj == ds for ds in expected)
+
+@pytest.fixture(scope='function')
+def no_combined_production(monkeypatch):
+    monkeypatch.setattr(
+        'ocelot.transformations.cutoff.combined.combined_production',
+        lambda x: x
+    )
+
+def test_combined_production_with_byproducts(no_combined_production):
+    pass
