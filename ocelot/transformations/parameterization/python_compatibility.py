@@ -9,7 +9,6 @@ import re
 
 KNOWN_MATH_SUBSTITUTIONS = (
     # bad string, replacement
-    ("ABS(", "abs("),
     ("%", "e-2"),
     ("^", "**"),
     ("\r\n", ""),

@@ -1,59 +1,31 @@
 # -*- coding: utf-8 -*-
 from ocelot.errors import UnparsableFormula
 from ocelot.transformations.parameterization.python_compatibility import *
-import copy
+from copy import deepcopy
 import pytest
 
 
 def test_fix_math_formulas():
-    bad, switched = "ABS() % ^ \r\n", "abs() e-2 ** "
-    data = [{
-        'name': 'a name',
-        'exchanges': [{'formula': copy.copy(bad)}],
-        'parameters': []
-    }]
-    expected = copy.deepcopy(data)
-    expected[0]['exchanges'][0]['formula'] = switched
-    assert fix_math_formulas(data) == expected
-
-def test_fix_math_formulas_production_volume():
-    bad, switched = "ABS() % ^", "abs() e-2 **"
-    data = [{
+    bad, good = "% ^ \r\n", "e-2 ** "
+    given = [{
         'name': 'a name',
         'exchanges': [{
-            'formula': '',
-            'production volume': {'formula': copy.copy(bad)},
+            'formula': deepcopy(bad),
+            'production volume': {'formula': deepcopy(bad)},
+            'properties': [{'formula': deepcopy(bad)}]
         }],
-        'parameters': []
+        'parameters': [{'formula': deepcopy(bad)}]
     }]
-    expected = copy.deepcopy(data)
-    expected[0]['exchanges'][0]['production volume']['formula'] = switched
-    assert fix_math_formulas(data) == expected
-
-def test_fix_math_formulas_properties():
-    bad, switched = "ABS() % ^", "abs() e-2 **"
-    data = [{
+    expected = [{
         'name': 'a name',
         'exchanges': [{
-            'formula': '',
-            'properties': [{'formula': copy.copy(bad)}]
+            'formula': deepcopy(good),
+            'production volume': {'formula': deepcopy(good)},
+            'properties': [{'formula': deepcopy(good)}]
         }],
-        'parameters': []
+        'parameters': [{'formula': deepcopy(good)}]
     }]
-    expected = copy.deepcopy(data)
-    expected[0]['exchanges'][0]['properties'][0]['formula'] = switched
-    assert fix_math_formulas(data) == expected
-
-def test_fix_math_formulas_parameters():
-    bad, switched = "ABS() % ^", "abs() e-2 **"
-    data = [{
-        'name': 'a name',
-        'exchanges': [{'formula': ''}],
-        'parameters': [{'formula': copy.copy(bad)}]
-    }]
-    expected = copy.deepcopy(data)
-    expected[0]['parameters'][0]['formula'] = switched
-    assert fix_math_formulas(data) == expected
+    assert fix_math_formulas(given) == expected
 
 def test_lowercase_all_parameters():
     given = [{
