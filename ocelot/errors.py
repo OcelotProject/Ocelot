@@ -43,3 +43,13 @@ class MultipleGlobalDatasets(OcelotError):
 class UnparsableFormula(OcelotError):
     """Formula contains elements that can't be parsed"""
     pass
+
+
+class InvalidMarketExchange(Exception):
+    """Markets aren't allowed to consume their own reference product"""
+    pass
+
+
+class InvalidMarket(Exception):
+    """Markets can only have one reference product"""
+    pass
