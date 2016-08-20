@@ -1,28 +1,21 @@
 # -*- coding: utf-8 -*-
 from ...collection import Collection
 from ...errors import ParameterizationError
+from ..utils import iterate_all_parameters
+from pprint import pformat
 
 
-def every_exchange_with_formula_has_a_variable_name(data):
-    """Data validity check."""
+def variable_names_are_unique(data):
+    """Variable names must be globally unique within a dataset.
+
+    Raises ``ParameterizationError`` if duplicates are found."""
+    has_variable = lambda x: x.get('variable')
+
     for ds in data:
-        for exc in ds['exchanges']:
-            if 'formula' in exc and 'variable' not in exc:
-                raise ParameterizationError
+        found = set()
+        for param in filter(has_variable, iterate_all_parameters(ds)):
+            if param['variable'] in found:
+                message = "Variable named {} used twice in dataset:\n{}"
+                raise ParameterizationError(message.format(param['variable'], ds))
+            found.add(param['variable'])
     return data
-
-
-def parameter_names_are_unique(data):
-    """Data validity check."""
-    for ds in data:
-        if not ds.get('parameters'):
-            continue
-        if len(ds['parameters']) != len({p['variable'] for p in ds['parameters']}):
-            raise ParameterizationError
-    return data
-
-
-parameterization_validity_checks = Collection(
-    # every_exchange_with_formula_has_a_variable_name,
-    # parameter_names_are_unique
-)

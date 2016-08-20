@@ -32,7 +32,7 @@ from .python_compatibility import (
     replace_reserved_words,
 )
 from .recalculation import recalculate
-
+from .validation import variable_names_are_unique
 
 fix_ecoinvent_parameters = Collection(
     replace_implicit_references,
