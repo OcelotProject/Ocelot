@@ -27,6 +27,42 @@ RESERVED_WORDS_RE = [(word, re.compile("(^|[^a-zA-Z_]){}($|[^a-zA-Z_])".format(w
 RESERVED_WORDS_STARTING = [(word, re.compile("{}[^a-zA-Z_]".format(word)))
                            for word in RESERVED_WORDS]
 
+IF_RE = re.compile("if\((?P<condition>[^;]+);(?P<if_yes>[^;]+);(?P<if_no>[^;)]+)\)")
+
+POWER_RE = re.compile("power\((?P<base>[^;]+);(?P<exponent>[^;]+)\)")
+
+
+def find_if_clause(ds, string):
+    while IF_RE.search(string):
+        match = IF_RE.search(string)
+        match_string = match.group(0)
+        condition, if_true, if_false = match.groups()
+        if if_true == if_false:
+            replacement = "({})".format(if_true.strip())
+        else:
+            replacement = "(({}) if ({}) else ({}))".format(
+                if_true, condition, if_false
+            )
+        logging.info({
+            'type': 'table element',
+            'data': (ds['name'], '', match_string, replacement)
+        })
+        string = string.replace(match_string, replacement)
+    return string
+
+
+def find_power_clause(ds, string):
+    while POWER_RE.search(string):
+        match = POWER_RE.search(string)
+        match_string = match.group(0)
+        replacement = "(({})**({}))".format(*match.groups())
+        logging.info({
+            'type': 'table element',
+            'data': (ds['name'], '', match_string, replacement)
+        })
+        string = string.replace(match_string, replacement)
+    return string
+
 
 def fix_math_formulas(data):
     """Fix some special cases in formulas needed for correct parsing."""
@@ -41,6 +77,8 @@ def fix_math_formulas(data):
                         'data': (ds['name'], exc['formula'], bad, good)
                     })
                     exc['formula'] = exc['formula'].replace(bad, good)
+            exc['formula'] = find_if_clause(ds, exc['formula'])
+            exc['formula'] = find_power_clause(ds, exc['formula'])
     return data
 
 fix_math_formulas.__table__ = {

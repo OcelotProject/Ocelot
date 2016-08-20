@@ -27,6 +27,33 @@ def test_fix_math_formulas():
     }]
     assert fix_math_formulas(given) == expected
 
+def test_find_if_clause():
+    ds = {'name': ''}
+
+    string = "if(T1_kW/hp_to_kW<750;T123_co_750hp;T124_co_750php)"
+    expected = "((T123_co_750hp) if (T1_kW/hp_to_kW<750) else (T124_co_750php))"
+    assert find_if_clause(ds, string) == expected
+
+    string = "if(c_soil_mineral>0;c_soil_mineral*(1/r) *ef_n2o_n*n2o_n_2_n2o;0)"
+    expected = "((c_soil_mineral*(1/r) *ef_n2o_n*n2o_n_2_n2o) if (c_soil_mineral>0) else (0))"
+    assert find_if_clause(ds, string) == expected
+
+def test_find_if_clause_same_value():
+    ds = {'name': ''}
+
+    string = "(euro_iiia* ep* lf*(if(ep>130;0.488;0.488))+euro_iiib* ep* lf*(if(ep>130;0.185;0.185)))/1000"
+    expected = "(euro_iiia* ep* lf*((0.488))+euro_iiib* ep* lf*((0.185)))/1000"
+    assert find_if_clause(ds, string) == expected
+
+def test_nested_if_clause():
+    string = "(t0*t0_kw/hp_to_kw*(t0_co_50hp) if (t0_k w/hp_to_kw<50) else (t0_co_100hp))+t1*t1 _kw/hp_to_kw*(t124a_co_50hp) if (t1_kw/h p_to_kw<50) else (t123b4a_co_100hp))+t2* t2_kw/hp_to_kw*(t124a_co_50hp) if (t2_kw /hp_to_kw<50) else (t123b4a_co_100hp))+t 3b*t3b_kw/hp_to_kw*t123b4a_co_100hp+t4*t 4_kw/hp_to_kw*(t4_co_50hp) if (t4_kw/hp_ to_kw<50) else (t44n_co_100hp))+t4a*t4a_ kw/hp_to_kw*(t124a_co_50hp) if (t4a_kw/h p_to_kw<50) else (t123b4a_co_100hp))+t4n *t4n_kw/hp_to_kw*t44n_co_100hp)*load"
+
+def test_find_power_clause():
+    ds = {'name': ''}
+    string = "6.6898*power(10;-05)*crown_leaf_residue + 3.2327*power(10;-05)*crown_leaf_harvest"
+    expected = "6.6898*((10)**(-05))*crown_leaf_residue + 3.2327*((10)**(-05))*crown_leaf_harvest"
+    assert find_power_clause(ds, string) == expected
+
 def test_lowercase_all_parameters():
     given = [{
         'exchanges': [{

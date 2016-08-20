@@ -37,8 +37,8 @@ from .validation import variable_names_are_unique
 fix_ecoinvent_parameters = Collection(
     replace_implicit_references,
     fix_known_bad_formula_strings,
-    fix_math_formulas,
     lowercase_all_parameters,
+    fix_math_formulas,
     replace_reserved_words,
     delete_unparsable_formulas,
 )
