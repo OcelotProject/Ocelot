@@ -12,7 +12,7 @@ KNOWN_MATH_SUBSTITUTIONS = (
     ("ABS(", "abs("),
     ("%", "e-2"),
     ("^", "**"),
-    ("\r\n", " "),
+    ("\r\n", ""),
 )
 
 RESERVED_WORDS = {
