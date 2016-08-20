@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from .transformations import (
+    drop_zero_pv_row_datasets,
     fix_ecoinvent_parameters,
-    variable_names_are_unique,
     relabel_global_to_row,
+    variable_names_are_unique,
 )
 
 
@@ -19,5 +20,6 @@ class Configuration(object):
 default_configuration = [
     variable_names_are_unique,
     fix_ecoinvent_parameters,
-    # relabel_global_to_row,
+    relabel_global_to_row,
+    drop_zero_pv_row_datasets,
 ]
