@@ -16,7 +16,7 @@ def fix_known_bad_formula_strings(data):
         for name, bad, good in KNOWN_SUBSTITUTIONS:
             if ds['name'] == name:
                 for param in iterate_all_parameters(ds):
-                    if bad in param.get('formula'):
+                    if bad in param.get('formula', ''):
                         logging.info({
                             'type': 'list element',
                             'data': message.format(
