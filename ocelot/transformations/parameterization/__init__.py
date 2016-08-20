@@ -24,7 +24,7 @@ These implicit references should be substituted by the function ``replace_implic
 """
 from ...collection import Collection
 from .implicit_references import replace_implicit_references
-from .known_ecoinvent_issues import fix_benzene_chlorination_unit
+from .known_ecoinvent_issues import fix_known_bad_formula_strings
 from .python_compatibility import (
     delete_unparsable_formulas,
     fix_math_formulas,
@@ -36,7 +36,7 @@ from .validation import variable_names_are_unique
 
 fix_ecoinvent_parameters = Collection(
     replace_implicit_references,
-    fix_benzene_chlorination_unit,
+    fix_known_bad_formula_strings,
     fix_math_formulas,
     lowercase_all_parameters,
     replace_reserved_words,

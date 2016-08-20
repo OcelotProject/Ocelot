@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from ocelot.transformations.parameterization.known_ecoinvent_issues import fix_benzene_chlorination_unit
+from ocelot.transformations.parameterization.known_ecoinvent_issues import fix_known_bad_formula_strings
 
 
-def test_fix_benzene():
+def test_fix_strings():
     data = [{
         'name': 'benzene chlorination',
         'location': 'nowhere',
@@ -15,4 +15,4 @@ def test_fix_benzene():
         'exchanges': [{'production volume': {
             'formula': '1 * 68949040.24',
     }}]}]
-    assert fix_benzene_chlorination_unit(data) == expected
+    assert fix_known_bad_formula_strings(data) == expected
