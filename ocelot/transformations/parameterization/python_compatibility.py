@@ -58,7 +58,8 @@ def find_power_clause(ds, string):
     while POWER_RE.search(string):
         match = POWER_RE.search(string)
         match_string = match.group(0)
-        replacement = "(({})**({}))".format(*match.groups())
+        as_numbers = [float(x) for x in match.groups()]
+        replacement = "(({})**({}))".format(*as_numbers)
         logging.info({
             'type': 'table element',
             'data': (ds['name'], '', match_string, replacement)

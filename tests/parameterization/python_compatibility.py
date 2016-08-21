@@ -54,8 +54,14 @@ def test_nested_if_clause():
 
 def test_find_power_clause():
     ds = {'name': ''}
+    string = "power(4;6)"
+    expected = "((4.0)**(6.0))"
+    assert find_power_clause(ds, string) == expected
+
+def test_find_power_clause_leading_zeros():
+    ds = {'name': ''}
     string = "6.6898*power(10;-05)*crown_leaf_residue + 3.2327*power(10;-05)*crown_leaf_harvest"
-    expected = "6.6898*((10)**(-05))*crown_leaf_residue + 3.2327*((10)**(-05))*crown_leaf_harvest"
+    expected = "6.6898*((10.0)**(-5.0))*crown_leaf_residue + 3.2327*((10.0)**(-5.0))*crown_leaf_harvest"
     assert find_power_clause(ds, string) == expected
 
 def test_lowercase_all_parameters():
