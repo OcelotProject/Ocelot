@@ -14,3 +14,5 @@ install:
 
 test_script:
   - "%PYTHON%/Scripts/py.test.exe"
+  - "%PYTHON%/python.exe setup.py -q install"
+  - "%PYTHON%/python.exe tests/manual/run_all_ci.py"

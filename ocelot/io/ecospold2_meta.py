@@ -68,18 +68,18 @@ ACCESS_RESTRICTED = {
  }
 
 BYPRODUCT_CLASSIFICATION = {
-    'allocatable product': 'allocatable',
+    'allocatable product': 'allocatable product',
     'Waste': 'waste',
     'Recyclable': 'recyclable'
 }
 
-UUID_REGULAR_EXPRESSION = '\w{8}-\w{4}-\w{4}-\w{4}-\w{12}'
+UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 
-REF_REGULAR_EXPRESSIONS = [
-    # exchange amount and parameters
-    re.compile("Ref\(\'%s\'\)" % UUID_REGULAR_EXPRESSION),
-    # production volume
-    re.compile("Ref\(\'%s\'[,]\s'ProductionVolume'\)" % (UUID_REGULAR_EXPRESSION)),
-    # property
-    re.compile("Ref\(\'%s\'[,]\s\'%s\'\)" % (UUID_REGULAR_EXPRESSION, UUID_REGULAR_EXPRESSION))
-]
+REFERENCE_REGULAR_EXPRESSIONS = {
+    # Exchange amount and parameters
+    'exchange': re.compile("Ref\('(?P<uuid>{uuid})'\)".format(uuid=UUID)),
+    # Exchange production volume
+    'pv': re.compile("Ref\('(?P<uuid>{uuid})', 'ProductionVolume'\)".format(uuid=UUID)),
+    # Exchange property
+    'property': re.compile("Ref\('(?P<first>{uuid})', '(?P<second>{uuid})'\)".format(uuid=UUID)),
+}

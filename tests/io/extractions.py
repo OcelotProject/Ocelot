@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from . import test_data_dir
+from .. import test_data_dir
 from ocelot.io.extract_ecospold2 import generic_extractor
 from ocelot.io.validate_internal import dataset_schema
 import os

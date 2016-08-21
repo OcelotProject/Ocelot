@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold02">
+  <activityDataset>
+    <activityDescription>
+      <activity id="3fbaab7c-6cd7-4f92-9c3d-abfa11a7bf6f" activityNameId="cfb1670b-5e5a-4bcb-84fa-36da368777b6" inheritanceDepth="0" type="1" specialActivityType="0">
+        <activityName xml:lang="en">treatment of waste graphical paper, municipal incineration</activityName>
+      </activity>
+      <classification classificationId="9a63625a-358b-4c1d-bf95-50ba038a759b">
+        <classificationSystem xml:lang="en">ISIC rev.4 ecoinvent</classificationSystem>
+        <classificationValue xml:lang="en">3821:Treatment and disposal of non-hazardous waste</classificationValue>
+      </classification>
+      <geography geographyId="34dbbff8-88ce-11de-ad60-0019e336be3a">
+        <shortname xml:lang="en">GLO</shortname>
+      </geography>
+      <technology technologyLevel="3">
+      </technology>
+      <timePeriod startDate="2006-01-01" endDate="2012-12-31" isDataValidForEntirePeriod="true">
+      </timePeriod>
+      <macroEconomicScenario macroEconomicScenarioId="d9f57f0a-a01f-42eb-a57b-8f18d6635801">
+        <name xml:lang="en">Business-as-Usual</name>
+      </macroEconomicScenario>
+    </activityDescription>
+    <flowData>
+      <intermediateExchange id="fe3bf381-fa09-41c4-964f-abfa1100213e" unitId="77ae64fa-7e74-4252-9c3b-889c1cd20bfc" variableName="E_el_prod_MSWI" amount="0.48303" intermediateExchangeId="637ee275-a239-4dcb-b084-abfa110dd65b" productionVolumeAmount="186370000" productionVolumeMathematicalRelation="">
+        <name xml:lang="en">electricity, for reuse in municipal waste incineration only</name>
+        <unitName xml:lang="en">kWh</unitName>
+        <comment xml:lang="en">Net electricity generated from this waste and used in internal MSWI plant energy redistribution.</comment>
+        <uncertainty>
+          <lognormal meanValue="0.483" mu="-0.7277" variance="0.11854" varianceWithPedigreeUncertainty="0.1185" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </uncertainty>
+        <property propertyId="38f94dd1-d5aa-41b8-b182-c0c42985d9dc" variableName="E_el_prod_MSWI_price_EUR2005" amount="0.1" unitId="7b75baf0-cbee-45e6-bf66-af119da06553">
+          <name xml:lang="en">price</name>
+          <unitName xml:lang="en">EUR2005</unitName>
+        </property>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <outputGroup>2</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="fe3bf381-fa09-41c4-964f-abfa1100214d" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" amount="-1" intermediateExchangeId="d51e5a32-c20a-4da6-8d58-31f344b50c00" productionVolumeAmount="385840000" productionVolumeMathematicalRelation="">
+        <name xml:lang="en">waste graphical paper</name>
+        <unitName xml:lang="en">kg</unitName>
+        <comment xml:lang="en">Main reference product of this activity (supply of disposal service).</comment>
+        <classification classificationId="ee3238ec-ca7a-4ddc-af1b-e7c35957b9b6">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">Waste</classificationValue>
+        </classification>
+        <outputGroup>0</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="fe3bf381-fa09-41c4-964f-abfa110020fc" unitId="5b972631-34e3-4db7-a615-f6931770a0cb" amount="3.4662E-11" intermediateExchangeId="3cc30fa4-8564-443b-9849-8c7b98c60ec8">
+        <name xml:lang="en">residual material landfill</name>
+        <unitName xml:lang="en">unit</unitName>
+        <comment xml:lang="en">Landfill infrastructure required for landfilling of incineration residues.</comment>
+        <uncertainty>
+          <lognormal meanValue="3.466E-11" mu="-24.09" variance="0.017933" varianceWithPedigreeUncertainty="0.01793" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+          <comment xml:lang="en">uncertainty is calculated from uncertainties in waste composition and transfer coefficients in incinerator</comment>
+        </uncertainty>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <inputGroup>5</inputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="fe3bf381-fa09-41c4-964f-abfa1100212f" unitId="980b811e-3905-4797-82a5-173f5568bc7e" amount="0.14823" intermediateExchangeId="1125e767-7b5d-442e-81d6-9b0d3e1919ac">
+        <name xml:lang="en">heat, district or industrial, natural gas</name>
+        <unitName xml:lang="en">MJ</unitName>
+        <comment xml:lang="en">Input to DeNOx stage, to heat up flue gas in low-dust SCR.</comment>
+        <uncertainty>
+          <lognormal meanValue="0.1482" mu="-1.909" variance="0.6748" varianceWithPedigreeUncertainty="0.6748" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </uncertainty>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <inputGroup>5</inputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="fe3bf381-fa09-41c4-964f-abfa11002141" unitId="980b811e-3905-4797-82a5-173f5568bc7e" variableName="E_th_prod_MSWI" amount="3.4935" intermediateExchangeId="45fbbc41-7ae9-46cc-bb31-abfa11e69de0" productionVolumeAmount="1347900000" productionVolumeMathematicalRelation="">
+        <name xml:lang="en">heat, for reuse in municipal waste incineration only</name>
+        <unitName xml:lang="en">MJ</unitName>
+        <uncertainty>
+          <lognormal meanValue="3.494" mu="1.251" variance="0.070798" varianceWithPedigreeUncertainty="0.0708" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+          <comment xml:lang="en">uncertainty is calculated from uncertainties in waste composition and uncertainties in energy efficiency and the uncertainty in internal energy demand</comment>
+        </uncertainty>
+        <property propertyId="38f94dd1-d5aa-41b8-b182-c0c42985d9dc" variableName="E_th_prod_MSWI_price_EUR2005" amount="0.0106" unitId="7b75baf0-cbee-45e6-bf66-af119da06553">
+          <name xml:lang="en">price</name>
+          <unitName xml:lang="en">EUR2005</unitName>
+        </property>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <outputGroup>2</outputGroup>
+      </intermediateExchange>
+      <elementaryExchange id="fe3bf381-fa09-41c4-964f-abfa1100208a" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" casNumber="007439-97-6" amount="8.8544E-09" elementaryExchangeId="40f89b03-64f8-466d-9480-bca47d8a435c">
+        <name xml:lang="en">Mercury</name>
+        <unitName xml:lang="en">kg</unitName>
+        <uncertainty>
+          <lognormal meanValue="8.854E-09" mu="-18.54" variance="3.3408" varianceWithPedigreeUncertainty="3.341" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </uncertainty>
+        <compartment subcompartmentId="aa4362e0-b20a-448b-b2a0-261f4510deb5">
+          <compartment xml:lang="en">water</compartment>
+          <subcompartment xml:lang="en">ground-, long-term</subcompartment>
+        </compartment>
+        <outputGroup>4</outputGroup>
+      </elementaryExchange>
+      <elementaryExchange id="fe3bf381-fa09-41c4-964f-abfa11001f8e" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" casNumber="007439-96-5" amount="7.6813E-09" elementaryExchangeId="b0546417-3064-4878-bd6f-2da75cefdf63">
+        <name xml:lang="en">Manganese</name>
+        <unitName xml:lang="en">kg</unitName>
+        <uncertainty>
+          <lognormal meanValue="7.681E-09" mu="-18.68" variance="1.1116" varianceWithPedigreeUncertainty="1.112" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </uncertainty>
+        <compartment subcompartmentId="e8d7772c-55ca-4dd7-b605-fee5ae764578">
+          <compartment xml:lang="en">air</compartment>
+          <subcompartment xml:lang="en">urban air close to ground</subcompartment>
+        </compartment>
+        <outputGroup>4</outputGroup>
+      </elementaryExchange>
+    </flowData>
+    <administrativeInformation>
+      <dataGeneratorAndPublication accessRestrictedTo="1" />
+    </administrativeInformation>
+  </activityDataset>
+</ecoSpold>

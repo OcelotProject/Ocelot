@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from .transformations import (
-    fix_known_ecoinvent_issues,
-    parameterization_validity_checks,
+    drop_zero_pv_row_datasets,
+    fix_ecoinvent_parameters,
     relabel_global_to_row,
+    variable_names_are_unique,
 )
 
 
@@ -17,7 +18,8 @@ class Configuration(object):
 
 # Default config for now is cutoff
 default_configuration = [
-    fix_known_ecoinvent_issues,
-    parameterization_validity_checks,
+    variable_names_are_unique,
+    fix_ecoinvent_parameters,
     relabel_global_to_row,
+    drop_zero_pv_row_datasets,
 ]

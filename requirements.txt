@@ -1,12 +1,16 @@
 appdirs
 arrow
+bw2parameters
 docopt
 docutils
 jinja2
 lxml
+numpy
+pandas
 psutil
 pyprind
 pyrsistent
 pytest
 toolz
 voluptuous
+wrapt

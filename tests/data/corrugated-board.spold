@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold02">
+  <activityDataset>
+    <activityDescription>
+      <activity id="7d494fb8-92a7-4ae2-943d-6a2cbc6f5b37" activityNameId="d8fbd861-07be-493d-925d-8a41488a486f" inheritanceDepth="0" type="1" specialActivityType="0">
+        <activityName xml:lang="en">corrugated board box production</activityName>
+      </activity>
+      <geography geographyId="34dbbff8-88ce-11de-ad60-0019e336be3a">
+        <shortname xml:lang="en">GLO</shortname>
+      </geography>
+      <technology technologyLevel="3">
+      </technology>
+      <timePeriod startDate="2008-01-01" endDate="2008-12-31" isDataValidForEntirePeriod="true" />
+      <macroEconomicScenario macroEconomicScenarioId="d9f57f0a-a01f-42eb-a57b-8f18d6635801">
+        <name xml:lang="en">Business-as-Usual</name>
+      </macroEconomicScenario>
+    </activityDescription>
+    <flowData>
+      <intermediateExchange id="7badf582-0908-40b4-9bb8-9e424aefe386" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" variableName="wasteLubricantsAmount" amount="0.046" sourceId="f2b8a3d1-3d7d-4478-a877-6a512c093107" sourceYear="2009" sourceFirstAuthor="FEFCO" intermediateExchangeId="1b30b018-ac39-41f4-a9e0-92057eef8bb8" productionVolumeAmount="5783028" productionVolumeMathematicalRelation="corrugatedBoardProductionVolume * wasteLubricantsAmount / corrugatedBoardAmount">
+        <name xml:lang="en">waste mineral oil</name>
+        <unitName xml:lang="en">kg</unitName>
+        <comment xml:lang="en">Reported as "Residues, Lubricants and oil"</comment>
+        <uncertainty>
+          <lognormal meanValue="0.046" mu="-3.08" variance="0.0006" varianceWithPedigreeUncertainty="0.0032" />
+          <pedigreeMatrix reliability="1" completeness="3" temporalCorrelation="1" geographicalCorrelation="5" furtherTechnologyCorrelation="1" />
+          <comment xml:lang="en"></comment>
+        </uncertainty>
+        <productionVolumeUncertainty>
+          <lognormal meanValue="5783000" mu="-6.25" variance="0" varianceWithPedigreeUncertainty="0" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+          <comment xml:lang="en">Calculated variable. Uncertainty will be determined from propagation of uncertainty factors of underlying variables.</comment>
+        </productionVolumeUncertainty>
+        <classification classificationId="ee3238ec-ca7a-4ddc-af1b-e7c35957b9b6">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">Waste</classificationValue>
+        </classification>
+        <outputGroup>2</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="d16e0e2a-ee7c-4b67-8e2d-10350169b2e3" unitId="de5b3c87-0e35-4fb0-9765-4f3ba34c99e5" amount="19.9481865284974" isCalculatedAmount="true" mathematicalRelation="770/38.6" sourceId="f2b8a3d1-3d7d-4478-a877-6a512c093107" sourceYear="2009" sourceFirstAuthor="FEFCO" intermediateExchangeId="609fae33-2e89-4b99-8129-b1f80a6dda33">
+        <name xml:lang="en">natural gas, low pressure</name>
+        <unitName xml:lang="en">m3</unitName>
+        <uncertainty>
+          <lognormal meanValue="19.9481865284974" mu="2.99" variance="0.0006" varianceWithPedigreeUncertainty="0.0032" />
+          <pedigreeMatrix reliability="1" completeness="3" temporalCorrelation="1" geographicalCorrelation="5" furtherTechnologyCorrelation="1" />
+          <comment xml:lang="en"></comment>
+        </uncertainty>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <inputGroup>5</inputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="e5ed62b8-b7a9-430b-83c6-59f80daba401" unitId="de5b3c87-0e35-4fb0-9765-4f3ba34c99e5" variableName="barkResidueAmount" amount="0.00209150326797386" isCalculatedAmount="true" mathematicalRelation="1.6/765" sourceId="f2b8a3d1-3d7d-4478-a877-6a512c093107" sourceYear="2009" sourceFirstAuthor="FEFCO" intermediateExchangeId="6205fbc0-d3ad-46e2-9426-09c6293c417c" productionVolumeAmount="262939.607843138" productionVolumeMathematicalRelation="corrugatedBoardProductionVolume * (barkResidueAmount / corrugatedBoardAmount)">
+        <name xml:lang="en">residual softwood, wet</name>
+        <unitName xml:lang="en">m3</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.00209150326797386" mu="-6.17" variance="0.0006" varianceWithPedigreeUncertainty="0.0132" />
+          <pedigreeMatrix reliability="3" completeness="3" temporalCorrelation="1" geographicalCorrelation="5" furtherTechnologyCorrelation="3" />
+        </uncertainty>
+        <property propertyId="38f94dd1-d5aa-41b8-b182-c0c42985d9dc" variableName="barkResidueAmount_price_EUR2005" amount="19.4156914399732" unitId="7b75baf0-cbee-45e6-bf66-af119da06553">
+          <name xml:lang="en">price</name>
+          <unitName xml:lang="en">EUR2005</unitName>
+        </property>
+        <productionVolumeUncertainty>
+          <lognormal meanValue="262940" mu="-7.45" variance="0" varianceWithPedigreeUncertainty="0" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+          <comment xml:lang="en">Calculated variable. Uncertainty will be determined from propagation of uncertainty factors of underlying variables.</comment>
+        </productionVolumeUncertainty>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <outputGroup>2</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="7e79db68-8d9b-49af-963c-a9e0312ae134" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" variableName="corrugatedBoardAmount" amount="1000" sourceId="f2b8a3d1-3d7d-4478-a877-6a512c093107" sourceYear="2009" sourceFirstAuthor="FEFCO" intermediateExchangeId="ca213807-7c00-4537-ac8c-23d39d0f2bd5" productionVolumeAmount="125718000000" productionVolumeVariableName="corrugatedBoardProductionVolume">
+        <name xml:lang="en">corrugated board box</name>
+        <unitName xml:lang="en">kg</unitName>
+        <property propertyId="38f94dd1-d5aa-41b8-b182-c0c42985d9dc" variableName="corrugatedBoardAmount_price_EUR2005" amount="0.843326883" isDefiningValue="true" unitId="7b75baf0-cbee-45e6-bf66-af119da06553">
+          <name xml:lang="en">price</name>
+          <unitName xml:lang="en">EUR2005</unitName>
+          <comment xml:lang="en">Calculated from EU prices by use of exchange rates.</comment>
+        </property>
+        <productionVolumeUncertainty>
+          <lognormal meanValue="125718000000" mu="18.65" variance="0.0006" varianceWithPedigreeUncertainty="0.0452" />
+          <pedigreeMatrix reliability="3" completeness="3" temporalCorrelation="1" geographicalCorrelation="5" furtherTechnologyCorrelation="4" />
+          <comment xml:lang="en"></comment>
+        </productionVolumeUncertainty>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <outputGroup>0</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="cca28433-84c6-40db-8bb4-c3c1718bf1fd" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" amount="5.95" isCalculatedAmount="true" mathematicalRelation="0.2+0.5*(5.1+3+3.4)" sourceId="f2b8a3d1-3d7d-4478-a877-6a512c093107" sourceYear="2009" sourceFirstAuthor="FEFCO" intermediateExchangeId="463fad24-d1d2-4a5d-9bb4-029d5b553d65">
+        <name xml:lang="en">potato starch</name>
+        <unitName xml:lang="en">kg</unitName>
+        <uncertainty>
+          <lognormal meanValue="5.95" mu="1.78" variance="0.0006" varianceWithPedigreeUncertainty="0.0032" />
+          <pedigreeMatrix reliability="1" completeness="3" temporalCorrelation="1" geographicalCorrelation="5" furtherTechnologyCorrelation="1" />
+          <comment xml:lang="en"></comment>
+        </uncertainty>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <inputGroup>5</inputGroup>
+      </intermediateExchange>
+      <elementaryExchange id="28d0108f-b007-4f55-bfbd-e5e2ee004199" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" casNumber="000074-98-6" amount="0.000163" elementaryExchangeId="3a6c936c-0276-4f11-9d98-1bd011387a6e">
+        <name xml:lang="en">Propane</name>
+        <unitName xml:lang="en">kg</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.000163" mu="-8.72" variance="0.04" varianceWithPedigreeUncertainty="0.0526" />
+          <pedigreeMatrix reliability="3" completeness="3" temporalCorrelation="1" geographicalCorrelation="5" furtherTechnologyCorrelation="3" />
+        </uncertainty>
+        <compartment subcompartmentId="7011f0aa-f5f9-4901-8c10-884ad8296812">
+          <compartment xml:lang="en">air</compartment>
+          <subcompartment xml:lang="en">unspecified</subcompartment>
+        </compartment>
+        <outputGroup>4</outputGroup>
+      </elementaryExchange>
+      <elementaryExchange id="caa677bf-aa46-4571-919d-c66314f4f220" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" casNumber="011104-93-1" amount="0.03" sourceId="f2b8a3d1-3d7d-4478-a877-6a512c093107" sourceYear="2009" sourceFirstAuthor="FEFCO" elementaryExchangeId="c1b91234-6f24-417b-8309-46111d09c457">
+        <name xml:lang="en">Nitrogen oxides</name>
+        <unitName xml:lang="en">kg</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.03" mu="-3.51" variance="0.04" varianceWithPedigreeUncertainty="0.0506" />
+          <pedigreeMatrix reliability="1" completeness="3" temporalCorrelation="1" geographicalCorrelation="5" furtherTechnologyCorrelation="3" />
+          <comment xml:lang="en"></comment>
+        </uncertainty>
+        <compartment subcompartmentId="7011f0aa-f5f9-4901-8c10-884ad8296812">
+          <compartment xml:lang="en">air</compartment>
+          <subcompartment xml:lang="en">unspecified</subcompartment>
+        </compartment>
+        <outputGroup>4</outputGroup>
+      </elementaryExchange>
+      <parameter parameterId="daadf2d4-7bbb-4f69-8ab5-58df4c1685eb" variableName="fraction_PW_to_air" amount="0.15">
+        <name xml:lang="en">fraction, process water, to air</name>
+        <unitName xml:lang="en">dimensionless</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.15" mu="-1.9" variance="0.04" varianceWithPedigreeUncertainty="0.092025" />
+          <pedigreeMatrix reliability="4" completeness="4" temporalCorrelation="3" geographicalCorrelation="2" furtherTechnologyCorrelation="4" />
+        </uncertainty>
+      </parameter>
+      <parameter parameterId="148c8010-cc60-48cd-9b40-fc7278e377f7" variableName="fraction_TW_to_air" mathematicalRelation="fraction_PW_to_air" isCalculatedAmount="true" amount="0.15">
+        <name xml:lang="en">fraction, tap water, to air</name>
+        <uncertainty>
+          <lognormal meanValue="0.15" mu="-1.9" variance="0.04" varianceWithPedigreeUncertainty="0.092025" />
+          <pedigreeMatrix reliability="4" completeness="4" temporalCorrelation="3" geographicalCorrelation="2" furtherTechnologyCorrelation="4" />
+        </uncertainty>
+      </parameter>
+    </flowData>
+    <administrativeInformation>
+      <dataGeneratorAndPublication accessRestrictedTo="1" />
+    </administrativeInformation>
+  </activityDataset>
+</ecoSpold>

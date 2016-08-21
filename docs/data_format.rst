@@ -44,7 +44,7 @@ Technosphere exchanges (``activity_exchange_schema``)
         'id': str, # ecospold2 field 1005: id
         'name': str, # ecospold2 field 1000: flow name
         'tag': 'intermediateExchange',
-        'type': Any('from technosphere', 'reference product', 'byproduct'),
+        'type': Any('from technosphere', 'reference product', 'byproduct', 'dropped product'),
         'unit': str, # ecospold2 field 1035: unitName
         Optional('activity link'): str, # ecospold2 field 1520: activityLinkId
         Optional('byproduct classification'): valid_byproducts, # ecospold2 field 310: classificationValue, if classificationSystem is 'By-product classification'.
@@ -145,7 +145,7 @@ Some fields can only take certain values. The activity dataset, for example, ref
         'waste treatment',
     )
 
-    valid_byproducts = Any('allocatable', 'waste', 'recyclable')
+    valid_byproducts = Any('allocatable product', 'waste', 'recyclable')
 
     valid_technology_levels = Any("undefined", "new", "modern",
                                   "current", "old", "outdated")

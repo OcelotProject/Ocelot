@@ -92,7 +92,7 @@ def extract_production_volume(exc):
         data['formula'] = formula.strip()
     variable = exc.get('productionVolumeVariableName')
     if variable:
-        data['variable'] = variable
+        data['variable'] = variable.strip()
     return data
 
 
@@ -141,7 +141,7 @@ def extract_exchange(exc):
 
     # Variable name and mathematical relation extraction
     if exc.get("variableName"):
-        data['variable'] = exc.get("variableName")
+        data['variable'] = exc.get("variableName").strip()
     if exc.get("mathematicalRelation"):
         data['formula'] = exc.get("mathematicalRelation").strip()
 
