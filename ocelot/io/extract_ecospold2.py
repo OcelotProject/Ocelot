@@ -13,7 +13,6 @@ from lxml import objectify
 from time import time
 import multiprocessing
 import os
-import pprint
 import pyprind
 import signal
 

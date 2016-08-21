@@ -112,7 +112,6 @@ valid_property = Schema({
     'id': str, # ecospold2 field 2300: propertyId
     'name': str,
     'unit': str, # ecospold2 field 2324: unitName
-    'unit': str, # ecospold2 field 2324: unitName
     Optional('formula'): str, # field 2340: mathematicalRelation
     Optional('uncertainty'): valid_uncertainty,
     Optional('variable'): str, # ecospold2 field 2350: variableName

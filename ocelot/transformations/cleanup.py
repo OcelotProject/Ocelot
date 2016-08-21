@@ -14,14 +14,6 @@ def ensure_all_datasets_have_production_volume(data):
     return data
 
 
-def count_same_as_rp(ds):
-    rp = get_single_reference_product(ds)
-    return sum(1 for exc in ds['exchanges']
-               if exc['name'] == rp['name']
-               and exc != rp
-               and not exc.get("activity link"))
-
-
 def drop_zero_pv_row_datasets(data):
     """Drop datasets which have the location ``RoW`` and zero production volumes.
 

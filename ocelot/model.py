@@ -3,7 +3,6 @@ from .configuration import default_configuration
 from .filesystem import (
     cache_data,
     check_cache_directory,
-    get_from_cache,
     OutputDir,
     save_intermediate_result,
 )
@@ -13,7 +12,6 @@ from .report import HTMLReport
 from .results import SaveStrategy
 from .utils import get_function_meta
 from collections.abc import Iterable
-from time import time
 import itertools
 import logging
 import os
