@@ -33,6 +33,9 @@ POWER_RE = re.compile("power\((?P<base>[^;]+);(?P<exponent>[^;]+)\)")
 
 
 def find_if_clause(ds, string):
+    """Reformat clauses that use ``if(condition;if_true;if_false) syntax.
+
+    This won't work on nested if clauses, or anything that uses parentheses inside ``if_true`` or ``if_false``."""
     while IF_RE.search(string):
         match = IF_RE.search(string)
         match_string = match.group(0)
