@@ -14,7 +14,9 @@ install:
 
 test_script:
   - "dir"
+  - "python --version"
+  - "C:\\Python35\\python.exe --version"
   - "dir C:\\Python35\\Scripts\\"
   - "%PYTHON%/Scripts/py.test.exe"
-  - "python setup.py -q install"
-  - "python tests/manual/run_all_ci.py"
+  - "%PYTHON%/python.exe setup.py -q install"
+  - "%PYTHON%/python.exe tests/manual/run_all_ci.py"
