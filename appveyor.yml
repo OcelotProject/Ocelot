@@ -13,6 +13,7 @@ install:
   - "%PYTHON%/Scripts/pip.exe install -r requirements-appveyor.txt"
 
 test_script:
+  - "dir C:/Python35/Scripts/"
   - "%PYTHON%/Scripts/py.test.exe"
-  - "%PYTHON%/Scripts/python.exe setup.py -q install"
-  - "%PYTHON%/Scripts/python.exe tests/manual/run_all_ci.py"
+  - "python setup.py -q install"
+  - "python tests/manual/run_all_ci.py"
