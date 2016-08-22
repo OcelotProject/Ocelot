@@ -4,9 +4,18 @@ from ..utils import (
     get_numerical_property,
     get_single_reference_product,
 )
+from ..validation import check_single_output_activity
 from ...errors import InvalidExchange
 from pprint import pformat
 import wrapt
+
+
+@wrapt.decorator
+def valid_no_allocation_dataset(wrapped, instance, args, kwargs):
+    """Check to make sure the activity has one reference product and no byproducts"""
+    dataset = kwargs.get('dataset') or args[0]
+    check_single_output_activity(dataset)
+    return wrapped(*args, **kwargs)
 
 
 @wrapt.decorator
