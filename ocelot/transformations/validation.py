@@ -4,6 +4,7 @@ from ..errors import (
     InvalidMarket,
     InvalidMarketExchange,
     InvalidMultioutputDataset,
+    MissingMandatoryProperty,
 )
 
 
@@ -49,3 +50,24 @@ def ensure_markets_dont_consume_their_ref_product(data):
             message = "Market dataset has exchanges which consume the ref. product:\n{}"
             raise InvalidMarketExchange(message.format(ds['filepath']))
     return data
+
+
+def ensure_mandatory_properties(data):
+    """If an exchange has properties, it must include the mandatory properties.
+
+    dry mass, water in wet mass, water content, wet mass, carbon content fossil, and carbon content non fossil."""
+    MANDATORY = {"dry mass", "water in wet mass", "water content", "wet mass", "carbon content fossil", "carbon content non-fossil"}
+
+    for ds in data:
+        for exc in ds['exchanges']:
+            if exc.get("properties"):
+                for prop in exc['properties']:
+                    if prop['name'] in MANDATORY:
+                        if 'amount' not in prop:
+                            raise ValueError
+                missing = MANDATORY.difference({p['name'] for p in exc['properties']})
+                if missing:
+                    message = "Exchange is missing mandatory properties: {}\n{}"
+                    raise MissingMandatoryProperty(message.format(missing, ds['filepath']))
+    return data
+
