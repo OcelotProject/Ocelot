@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from ...errors import InvalidMultioutputDataset
-from ..validation import check_single_output_activity
+# from ..validation import check_single_output_activity
 from .combined import combined_production, combined_production_with_byproducts
 from .economic import economic_allocation
+from .validation import valid_no_allocation_dataset
 from .wastes import waste_treatment_allocation, recycling_allocation
 import itertools
 
 
+@valid_no_allocation_dataset
 def no_allocation(dataset):
     return [dataset]
 
@@ -43,30 +45,22 @@ def choose_allocation_method(dataset):
                                    and exc['amount'] != 0
                                    and exc.get('conditional exchange'))
 
-    # Validity checks
-    if dataset['type'] == 'market group':
-        assert number_reference_products == 1
-        assert not allocatable_byproducts
-
-    # No allocation needed
-    if dataset['type'] == 'market group':
+    if number_reference_products == 1 and not allocatable_byproducts:
         return no_allocation
-    elif number_reference_products == 1 and not allocatable_byproducts:
+    elif dataset['type'] == 'market group':
         return no_allocation
-    elif dataset['type'] == 'market activity' and not has_conditional_exchange:
-        # TODO: Why is there no allocation here? Still have more than one
-        # reference product, or some byproducts?
-        return no_allocation
-
-    # Choose between available methods
-    if dataset['type'] == 'market activity' and has_conditional_exchange:
-        return 'constrained market'
+    elif dataset['type'] == 'market activity':
+        if has_conditional_exchange:
+            return no_allocation  # constrained market
+        else:
+            return no_allocation
     elif number_reference_products > 1:
         if allocatable_byproducts:
             return combined_production_with_byproducts
         else:
             return combined_production
     elif negative_reference_production:
+        # TODO: Should be part of a validation function
         assert len(set(reference_product_classifications)) == 1
         if reference_product_classifications[0] == 'waste':
             return waste_treatment_allocation
