@@ -72,6 +72,6 @@ def choose_allocation_method(dataset):
 
 def cutoff_allocation(data):
     """Do cutoff system model allocation."""
-    return [check_single_output_activity(result)
+    return [result  # check_single_output_activity(result)
             for ds in data
             for result in choose_allocation_method(ds)(ds)]
