@@ -69,7 +69,7 @@ class HTMLReport(object):
         template_filepath = os.path.join(data_dir, "report-template.jinja2")
         template = jinja2.Template(open(template_filepath).read())
         self.report_fp = os.path.join(base_dir, "report.html")
-        with open(self.report_fp, "w") as f:
+        with open(self.report_fp, "w", encoding='utf-8') as f:
             f.write(template.render(**data))
 
     def create_assets_directory(self, base_dir):
