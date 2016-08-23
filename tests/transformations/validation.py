@@ -3,11 +3,13 @@ from ocelot.errors import (
     InvalidMarket,
     InvalidMarketExchange,
     InvalidMultioutputDataset,
+    MissingMandatoryProperty,
 )
 from ocelot.transformations.validation import (
     check_single_output_activity,
-    ensure_markets_only_have_one_reference_product,
+    ensure_mandatory_properties,
     ensure_markets_dont_consume_their_ref_product,
+    ensure_markets_only_have_one_reference_product,
 )
 import pytest
 
@@ -121,3 +123,46 @@ def test_ensure_markets_dont_consume_their_ref_product():
     }]
     with pytest.raises(InvalidMarketExchange):
         ensure_markets_dont_consume_their_ref_product(bad)
+
+def test_ensure_mandatory_properties():
+    given = [{'exchanges': [{
+            'name': 'something',
+            'type': 'from technosphere'
+        }]
+    }]
+    assert ensure_mandatory_properties(given)
+
+    missing = [{
+        'filepath': '',
+        'exchanges': [{
+            'name': 'something',
+            'type': 'from technosphere',
+            'properties': [
+                {'amount': 1, 'name': "dry mass"},
+                {'amount': 1, 'name': "water in wet mass"},
+                {'amount': 1, 'name': "wet mass"},
+                {'amount': 1, 'name': "water content"},
+                {'amount': 1, 'name': "carbon content fossil"},
+            ]
+        }]
+    }]
+    with pytest.raises(MissingMandatoryProperty):
+        ensure_mandatory_properties(missing)
+
+    missing = [{
+        'filepath': '',
+        'exchanges': [{
+            'name': 'something',
+            'type': 'from technosphere',
+            'properties': [
+                {'amount': 1, 'name': "dry mass"},
+                {'amount': 1, 'name': "water in wet mass"},
+                {'amount': 1, 'name': "wet mass"},
+                {'name': "water content"},
+                {'amount': 1, 'name': "carbon content fossil"},
+                {'amount': 1, 'name': "carbon content non-fossil"},
+            ]
+        }]
+    }]
+    with pytest.raises(ValueError):
+        ensure_mandatory_properties(missing)

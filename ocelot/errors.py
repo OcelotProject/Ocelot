@@ -58,3 +58,8 @@ class InvalidMarket(Exception):
 class UnresolvableActivityLink(OcelotError):
     """Activity link can't be uniquely resolved to an exchange"""
     pass
+
+
+class MissingMandatoryProperty(Exception):
+    """Exchange is missing a mandatory property"""
+    pass
