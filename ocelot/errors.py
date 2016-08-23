@@ -53,3 +53,8 @@ class InvalidMarketExchange(Exception):
 class InvalidMarket(Exception):
     """Markets can only have one reference product"""
     pass
+
+
+class MissingMandatoryProperty(Exception):
+    """Exchange is missing a mandatory property"""
+    pass
