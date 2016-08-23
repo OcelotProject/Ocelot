@@ -10,6 +10,6 @@ from .parameterization import (
     variable_names_are_unique,
 )
 from .validation import (
-    ensure_markets_dont_consume_their_ref_product,
-    ensure_markets_only_have_one_reference_product,
+    ensure_mandatory_properties,
+    validate_markets,
 )

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from .utils import allocatable_production
+from ..collection import Collection
 from ..errors import (
     InvalidMarket,
     InvalidMarketExchange,
@@ -50,6 +51,12 @@ def ensure_markets_dont_consume_their_ref_product(data):
             message = "Market dataset has exchanges which consume the ref. product:\n{}"
             raise InvalidMarketExchange(message.format(ds['filepath']))
     return data
+
+
+validate_markets = Collection(
+    ensure_markets_only_have_one_reference_product,
+    ensure_markets_dont_consume_their_ref_product,
+)
 
 
 def ensure_mandatory_properties(data):
