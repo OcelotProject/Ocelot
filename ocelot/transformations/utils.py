@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from ..errors import InvalidMultioutputDataset, ZeroProduction
-from ..uncertainty import scale_exchange
+from .uncertainty import scale_exchange, remove_exchange_uncertainty
 from copy import deepcopy
 from pprint import pformat
 import hashlib
@@ -191,18 +191,6 @@ def label_reference_product(dataset):
     Uses ``get_single_reference_product``."""
     dataset['reference product'] = get_single_reference_product(dataset)['name']
     return dataset
-
-
-def remove_exchange_uncertainty(exchange):
-    """Remove uncertainty from the given ``exchange``"""
-    exchange['uncertainty'] = {
-        'maximum': exchange['amount'],
-        'minimum': exchange['amount'],
-        'pedigree matrix': {},
-        'standard deviation 95%': 0.,
-        'type': 'undefined',
-    }
-    return exchange
 
 
 def nonreference_product(exchange):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .errors import UnsupportedDistribution
+from ...errors import UnsupportedDistribution
 import math
 
 
@@ -47,7 +47,8 @@ def scale_uniform(exchange, factor):
 
 
 def scale_undefined(exchange, factor):
-    # TODO: How to handle `standard deviation 95%`?
+    # 'standard deviation 95%' is not modified, as this value
+    # has ambiguous meaning and is always 0 in ecoinvent 3.2
     return scale_fields(exchange, ('minimum', 'maximum'), factor)
 
 

@@ -5,9 +5,9 @@ from ..utils import (
     allocatable_production,
     get_single_reference_product,
     nonreference_product,
-    remove_exchange_uncertainty,
 )
 from ..parameterization import recalculate
+from ..uncertainty import remove_exchange_uncertainty
 from .economic import economic_allocation
 from .validation import valid_combined_production_activity
 from copy import deepcopy

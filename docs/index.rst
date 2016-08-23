@@ -23,6 +23,7 @@ Contents:
    foundation
    transformation
    filesystem
+   uncertainty
    tests
    contributing
 
