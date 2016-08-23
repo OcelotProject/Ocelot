@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from .activity_links import check_activity_link_validity
 from .locations import relabel_global_to_row
 from .cleanup import (
     drop_zero_pv_row_datasets,

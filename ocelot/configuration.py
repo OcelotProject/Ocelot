@@ -7,6 +7,7 @@ from .transformations import (
     validate_markets,
     variable_names_are_unique,
 )
+from .transformations.cutoff import cleanup_activity_links
 
 
 class Configuration(object):
@@ -24,6 +25,7 @@ default_configuration = [
     # ensure_mandatory_properties,
     validate_markets,
     fix_ecoinvent_parameters,
+    cleanup_activity_links,
     relabel_global_to_row,
     drop_zero_pv_row_datasets,
 ]
