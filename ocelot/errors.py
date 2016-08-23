@@ -53,3 +53,8 @@ class InvalidMarketExchange(Exception):
 class InvalidMarket(Exception):
     """Markets can only have one reference product"""
     pass
+
+
+class UnresolvableActivityLink(OcelotError):
+    """Activity link can't be uniquely resolved to an exchange"""
+    pass

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ocelot.transformations.cutoff.cleanup import (
+    drop_rp_activity_links,
     remove_consequential_exchanges,
 )
 
@@ -35,3 +36,26 @@ def test_remove_consequential_exchanges():
     }]
     assert remove_consequential_exchanges(given) == expected
 
+def test_drop_rp_activity_links():
+    given = [{
+        'name': 'a name',
+        'exchanges': [{
+            'type': 'not reference product',
+            'activity link': 'keep me'
+        }, {
+            'type': 'reference product',
+            'activity link': 'delete me',
+            'name': 'something for logging'
+        }]
+    }]
+    expected = [{
+        'name': 'a name',
+        'exchanges': [{
+            'type': 'not reference product',
+            'activity link': 'keep me'
+        }, {
+            'type': 'reference product',
+            'name': 'something for logging'
+        }]
+    }]
+    assert drop_rp_activity_links(given) == expected
