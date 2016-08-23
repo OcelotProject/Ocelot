@@ -5,8 +5,9 @@ from ..errors import (
     InvalidMarket,
     InvalidMarketExchange,
     InvalidMultioutputDataset,
-    MissingMandatoryProperty,
+    # MissingMandatoryProperty,
 )
+import logging
 
 
 def check_single_output_activity(dataset):
@@ -60,9 +61,16 @@ validate_markets = Collection(
 
 
 def ensure_mandatory_properties(data):
-    """If an exchange has properties, it must include the mandatory properties.
+    """If an exchange has properties, it should include the mandatory properties.
 
-    dry mass, water in wet mass, water content, wet mass, carbon content fossil, and carbon content non fossil."""
+    * dry mass
+    * water in wet mass
+    * water content
+    * wet mass
+    * carbon content fossil
+    * carbon content non fossil
+
+    This function logs exchanges which are missing some of these mandatory properties."""
     MANDATORY = {"dry mass", "water in wet mass", "water content", "wet mass", "carbon content fossil", "carbon content non-fossil"}
 
     for ds in data:
@@ -74,7 +82,15 @@ def ensure_mandatory_properties(data):
                             raise ValueError
                 missing = MANDATORY.difference({p['name'] for p in exc['properties']})
                 if missing:
-                    message = "Exchange is missing mandatory properties: {}\n{}"
-                    raise MissingMandatoryProperty(message.format(missing, ds['filepath']))
+                    logging.info({
+                        'type': 'table element',
+                        'data': (ds['name'], exc['name'], "; ".join(sorted(missing)))
+                    })
+                    # message = "Exchange is missing mandatory properties: {}\n{}"
+                    # raise MissingMandatoryProperty(message.format(missing, ds['filepath']))
     return data
 
+ensure_mandatory_properties.__table__ = {
+    'title': 'Exchanges with properties should have all mandatory properties',
+    'columns': ["Activity name", "Flow name", "Missing properties"]
+}

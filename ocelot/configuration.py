@@ -22,6 +22,8 @@ class Configuration(object):
 # Default config for now is cutoff
 default_configuration = [
     variable_names_are_unique,
+    # There are a *lot* of missing mandatory properties
+    # No point adding them to this report
     # ensure_mandatory_properties,
     validate_markets,
     fix_ecoinvent_parameters,
