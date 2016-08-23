@@ -5,6 +5,7 @@ from .transformations import (
     relabel_global_to_row,
     variable_names_are_unique,
 )
+from .transformations.cutoff import cleanup_activity_links
 
 
 class Configuration(object):
@@ -20,6 +21,7 @@ class Configuration(object):
 default_configuration = [
     variable_names_are_unique,
     fix_ecoinvent_parameters,
+    cleanup_activity_links,
     relabel_global_to_row,
     drop_zero_pv_row_datasets,
 ]
