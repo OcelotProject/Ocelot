@@ -10,7 +10,7 @@ from .io import extract_directory
 from .logger import create_log
 from .report import HTMLReport
 from .results import SaveStrategy
-from .utils import get_function_meta
+from .utils import get_function_meta, validate_configuration
 from collections.abc import Iterable
 import itertools
 import logging
@@ -66,7 +66,7 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
     """
     print("Starting Ocelot model run")
     try:
-        config = config or default_configuration
+        config = validate_configuration(config or default_configuration)
         data = extract_directory(data_path, use_cache)
         output_manager = OutputDir()
         counter = itertools.count()

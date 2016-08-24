@@ -63,3 +63,8 @@ class UnresolvableActivityLink(OcelotError):
 class MissingMandatoryProperty(Exception):
     """Exchange is missing a mandatory property"""
     pass
+
+
+class InvalidTransformationFunction(OcelotError):
+    """Metadata could not be retrieved for this function"""
+    pass
