@@ -20,7 +20,7 @@ def recycling_allocation(dataset):
     This function will change the reference product to an input (meaning that it is now an allocatable input instead of an output), and then perform economic allocation."""
     rp = get_single_reference_product(dataset)
     rp['type'] = 'from technosphere'
-    # TODO: Figure out about uncertainties
+    # TODO: Use rescale_exchange when new uncertainties code is merged
     rp['amount'] = -1 * rp['amount']
     return economic_allocation(dataset)
 

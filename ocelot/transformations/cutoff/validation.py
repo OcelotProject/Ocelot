@@ -43,8 +43,8 @@ def valid_recycling_activity(wrapped, instance, args, kwargs):
     """
     dataset = kwargs.get('dataset') or args[0]
     rp = get_single_reference_product(dataset)
-    if not rp['amount'] > 0:
-        message = "Reference product exchange amount not greater than 0:\n{}"
+    if not rp['amount'] < 0:
+        message = "Reference product exchange amount shouldn't be positive:\n{}"
         raise InvalidExchange(message.format(pformat(dataset)))
     if not any(exc for exc in dataset['exchanges']
                if exc['type'] == 'byproduct'
