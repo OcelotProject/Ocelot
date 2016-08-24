@@ -18,6 +18,7 @@ SPECIAL_ACTIVITY_TYPE = {
 TECHNOLOGY_LEVEL = {
     "0": "undefined",
     "None": "undefined",
+    None: "undefined",
     "1": "new",
     "2": "modern",
     "3": "current",

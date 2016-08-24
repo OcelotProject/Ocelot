@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from .activity_links import check_activity_link_validity
 from .locations import relabel_global_to_row
 from .cleanup import (
     drop_zero_pv_row_datasets,
@@ -10,6 +11,6 @@ from .parameterization import (
     variable_names_are_unique,
 )
 from .validation import (
-    ensure_markets_dont_consume_their_ref_product,
-    ensure_markets_only_have_one_reference_product,
+    ensure_mandatory_properties,
+    validate_markets,
 )
