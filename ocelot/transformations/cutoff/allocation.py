@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from ...collection import Collection
 from ...errors import InvalidMultioutputDataset
-# from ..validation import check_single_output_activity
+from ...wrapper import TransformationWrapper
 from .combined import combined_production, combined_production_with_byproducts
 from .economic import economic_allocation
 from .validation import valid_no_allocation_dataset
@@ -10,6 +11,9 @@ import itertools
 
 @valid_no_allocation_dataset
 def no_allocation(dataset):
+    """No-op for single output dataset.
+
+    Performs a validity check to make sure that there is only one reference product and no allocatable byproducts."""
     return [dataset]
 
 
@@ -70,8 +74,24 @@ def choose_allocation_method(dataset):
         return economic_allocation
 
 
-def cutoff_allocation(data):
-    """Do cutoff system model allocation."""
-    return [result  # check_single_output_activity(result)
-            for ds in data
-            for result in choose_allocation_method(ds)(ds)]
+def label_allocation_method(data):
+    """Add ``allocation method`` attribute to each dataset with the chosen allocation function."""
+    for ds in data:
+        ds['allocation method'] = choose_allocation_method(ds)
+    return data
+
+
+ALLOCATION_METHODS = (
+    no_allocation,
+    economic_allocation,
+    recycling_allocation,
+    waste_treatment_allocation,
+    combined_production,
+    combined_production_with_byproducts,
+)
+
+cutoff_allocation = Collection(
+    label_allocation_method,
+    *[TransformationWrapper(f, lambda ds: ds['allocation method'] == x)
+      for f in ALLOCATION_METHODS]
+)
