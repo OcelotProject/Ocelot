@@ -8,6 +8,8 @@ import re
 import unicodedata
 import uuid
 
+# Ecospold 2 extractor version. Bump this to invalidate all caches.
+__io_version__ = "4"
 
 re_slugify = re.compile('[^\w\s-]', re.UNICODE)
 
@@ -77,10 +79,12 @@ def get_base_directory():
 def get_cache_filepath_for_data_path(data_path):
     """Return the cache directory for source directory ``data_path``.
 
-    The cache filepath is in the directory returned by ``get_cache_directory``. The file name is the MD5 hash of the string ``data_path`` plus ``".pickle"``"""
+    The cache filepath is in the directory returned by ``get_cache_directory``. The file name is the MD5 hash of the string ``data_path`` + ``__io_version__``, plus the suffix ``".pickle"``"""
     return os.path.join(
         get_cache_directory(),
-        hashlib.md5(data_path.encode("utf-8")).hexdigest() + ".pickle"
+        hashlib.md5(
+            (data_path + __io_version__).encode("utf-8")
+        ).hexdigest() + ".pickle"
     )
 
 
