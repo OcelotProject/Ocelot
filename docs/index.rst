@@ -21,7 +21,6 @@ Contents:
    cutoff
    data_format
    foundation
-   transformation
    filesystem
    tests
    contributing

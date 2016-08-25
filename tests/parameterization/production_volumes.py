@@ -31,8 +31,7 @@ def test_create_pv_parameters_format():
         }],
         'parameters': []
     }
-    print(create_pv_parameters(given))
-    assert dataset_schema(create_pv_parameters(given))
+    assert dataset_schema(create_pv_parameters(given)[0])
 
 def test_create_pv_parameters_create_parameter():
     given = {
@@ -64,7 +63,7 @@ def test_create_pv_parameters_create_parameter():
             'amount': 1
         }]
     }
-    result = create_pv_parameters(given)
+    result = create_pv_parameters(given)[0]
     result['parameters'][0]['id'] = ''
     assert result == expected
 
@@ -84,4 +83,4 @@ def test_create_pv_parameters_delete_formula():
             }
         }],
     }
-    assert create_pv_parameters(given) == expected
+    assert create_pv_parameters(given)[0] == expected

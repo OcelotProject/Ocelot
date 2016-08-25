@@ -36,7 +36,7 @@ def create_pv_parameters(dataset):
             del pv['variable']
         elif 'formula' in pv:
             del pv['formula']
-    return dataset
+    return [dataset]
 
 create_pv_parameters.__table__ = {
     'title': 'Turn parameterized production volumes into parameters.',

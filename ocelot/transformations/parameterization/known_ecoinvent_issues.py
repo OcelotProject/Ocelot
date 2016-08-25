@@ -9,7 +9,7 @@ KNOWN_SUBSTITUTIONS = (
 
 
 def fix_known_bad_formula_strings(data):
-    """Change certain known bad text elements in formulas"""
+    """Change certain known bad text elements in formulas."""
     message = ("{} ({}): Changed {} to {}")
 
     for ds in data:

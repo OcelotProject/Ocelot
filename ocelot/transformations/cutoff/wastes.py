@@ -18,9 +18,9 @@ def recycling_allocation(dataset):
 
     Returns a list of new activities.
 
-    A recycling dataset has a reference product of the material to be recycled, and a byproduct of the material that can enter a market. For example, aluminium recycling has a reference production of -1 kg of 'aluminium scrap, post-consumer, prepared for melting', and allocatable byproducts of 'aluminium, cast alloy' and 'aluminium oxide'.
+    A recycling dataset has a reference product of the material to be recycled, and a byproduct of the material that can enter a market. For example, aluminium recycling has a reference production of -1 kg of ``aluminium scrap, post-consumer, prepared for melting``, and allocatable byproducts of ``aluminium, cast alloy`` and ``aluminium oxide``.
 
-    This function will change the reference product to an input (meaning that this activity will consumer e.g. aluminium scrap), and then perform economic allocation on the byproducts.
+    This function will change the reference product to an input (meaning that this activity will consume e.g. aluminium scrap), and then perform economic allocation on the byproducts.
 
     Note that recycling allocation is not applied to ``recyclable`` byproducts, as the cutoff system model breaks the chain between production and consumption of these types of materials.
 
@@ -90,7 +90,7 @@ def create_recycled_content_datasets(data):
 
     In the cutoff system model, no credit is given for the production of recyclable materials. Rather, consumers get these materials with no environmental burdens. So the production of a recyclable material (i.e. a flow with the byproduct classification ``recyclable``) during any transforming activity will create a new flow which has no consumer. This function creates consuming activities for these flows. These new activities have no environmental burdens, and serve no purpose other than to balance the output of a recyclable material.
 
-    These new datasets have the name of the recyclable flow, followed by the string ``, Recycled Content cut-off``.
+    These new datasets have the name of the recyclable flow, followed by the string ``, Recycled Content cut-off``, e.g. ``scrap lead acid battery, Recycled Content cut-off``.
 
     """
     new_datasets = {}

@@ -6,6 +6,7 @@ from .cleanup import (
     ensure_all_datasets_have_production_volume,
 )
 from .parameterization import (
+    create_pv_parameters,
     fix_ecoinvent_parameters,
     recalculate,
     variable_names_are_unique,

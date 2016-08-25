@@ -27,9 +27,9 @@ def check_single_output_activity(dataset):
 
 
 def ensure_markets_only_have_one_reference_product(data):
-    """"Markets are only allowed to have one reference product exchange.
+    """Markets are only allowed to have one reference product exchange.
 
-    Raises ``InvalidMarket`` if multiple outputs were found."""
+    Raises ``InvalidMarket`` if zero or multiple outputs were found."""
     for ds in (obj for obj in data if obj['type'] == 'market activity'):
         if sum(1 for exc in ds['exchanges'] if exc['type'] == 'reference product') != 1:
             message = "Market dataset has zero or multiple reference products:\{}"
@@ -38,7 +38,7 @@ def ensure_markets_only_have_one_reference_product(data):
 
 
 def ensure_markets_dont_consume_their_ref_product(data):
-    """Markets aren't allowed to consumer their own reference product.
+    """Markets aren't allowed to consume their own reference product.
 
     Raise ``InvalidMarketExchange`` if such an exchange is found.
 

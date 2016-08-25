@@ -1,5 +1,7 @@
-Internal data formats
-*********************
+.. _dataformat:
+
+Internal data format
+********************
 
 Datasets
 ========
@@ -7,7 +9,6 @@ Datasets
 Internally, datasets have the bare minimum of information needed for successful linking. Most information from `ecospold2 files <http://www.ecoinvent.org/data-provider/data-provider-toolkit/ecospold2/ecospold2.html>`__ is not read, as it is not needed during Ocelot runs and would needlessly consume resources to manage.
 
 Ocelot uses the `voluptuous validation library <https://pypi.python.org/pypi/voluptuous>`__ to make sure extracted datasets are formatted the way that Ocelot expects. The voluptuous schema is restrictive - only the listed values are allowed.
-
 
 Activity
 --------

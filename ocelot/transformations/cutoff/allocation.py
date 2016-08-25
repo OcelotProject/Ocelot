@@ -22,16 +22,48 @@ def no_allocation(dataset):
 def choose_allocation_method(dataset):
     """Choose from among the following allocation methods:
 
+    * no allocation
     * combined production
     * combined production with byproducts
     * constrained market
-    * economic (including true value allocation)
+    * economic (including true value) allocation
     * recycling
     * waste treatment
 
-    TODO: It feels strange to get reference product classification from the byproduct classification... this should at least be described a bit.
+    The chosen allocation function is returned as a string.
 
-    The chosen allocation function is returned. For functions which don't need allocation, a dummy function (which does nothing) is returned. Note that all functions returned by this function must return a list of datasets.
+    The choice is made using the following decision tree:
+
+    If the dataset is a market group:
+        * **no allocation**
+
+    If the dataset has only one reference product and no allocatable byproducts:
+        * **no allocation**
+
+    If the dataset is a market activity:
+        * and has a conditional exchange: **constrained market**,
+        * otherwise: **no allocation**
+
+    A conditional exchange is an exchange with the following properties:
+
+    * The exchange amount is negative
+    * The exchange has a hard (activity) link
+    * The exchange is a byproduct
+
+    Conditional exchanges are used in the consequential system model.
+
+    If there is more than one reference product,
+        * and there are allocatable byproducts: **combined production with byproducts**,
+        * otherwise: **combined production**.
+
+    If the reference production exchange has a negative amount, meaning that this dataset is a treatment service that consumes instead of producing something:
+        * If the reference product has the classification ``waste``: **waste treatment**
+        * Otherwise: **recycling**
+
+    If no of the above apply:
+        * **economic**
+
+    Economic allocation uses "true value" properties whenever they are present.
 
     """
     reference_product_classifications = [exc.get('byproduct classification')
