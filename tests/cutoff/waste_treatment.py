@@ -8,12 +8,9 @@ import os
 import pytest
 
 
-### Test artificial cases
-
-
 ### Test real test data
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def paper():
     fp = os.path.join(os.path.dirname(__file__), "..", "data",
                       "treatment-waste-graphical-paper.spold")

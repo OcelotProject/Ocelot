@@ -20,8 +20,8 @@ def no_allocation(dataset):
 def choose_allocation_method(dataset):
     """Choose from among the following allocation methods:
 
+    * combined production
     * combined production with byproducts
-    * combined production without byproducts
     * constrained market
     * economic (including true value allocation)
     * recycling

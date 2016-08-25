@@ -14,34 +14,43 @@ def test_recycling_activity_validation_errors():
     def f(dataset):
         return dataset
 
-    no_byproduct = {'exchanges': [
-        {
-            'type': 'reference product',
-            'amount': 1
-        }
-    ]}
+    no_byproduct = {
+        'filepath': 'foo',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'amount': 1
+            }
+        ]
+    }
     with pytest.raises(InvalidExchange):
         f(no_byproduct)
 
-    negative_value = {'exchanges': [
-        {
-            'type': 'reference product',
-            'amount': -1
-        }
-    ]}
+    negative_value = {
+        'filepath': 'foo',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'amount': -1
+            }
+        ]
+    }
     with pytest.raises(InvalidExchange):
         f(negative_value)
 
-    wrong_classification = {'exchanges': [
-        {
-            'type': 'reference product',
-            'amount': 1
-        },
-        {
-            'type': 'byproduct',
-            'byproduct classification': 'waste'
-        }
-    ]}
+    wrong_classification = {
+        'filepath': 'foo',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'amount': 1
+            },
+            {
+                'type': 'byproduct',
+                'byproduct classification': 'waste'
+            }
+        ]
+    }
     with pytest.raises(InvalidExchange):
         f(wrong_classification)
 
@@ -165,6 +174,7 @@ def test_economic_activity_validation():
 
     data = {'exchanges': [
         {
+            'amount': 1,
             'type': 'reference product',
             'properties': [{
                 'name': 'price',

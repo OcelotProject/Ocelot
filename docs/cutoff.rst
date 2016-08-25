@@ -35,6 +35,10 @@ Data cleanup
 
 .. autofunction:: ocelot.transformations.activity_links.check_activity_link_validity
 
+.. autofunction:: ocelot.transformations.cutoff.wastes.create_recycled_content_datasets
+
+.. autofunction:: ocelot.transformations.cutoff.wastes.flip_non_allocatable_byproducts
+
 Split multioutput activities
 ============================
 

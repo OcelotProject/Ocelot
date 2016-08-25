@@ -10,7 +10,7 @@ __all__ = (
 from .allocation import choose_allocation_method, cutoff_allocation
 from .economic import economic_allocation
 from .utils import apply_allocation_factors
-
+from .wastes import handle_waste_outputs
 
 from ...collection import Collection
 from ..activity_links import check_activity_link_validity
