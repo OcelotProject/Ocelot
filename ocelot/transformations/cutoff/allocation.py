@@ -2,6 +2,7 @@
 from ...collection import Collection
 from ...errors import InvalidMultioutputDataset
 from ...wrapper import TransformationWrapper
+from ..utils import allocatable_production
 from .combined import combined_production, combined_production_with_byproducts
 from .economic import economic_allocation
 from .markets import constrained_market_allocation
@@ -74,13 +75,12 @@ def choose_allocation_method(dataset):
     negative_reference_production = any(1 for exc in dataset['exchanges']
                                         if exc['type'] == 'reference product'
                                         and exc['amount'] < 0)
-    allocatable_byproducts = any(1 for exc in dataset['exchanges']
+    allocatable_byproducts = any(1
+                                 for exc in allocatable_production(dataset)
                                  if exc['type'] == 'byproduct'
-                                 and exc['byproduct classification'] == 'allocatable product'
                                  and exc['amount'] != 0)
     has_conditional_exchange = any(1 for exc in dataset['exchanges']
-                                   if exc['type'] == 'byproduct'
-                                   and exc.get('conditional exchange'))
+                                   if exc.get('conditional exchange'))
 
     if number_reference_products == 1 and not allocatable_byproducts:
         return None
@@ -114,15 +114,14 @@ def label_allocation_method(data):
     return data
 
 
-ALLOCATION_METHODS = {
-    None: no_allocation,
-    "economic": economic_allocation,
-    "recycling": recycling_allocation,
-    "waste treatment": waste_treatment_allocation,
-    "combined production": combined_production,
-    "combined production with byproducts": combined_production_with_byproducts,
-    "constrained market": constrained_market_allocation,
-}
+ALLOCATION_METHODS = (
+    ("economic", economic_allocation),
+    ("constrained market", constrained_market_allocation),
+    ("recycling", recycling_allocation),
+    ("waste treatment", waste_treatment_allocation),
+    ("combined production", combined_production),
+    ("combined production with byproducts", combined_production_with_byproducts),
+)
 
 
 def create_allocation_filter(label):
@@ -138,6 +137,6 @@ cutoff_allocation = Collection(
     label_allocation_method,
     *[TransformationWrapper(func,
                             create_allocation_filter(label))
-      for label, func in ALLOCATION_METHODS.items()],
+      for label, func in ALLOCATION_METHODS],
     TransformationWrapper(delete_allocation_method),
 )
