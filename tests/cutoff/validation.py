@@ -151,21 +151,21 @@ def test_economic_activity_validation_errors():
     with pytest.raises(InvalidExchange):
         f(zero_amount)
 
-    zero_price = {
-        'filepath': 'foo',
-        'exchanges': [
-            {
-                'type': 'reference product',
-                'properties': [{
-                    'name': 'price',
-                    'amount': 0
-                }],
-                'amount': 1
-            },
-        ]
-    }
-    with pytest.raises(InvalidExchange):
-        f(zero_price)
+    # zero_price = {
+    #     'filepath': 'foo',
+    #     'exchanges': [
+    #         {
+    #             'type': 'reference product',
+    #             'properties': [{
+    #                 'name': 'price',
+    #                 'amount': 0
+    #             }],
+    #             'amount': 1
+    #         },
+    #     ]
+    # }
+    # with pytest.raises(InvalidExchange):
+    #     f(zero_price)
 
 def test_waste_treatment_validation():
     @valid_waste_treatment_activity
