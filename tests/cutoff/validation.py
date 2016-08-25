@@ -53,7 +53,7 @@ def test_recycling_activity_validation():
     correct = {'exchanges': [
         {
             'type': 'reference product',
-            'amount': 1
+            'amount': -1
         },
         {
             'type': 'byproduct',
