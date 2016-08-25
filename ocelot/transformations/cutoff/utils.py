@@ -12,3 +12,10 @@ def apply_allocation_factors(dataset, factors):
         choose_reference_product_exchange(dataset, exc, scale)
         for scale, exc in factors
     ]
+
+
+def delete_allocation_method(dataset):
+    """Delete key ``allocation method`` if present"""
+    if "allocation method" in dataset:
+        del dataset["allocation method"]
+    return [dataset]
