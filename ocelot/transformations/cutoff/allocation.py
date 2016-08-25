@@ -4,6 +4,7 @@ from ...errors import InvalidMultioutputDataset
 from ...wrapper import TransformationWrapper
 from .combined import combined_production, combined_production_with_byproducts
 from .economic import economic_allocation
+from .markets import constrained_market_allocation
 from .validation import valid_no_allocation_dataset
 from .wastes import waste_treatment_allocation, recycling_allocation
 import itertools
@@ -46,7 +47,6 @@ def choose_allocation_method(dataset):
                                  and exc['amount'] != 0)
     has_conditional_exchange = any(1 for exc in dataset['exchanges']
                                    if exc['type'] == 'byproduct'
-                                   and exc['amount'] != 0  # Should always be negative
                                    and exc.get('conditional exchange'))
 
     if number_reference_products == 1 and not allocatable_byproducts:
@@ -55,7 +55,7 @@ def choose_allocation_method(dataset):
         return no_allocation
     elif dataset['type'] == 'market activity':
         if has_conditional_exchange:
-            return no_allocation  # constrained market
+            return constrained_market_allocation
         else:
             return no_allocation
     elif number_reference_products > 1:
@@ -88,6 +88,7 @@ ALLOCATION_METHODS = (
     waste_treatment_allocation,
     combined_production,
     combined_production_with_byproducts,
+    constrained_market_allocation,
 )
 
 cutoff_allocation = Collection(
