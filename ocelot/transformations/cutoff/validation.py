@@ -53,7 +53,7 @@ def valid_recycling_activity(wrapped, instance, args, kwargs):
     rp = get_single_reference_product(dataset)
     if not rp['amount'] < 0:
         message = "Reference product exchange amount shouldn't be positive:\n{}"
-        raise InvalidExchange(message.format(pformat(dataset)))
+        raise InvalidExchange(message.format(pformat(dataset['filepath'])))
 
     allocatable_byproducts = (
         exc
@@ -79,11 +79,11 @@ def valid_waste_treatment_activity(wrapped, instance, args, kwargs):
     if rp.get('byproduct classification') != 'waste':
         message = ("Wrong byproduct classification for waste treatment "
             "reference product:\n{}\nIn dataset:\n{}")
-        raise InvalidExchange(message.format(pformat(exchange), pformat(dataset)))
+        raise InvalidExchange(message.format(pformat(rp), dataset['filepath']))
     if not rp['amount'] < 0:
         message = ("Waste treatment ref. product exchange amount must be "
             "negative:\n{}\nIn dataset:\n{}")
-        raise InvalidExchange(message.format(pformat(exchange), pformat(dataset)))
+        raise InvalidExchange(message.format(pformat(rp), dataset['filepath']))
     return wrapped(*args, **kwargs)
 
 

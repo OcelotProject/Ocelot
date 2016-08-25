@@ -5,6 +5,7 @@ from ocelot.transformations.cutoff.validation import (
     valid_combined_production_activity,
     valid_economic_activity,
     valid_recycling_activity,
+    valid_waste_treatment_activity,
 )
 import pytest
 
@@ -166,6 +167,52 @@ def test_economic_activity_validation_errors():
     }
     with pytest.raises(InvalidExchange):
         f(zero_price)
+
+def test_waste_treatment_validation():
+    @valid_waste_treatment_activity
+    def f(dataset):
+        return dataset
+
+    correct = {'exchanges': [
+        {
+            'type': 'reference product',
+            'amount': -1,
+            'byproduct classification': 'waste'
+        },
+        {
+            'type': 'byproduct',
+            'byproduct classification': 'allocatable product'
+        }
+    ]}
+    assert f(correct) is correct
+    assert f(dataset=correct) is correct
+
+def test_waste_treatment_validation_errors():
+    @valid_waste_treatment_activity
+    def f(dataset):
+        return dataset
+
+    wrong_classification = {
+        'filepath': 'foo',
+        'exchanges': [{
+            'type': 'reference product',
+            'amount': -1,
+            'byproduct classification': 'recyclable'
+        }]
+    }
+    with pytest.raises(InvalidExchange):
+        f(wrong_classification)
+
+    wrong_amount = {
+        'filepath': 'foo',
+        'exchanges': [{
+            'type': 'reference product',
+            'amount': 0,
+            'byproduct classification': 'waste'
+        }]
+    }
+    with pytest.raises(InvalidExchange):
+        f(wrong_amount)
 
 def test_economic_activity_validation():
     @valid_economic_activity
