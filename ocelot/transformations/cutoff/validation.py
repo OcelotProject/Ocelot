@@ -87,24 +87,6 @@ def valid_waste_treatment_activity(wrapped, instance, args, kwargs):
     return wrapped(*args, **kwargs)
 
 
-@wrapt.decorator
-def valid_combined_production_activity(wrapped, instance, args, kwargs):
-    """Check to make sure the activity meets the assumptions for combined production allocation.
-
-    * Each refernce product exchange must be a variable name, so that the amount of inputs can vary depending on whether that reference product is chosen in subdivision.
-
-    """
-    dataset = kwargs.get('dataset') or args[0]
-    for exc in dataset['exchanges']:
-        if (exc['type'] == 'reference product'
-            and exc['amount']
-            and not exc.get('variable')):
-            message = ("Ref. product exchange in combined production must have"
-                " variable name:\n{}\nIn dataset:\n{}")
-            raise InvalidExchange(message.format(pformat(exc), pformat(dataset)))
-    return wrapped(*args, **kwargs)
-
-
 def ready_for_market_linking(data):
     """All transforming activities must have exactly one reference product.
 

@@ -2,7 +2,6 @@
 from ocelot.errors import InvalidExchange, InvalidMultioutputDataset
 from ocelot.transformations.cutoff.validation import (
     ready_for_market_linking,
-    valid_combined_production_activity,
     valid_economic_activity,
     valid_recycling_activity,
     valid_waste_treatment_activity,
@@ -231,29 +230,6 @@ def test_economic_activity_validation():
     ]}
     assert f(data) is data
     assert f(dataset=data) is data
-
-def test_combined_production_validation_errors():
-    @valid_combined_production_activity
-    def f(dataset):
-        return dataset
-
-    no_variable = {'exchanges': [
-        {
-            'type': 'reference product',
-            'amount': 1
-        }
-    ]}
-    with pytest.raises(InvalidExchange):
-        f(no_variable)
-
-    yes_variable = {'exchanges': [
-        {
-            'type': 'reference product',
-            'variable': 'yes minister!',
-            'amount': 1
-        }
-    ]}
-    assert f(yes_variable)
 
 def test_ready_for_market_linking():
     valid = [{
