@@ -169,21 +169,6 @@ def test_normal_economic_allocation():
     }]
     assert economic_allocation(dataset) == expected
 
-# TODO: Find out expected behaviour here... right now it will work as you think
-# But maybe this is not desired.
-
-def test_economic_allocation_negative_price():
-    pass
-
-def test_economic_allocation_negative_amount():
-    pass
-
-def test_economic_allocation_zero_amount():
-    pass
-
-def test_economic_allocation_zero_price():
-    pass
-
 
 ### Test real test data
 

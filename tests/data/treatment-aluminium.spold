@@ -74,6 +74,10 @@
           <lognormal meanValue="0.0008065" mu="-7.12" variance="0.0006" varianceWithPedigreeUncertainty="0.0012" />
           <pedigreeMatrix reliability="1" completeness="3" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
         </uncertainty>
+        <property propertyId="38f94dd1-d5aa-41b8-b182-c0c42985d9dc" variableName="Al2O3Amount_price_EUR2005" amount="0.275317529539232" unitId="7b75baf0-cbee-45e6-bf66-af119da06553">
+          <name xml:lang="en">price</name>
+          <unitName xml:lang="en">EUR2005</unitName>
+        </property>
         <productionVolumeUncertainty>
           <lognormal meanValue="878339.495798319" mu="15.57" variance="0" varianceWithPedigreeUncertainty="0" />
           <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
@@ -91,6 +95,10 @@
           <lognormal meanValue="0.9488" mu="-0.05" variance="0.0006" varianceWithPedigreeUncertainty="0.0012" />
           <pedigreeMatrix reliability="1" completeness="3" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
         </uncertainty>
+        <property propertyId="38f94dd1-d5aa-41b8-b182-c0c42985d9dc" variableName="castAlloyAmount_price_EUR2005" amount="1.3" unitId="7b75baf0-cbee-45e6-bf66-af119da06553">
+          <name xml:lang="en">price</name>
+          <unitName xml:lang="en">EUR2005</unitName>
+        </property>
         <productionVolumeUncertainty>
           <lognormal meanValue="1033314957.98319" mu="22.64" variance="0" varianceWithPedigreeUncertainty="0" />
           <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />

@@ -22,14 +22,21 @@ def valid_no_allocation_dataset(wrapped, instance, args, kwargs):
 def valid_economic_activity(wrapped, instance, args, kwargs):
     """Check to make sure the activity meets the assumptions for economic allocation.
 
-    * All allocatable products must have a price.
+    * All allocatable products must have a positive price.
+    * All allocatable products must have a positive exchange amount.
 
     """
     dataset = kwargs.get('dataset') or args[0]
     for exchange in allocatable_production(dataset):
         if get_numerical_property(exchange, 'price') is None:
             message = "No price given for exchange:\n{}\nIn dataset:\n{}"
-            raise InvalidExchange(message.format(pformat(exchange), pformat(dataset)))
+            raise InvalidExchange(message.format(pformat(exchange), pformat(dataset['filepath'])))
+        elif get_numerical_property(exchange, 'price') <= 0:
+            message = "Price must be greater than zero:\n{}\nIn dataset:\n{}"
+            raise InvalidExchange(message.format(pformat(exchange), pformat(dataset['filepath'])))
+        elif exchange['amount'] <= 0:
+            message = "Exchange amount must be greater than zero:\n{}\nIn dataset:\n{}"
+            raise InvalidExchange(message.format(pformat(exchange), pformat(dataset['filepath'])))
     return wrapped(*args, **kwargs)
 
 
