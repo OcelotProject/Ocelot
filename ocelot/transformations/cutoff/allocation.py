@@ -46,7 +46,7 @@ def choose_allocation_method(dataset):
                                  and exc['amount'] != 0)
     has_conditional_exchange = any(1 for exc in dataset['exchanges']
                                    if exc['type'] == 'byproduct'
-                                   and exc['amount'] != 0
+                                   and exc['amount'] != 0  # Should always be negative
                                    and exc.get('conditional exchange'))
 
     if number_reference_products == 1 and not allocatable_byproducts:

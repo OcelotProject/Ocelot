@@ -45,7 +45,8 @@ def valid_recycling_activity(wrapped, instance, args, kwargs):
     """Check to make sure the activity meets the assumptions for recycling allocation.
 
     * There is exactly one reference product exchange with a positive production amount
-    * There is at least one byproduct exchange.
+    * There is at least one byproduct exchange with classification ``allocatable byproduct``.
+    * Each of these allocatable byproducts must meet the requirements for economic allocation.
 
     """
     dataset = kwargs.get('dataset') or args[0]
@@ -53,11 +54,16 @@ def valid_recycling_activity(wrapped, instance, args, kwargs):
     if not rp['amount'] < 0:
         message = "Reference product exchange amount shouldn't be positive:\n{}"
         raise InvalidExchange(message.format(pformat(dataset)))
-    if not any(exc for exc in dataset['exchanges']
-               if exc['type'] == 'byproduct'
-               and exc['byproduct classification'] == 'allocatable product'):
+
+    allocatable_byproducts = (
+        exc
+        for exc in dataset['exchanges']
+        if exc['type'] == 'byproduct'
+        and exc['byproduct classification'] == 'allocatable product'
+    )
+    if not any(allocatable_byproducts):
         message = "No allocatable byproducts in recycling activity:\n{}"
-        raise InvalidExchange(message.format(pformat(dataset)))
+        raise InvalidExchange(message.format(pformat(dataset['filepath'])))
     return wrapped(*args, **kwargs)
 
 
