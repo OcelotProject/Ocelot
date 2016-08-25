@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from .transformations import (
+    create_pv_parameters,
     drop_zero_pv_row_datasets,
     ensure_mandatory_properties,
     fix_ecoinvent_parameters,
@@ -12,6 +13,7 @@ from .transformations.cutoff import (
     cutoff_allocation,
     handle_waste_outputs,
 )
+from .wrapper import TransformationWrapper
 
 
 class Configuration(object):
@@ -31,6 +33,7 @@ default_configuration = [
     # ensure_mandatory_properties,
     validate_markets,
     fix_ecoinvent_parameters,
+    TransformationWrapper(create_pv_parameters),
     cleanup_activity_links,
     handle_waste_outputs,
     cutoff_allocation,
