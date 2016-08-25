@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ocelot.transformations.cutoff.utils import flip_non_allocatable_byproducts
+from ocelot.transformations.cutoff.wastes import flip_non_allocatable_byproducts
 
 
 def test_flip_non_allocatable_byproducts():
@@ -24,7 +24,8 @@ def test_flip_non_allocatable_byproducts():
             'type': 'byproduct',
             'byproduct classification': 'recyclable',
             'amount': 4,
-            'formula': 'foo'
+            'formula': 'foo',
+            'name': "Fix me!",
         },
     ]}
     expected = {
@@ -46,7 +47,8 @@ def test_flip_non_allocatable_byproducts():
         {
             'type': 'from technosphere',
             'amount': -4,
-            'formula': '-1 * (foo)'
+            'formula': '-1 * (foo)',
+            'name': "Fix me!, Recycled Content cut-off",
         },
     ]}
     assert flip_non_allocatable_byproducts(given) == expected

@@ -49,3 +49,27 @@ def waste_treatment_allocation(dataset):
         for exchange in allocatable_production(dataset)
         if exchange is not rp
     ]
+
+def flip_non_allocatable_byproducts(dataset):
+    """Change non-allocatable byproducts (i.e. classification ``recyclable`` or ``waste``) from outputs to technosphere to inputs from technosphere.
+
+    This has no effect on the technosphere matrix, and should not change the behaviour of any transformation functions, which should be testing for byproduct classification instead of exchange type. However, this is the current behaviour of the existing ecoinvent system model.
+
+    Production of recyclable materials are handled by the function ``create_recycled_content_datasets``, which creates consuming activities for these materials. Note, however, that the name of these materials changes - the string ``, Recycled Content cut-off`` is added to indicate that these materials are cutoff from the rest of the supply chain.
+
+    Production of wastes will be handled by existing waste treatment activities.
+
+    Change something from an output to an input requires flipping the sign of all numeric fields.
+
+    """
+    for exc in dataset['exchanges']:
+        if exc['type'] == 'byproduct' and exc['byproduct classification'] != 'allocatable product':
+            if exc['byproduct classification'] == 'recyclable':
+                exc['name'] += ', Recycled Content cut-off'
+            # TODO: Use rescale_exchange when new uncertainties code is merged
+            exc['type'] = 'from technosphere'
+            del exc['byproduct classification']
+            exc['amount'] = -1 * exc['amount']
+            if 'formula' in exc:
+                exc['formula'] = '-1 * ({})'.format(exc['formula'])
+    return dataset
