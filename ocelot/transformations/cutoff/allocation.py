@@ -10,6 +10,7 @@ from .utils import delete_allocation_method
 from .validation import valid_no_allocation_dataset
 from .wastes import waste_treatment_allocation, recycling_allocation
 import itertools
+import logging
 
 
 @valid_no_allocation_dataset
@@ -107,14 +108,8 @@ def choose_allocation_method(dataset):
         return "economic"
 
 
-def label_allocation_method(data):
-    """Add ``allocation method`` attribute to each dataset with the chosen allocation function."""
-    for ds in data:
-        ds['allocation method'] = choose_allocation_method(ds)
-    return data
-
-
 ALLOCATION_METHODS = (
+    (None, no_allocation),
     ("economic", economic_allocation),
     ("constrained market", constrained_market_allocation),
     ("recycling", recycling_allocation),
@@ -122,6 +117,26 @@ ALLOCATION_METHODS = (
     ("combined production", combined_production),
     ("combined production with byproducts", combined_production_with_byproducts),
 )
+
+
+def label_allocation_method(data):
+    """Add ``allocation method`` attribute to each dataset with the chosen allocation function."""
+    for ds in data:
+        ds['allocation method'] = choose_allocation_method(ds)
+    for label, _ in ALLOCATION_METHODS:
+        logging.info({
+            'type': 'table element',
+            'data': (
+                str(label),
+                sum(1 for ds in data if ds['allocation method'] == label)
+            ),
+        })
+    return data
+
+label_allocation_method.__table__ = {
+    'title': 'Label allocation method types',
+    'columns': ["Allocation", "Count"]
+}
 
 
 def create_allocation_filter(label):
@@ -135,8 +150,8 @@ def create_allocation_filter(label):
 
 cutoff_allocation = Collection(
     label_allocation_method,
-    *[TransformationWrapper(func,
-                            create_allocation_filter(label))
-      for label, func in ALLOCATION_METHODS],
+    # *[TransformationWrapper(func,
+    #                         create_allocation_filter(label))
+    #   for label, func in ALLOCATION_METHODS[1:]],
     TransformationWrapper(delete_allocation_method),
 )
