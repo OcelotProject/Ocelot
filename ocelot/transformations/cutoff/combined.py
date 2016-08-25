@@ -9,7 +9,6 @@ from ..utils import (
 )
 from ..parameterization import recalculate
 from .economic import economic_allocation
-from .validation import valid_combined_production_activity
 from copy import deepcopy
 
 
@@ -40,7 +39,6 @@ def selected_product(exc):
     return remove_exchange_uncertainty(exc)
 
 
-@valid_combined_production_activity
 def combined_production(dataset):
     """Perform subdivision of combined production activities.
 

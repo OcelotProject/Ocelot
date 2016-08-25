@@ -19,7 +19,7 @@ def test_load_validate_aluminium_dataset(aluminium):
     assert dataset_schema(aluminium)
 
 def test_choice_allocation_method(aluminium):
-    assert choose_allocation_method(aluminium) == recycling_allocation
+    assert choose_allocation_method(aluminium) == "recycling"
 
 def test_allocation_function_output_valid(aluminium):
     for new_ds in recycling_allocation(aluminium):

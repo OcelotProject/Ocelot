@@ -241,6 +241,7 @@ def test_ready_for_market_linking():
 
 def test_ready_for_market_linking_no_rp_attribute():
     invalid = [{
+        'filepath': 'foo',
         'type': 'transforming activity',
         'exchanges': [{'type': 'reference product'}]
     }]
@@ -249,6 +250,7 @@ def test_ready_for_market_linking_no_rp_attribute():
 
 def test_ready_for_market_linking_no_exchanges():
     invalid = [{
+        'filepath': 'foo',
         'type': 'transforming activity',
         'reference product': True,
         'exchanges': [{'type': 'nope'}]
@@ -258,6 +260,7 @@ def test_ready_for_market_linking_no_exchanges():
 
 def test_ready_for_market_linking_multiple_rp():
     invalid = [{
+        'filepath': 'foo',
         'name': 'one',
         'type': 'transforming activity',
         'reference product': True,

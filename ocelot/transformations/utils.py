@@ -80,10 +80,10 @@ def get_single_reference_product(dataset):
                 if exc['type'] == 'reference product']
     if len(products) > 1:
         message = "Found multiple reference products in dataset:\n{}"
-        raise InvalidMultioutputDataset(message.format(pformat(dataset)))
+        raise InvalidMultioutputDataset(message.format(dataset['filepath']))
     elif not products:
         message = "Found no reference products in dataset:\n{}"
-        raise ValueError(message.format(pformat(dataset)))
+        raise ValueError(message.format(dataset['filepath']))
     return products[0]
 
 
@@ -176,7 +176,7 @@ def normalize_reference_production_amount(dataset):
     product = get_single_reference_product(dataset)
     if not product['amount']:
         message = "Zero production amount for dataset:\n{}"
-        raise ZeroProduction(message.format(pformat(dataset)))
+        raise ZeroProduction(message.format(dataset['filepath']))
     factor = 1 / abs(product['amount'])
     # TODO: Skip if very close to one?
     if factor != 1:
@@ -247,7 +247,7 @@ def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
     obj = deepcopy(dataset)
     if not exchange['amount']:
         message = "Zero production amount for new reference product exchange:\n{}\nIn dataset:\n{}"
-        raise ZeroProduction(message.format(pformat(exchange), pformat(dataset)))
+        raise ZeroProduction(message.format(pformat(exchange), dataset['filepath']))
     rp = remove_exchange_uncertainty(deepcopy(exchange))
     rp['type'] = 'reference product'
     if 'byproduct classification' in rp:

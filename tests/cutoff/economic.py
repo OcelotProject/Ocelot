@@ -182,7 +182,7 @@ def test_load_validate_cardboard_dataset(cardboard):
     assert dataset_schema(cardboard)
 
 def test_choice_allocation_method(cardboard):
-    assert choose_allocation_method(cardboard) == economic_allocation
+    assert choose_allocation_method(cardboard) == "economic"
 
 def test_allocation_function_output_valid(cardboard):
     for new_ds in economic_allocation(cardboard):

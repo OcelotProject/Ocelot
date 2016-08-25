@@ -5,6 +5,7 @@ from ...wrapper import TransformationWrapper
 from .combined import combined_production, combined_production_with_byproducts
 from .economic import economic_allocation
 from .markets import constrained_market_allocation
+from .utils import delete_allocation_method
 from .validation import valid_no_allocation_dataset
 from .wastes import waste_treatment_allocation, recycling_allocation
 import itertools
@@ -33,7 +34,7 @@ def choose_allocation_method(dataset):
     The chosen allocation function is returned. For functions which don't need allocation, a dummy function (which does nothing) is returned. Note that all functions returned by this function must return a list of datasets.
 
     """
-    reference_product_classifications = [exc['byproduct classification']
+    reference_product_classifications = [exc.get('byproduct classification')
                                          for exc in dataset['exchanges']
                                          if exc['type'] == 'reference product'
                                          and exc['amount'] != 0]
@@ -50,28 +51,28 @@ def choose_allocation_method(dataset):
                                    and exc.get('conditional exchange'))
 
     if number_reference_products == 1 and not allocatable_byproducts:
-        return no_allocation
+        return None
     elif dataset['type'] == 'market group':
-        return no_allocation
+        return None
     elif dataset['type'] == 'market activity':
         if has_conditional_exchange:
-            return constrained_market_allocation
+            return "constrained market"
         else:
-            return no_allocation
+            return None
     elif number_reference_products > 1:
         if allocatable_byproducts:
-            return combined_production_with_byproducts
+            return "combined production with byproducts"
         else:
-            return combined_production
+            return "combined production"
     elif negative_reference_production:
         # TODO: Should be part of a validation function
         assert len(set(reference_product_classifications)) == 1
         if reference_product_classifications[0] == 'waste':
-            return waste_treatment_allocation
+            return "waste treatment"
         else:
-            return recycling_allocation
+            return "recycling"
     else:
-        return economic_allocation
+        return "economic"
 
 
 def label_allocation_method(data):
@@ -81,18 +82,30 @@ def label_allocation_method(data):
     return data
 
 
-ALLOCATION_METHODS = (
-    no_allocation,
-    economic_allocation,
-    recycling_allocation,
-    waste_treatment_allocation,
-    combined_production,
-    combined_production_with_byproducts,
-    constrained_market_allocation,
-)
+ALLOCATION_METHODS = {
+    None: no_allocation,
+    "economic": economic_allocation,
+    "recycling": recycling_allocation,
+    "waste treatment": waste_treatment_allocation,
+    "combined production": combined_production,
+    "combined production with byproducts": combined_production_with_byproducts,
+    "constrained market": constrained_market_allocation,
+}
+
+
+def create_allocation_filter(label):
+    """Return a function that checks where the dataset allocation method is ``label``.
+
+    Previous approach using lambda broke somewhere deep and mysterious..."""
+    def allocation_method_filter(ds):
+        return ds['allocation method'] == label
+    return allocation_method_filter
+
 
 cutoff_allocation = Collection(
     label_allocation_method,
-    *[TransformationWrapper(f, lambda ds: ds['allocation method'] == x)
-      for f in ALLOCATION_METHODS]
+    *[TransformationWrapper(func,
+                            create_allocation_filter(label))
+      for label, func in ALLOCATION_METHODS.items()],
+    TransformationWrapper(delete_allocation_method),
 )

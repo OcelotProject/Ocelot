@@ -69,22 +69,28 @@ def test_single_reference_product():
     assert get_single_reference_product(given) == expected
 
 def test_single_reference_product_multiple():
-    given = {'exchanges': [
-        {
-            'type': 'reference product',
-            'name': 'sandwich'
-        },
-        {
-            'type': 'reference product',
-            'name': 'hamburger'
-        },
-    ]}
+    given = {
+        'filepath': 'foo',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'name': 'sandwich'
+            },
+            {
+                'type': 'reference product',
+                'name': 'hamburger'
+            },
+        ]
+    }
     with pytest.raises(InvalidMultioutputDataset):
         get_single_reference_product(given)
 
 def test_single_reference_product_none():
     with pytest.raises(ValueError):
-        get_single_reference_product({'exchanges': []})
+        get_single_reference_product({
+            'filepath': 'foo',
+            'exchanges': [{'type': 'something'}]
+        })
 
 def test_normalize_reference_production_amount():
     given = {'exchanges': [
@@ -110,12 +116,13 @@ def test_normalize_reference_production_amount():
     assert normalize_reference_production_amount(given) == expected
 
 def test_normalize_reference_production_amount_zero_amount():
-    given = {'exchanges': [
-        {
+    given = {
+        'filepath': 'foo',
+        'exchanges': [{
             'type': 'reference product',
             'amount': 0
-        },
-    ]}
+        }]
+    }
     with pytest.raises(ZeroProduction):
         normalize_reference_production_amount(given)
 
@@ -271,10 +278,13 @@ def test_choose_reference_product_exchange_byproducts(no_normalization):
         assert one is not two
 
 def test_choose_reference_product_exchange_zero_production(no_normalization):
-    given = {'exchanges': [{
-        'type': 'reference product',
-        'amount': 0
-    }]}
+    given = {
+        'filepath': 'foo',
+        'exchanges': [{
+            'type': 'reference product',
+            'amount': 0
+        }]
+    }
     with pytest.raises(ZeroProduction):
         choose_reference_product_exchange(given, given['exchanges'][0])
 

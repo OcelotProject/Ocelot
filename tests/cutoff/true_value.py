@@ -112,7 +112,7 @@ def test_load_validate_cogeneration_dataset(cogen):
     assert dataset_schema(cogen)
 
 def test_choice_allocation_method(cogen):
-    assert choose_allocation_method(cogen) == economic_allocation
+    assert choose_allocation_method(cogen) == "economic"
 
 def test_allocation_function_output_valid(cogen):
     for new_ds in economic_allocation(cogen):

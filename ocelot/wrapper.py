@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import inspect
 
 
 class TransformationWrapper:
@@ -19,11 +20,17 @@ class TransformationWrapper:
     """
     def __init__(self, function, filter_function=None):
         self.func = function
-        self.filter = (lambda x: True) if filter_function is None else filter_function
+        self.filter_function = filter_function
         self.__name__ = function.__name__
         self.__doc__ = function.__doc__
         self.__table__ = getattr(function, "__table__", None)
 
     def __call__(self, data):
-        _ = lambda ds: self.func(ds) if self.filter(ds) else [ds]
-        return [ds for elem in data for ds in _(elem)]
+        if self.filter_function:
+            _ = lambda ds: self.func(ds) if self.filter_function(ds) else [ds]
+            return [ds for elem in data for ds in _(elem)]
+        else:
+            return [child for ds in data for child in self.func(ds)]
+
+
+

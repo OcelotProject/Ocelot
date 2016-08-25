@@ -9,6 +9,7 @@ from .transformations import (
 )
 from .transformations.cutoff import (
     cleanup_activity_links,
+    cutoff_allocation,
     handle_waste_outputs,
 )
 
@@ -32,6 +33,7 @@ default_configuration = [
     fix_ecoinvent_parameters,
     cleanup_activity_links,
     handle_waste_outputs,
+    cutoff_allocation,
     relabel_global_to_row,
     drop_zero_pv_row_datasets,
 ]

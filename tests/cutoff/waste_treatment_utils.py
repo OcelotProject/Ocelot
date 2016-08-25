@@ -121,7 +121,7 @@ def test_create_recycled_content_datasets(monkeypatch):
             'name': 'henrietta',
         }]
     }]
-    expected = [{
+    expected = {
         'name': 'foo',
         'exchanges': [{
             'type': 'nope'
@@ -134,9 +134,9 @@ def test_create_recycled_content_datasets(monkeypatch):
             'byproduct classification': 'recyclable',
             'name': 'henrietta',
         }]
-    }, {
-        'name': 'henry'
-    }, {
-        'name': 'henrietta'
-    }]
-    assert create_recycled_content_datasets(given) == expected
+    }
+    result = create_recycled_content_datasets(given)
+    assert result[0] == expected
+    assert len(result) == 3
+    assert {'name': 'henry'} in result
+    assert {'name': 'henrietta'} in result
