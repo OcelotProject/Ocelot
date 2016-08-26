@@ -3,11 +3,46 @@ from ocelot.errors import InvalidExchange, InvalidMultioutputDataset
 from ocelot.transformations.cutoff.validation import (
     ready_for_market_linking,
     valid_economic_activity,
+    valid_no_allocation_dataset,
     valid_recycling_activity,
     valid_waste_treatment_activity,
 )
 import pytest
 
+
+def test_no_allocation_validation():
+    @valid_no_allocation_dataset
+    def f(dataset):
+        return dataset
+
+    correct = {
+        'filepath': 'foo',
+        'exchanges': [
+            {'type': 'reference product', 'amount': 1},
+            {'type': 'byproduct', 'classification': 'waste'},
+        ]
+    }
+    assert f(correct)
+
+    problem = {
+        'filepath': 'foo',
+        'exchanges': [
+            {'type': 'reference product', 'amount': 1},
+            {'type': 'reference product', 'amount': 2},
+        ]
+    }
+    with pytest.raises(InvalidMultioutputDataset):
+        f(problem)
+
+    problem = {
+        'filepath': 'foo',
+        'exchanges': [
+            {'type': 'reference product', 'amount': 1},
+            {'type': 'byproduct', 'classification': 'allocatable product'},
+        ]
+    }
+    with pytest.raises(InvalidMultioutputDataset):
+        f(problem)
 
 def test_recycling_activity_validation_errors():
     @valid_recycling_activity

@@ -17,6 +17,15 @@ def test_allocatable_production():
         assert x == y
     assert len(list(allocatable_production(dataset))) == 3
 
+def test_allocatable_production_include_all_reference_products():
+    given = {"exchanges": [
+        {'type': 'reference product', 'classification': 'recyclable'},
+        {'type': 'reference product', 'classification': 'allocatable product'},
+        {'type': 'reference product', 'classification': 'waste'},
+        {'type': 'reference product', 'classification': 'foo'},
+    ]}
+    assert len(list(allocatable_production(given))) == 4
+
 def test_nonproduction_exchanges():
     exchanges = [
         {'type': 'reference product'},
@@ -328,3 +337,16 @@ def test_iterate_all_parameters(parameterized_ds):
     assert next(generator) == parameterized_ds['exchanges'][1]['properties'][0]
     assert next(generator) == parameterized_ds['parameters'][0]
     assert next(generator) == parameterized_ds['parameters'][1]
+
+def test_activity_hash():
+    given = {
+        'name': 'a',
+        'reference product': 'b',
+        'unit': 'c',
+        'location': 'd',
+        'start date': 'e',
+        'end date': 'f',
+        'foo': 'bar',
+    }
+    assert activity_hash({})
+    assert activity_hash(given)

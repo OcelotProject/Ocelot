@@ -33,6 +33,11 @@ def test_create_pv_parameters_format():
     }
     assert dataset_schema(create_pv_parameters(given)[0])
 
+def test_create_pv_parameters_without_pv():
+    given = {'exchanges': [{'foo': 'bar'}]}
+    expected = [{'exchanges': [{'foo': 'bar'}]}]
+    assert create_pv_parameters(given) == expected
+
 def test_create_pv_parameters_create_parameter():
     given = {
         'name': 'test case',

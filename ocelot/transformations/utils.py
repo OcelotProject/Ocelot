@@ -45,6 +45,8 @@ def allocatable_production(dataset):
     * Have type ``reference product``, or
     * Have type ``byproduct`` and ``classification`` is ``allocatable product``
 
+    Note that all types of reference products are returned: ``allocatable product``, ``waste``, and ``recyclable``!
+
     """
     for exc in dataset['exchanges']:
         if exc['type'] =='reference product':
