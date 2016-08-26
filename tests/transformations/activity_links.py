@@ -27,7 +27,7 @@ def test_check_activity_link_validity_byproduct():
         'id': 1,
         'exchanges': [{
             'type': 'byproduct',
-            'byproduct classification': 'allocatable product',
+            'classification': 'allocatable product',
             'name': 'widget',
             'production volume': {'amount': 42}
         }]

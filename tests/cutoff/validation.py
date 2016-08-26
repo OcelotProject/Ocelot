@@ -47,7 +47,7 @@ def test_recycling_activity_validation_errors():
             },
             {
                 'type': 'byproduct',
-                'byproduct classification': 'waste'
+                'classification': 'waste'
             }
         ]
     }
@@ -66,7 +66,7 @@ def test_recycling_activity_validation():
         },
         {
             'type': 'byproduct',
-            'byproduct classification': 'allocatable product'
+            'classification': 'allocatable product'
         }
     ]}
     assert f(correct) is correct
@@ -176,11 +176,11 @@ def test_waste_treatment_validation():
         {
             'type': 'reference product',
             'amount': -1,
-            'byproduct classification': 'waste'
+            'classification': 'waste'
         },
         {
             'type': 'byproduct',
-            'byproduct classification': 'allocatable product'
+            'classification': 'allocatable product'
         }
     ]}
     assert f(correct) is correct
@@ -196,7 +196,7 @@ def test_waste_treatment_validation_errors():
         'exchanges': [{
             'type': 'reference product',
             'amount': -1,
-            'byproduct classification': 'recyclable'
+            'classification': 'recyclable'
         }]
     }
     with pytest.raises(InvalidExchange):
@@ -207,7 +207,7 @@ def test_waste_treatment_validation_errors():
         'exchanges': [{
             'type': 'reference product',
             'amount': 0,
-            'byproduct classification': 'waste'
+            'classification': 'waste'
         }]
     }
     with pytest.raises(InvalidExchange):

@@ -68,7 +68,7 @@ def choose_allocation_method(dataset):
     Economic allocation uses "true value" properties whenever they are present.
 
     """
-    reference_product_classifications = [exc.get('byproduct classification')
+    reference_product_classifications = [exc.get('classification')
                                          for exc in dataset['exchanges']
                                          if exc['type'] == 'reference product'
                                          and exc['amount'] != 0]
@@ -150,8 +150,8 @@ def create_allocation_filter(label):
 
 cutoff_allocation = Collection(
     label_allocation_method,
-    # *[TransformationWrapper(func,
-    #                         create_allocation_filter(label))
-    #   for label, func in ALLOCATION_METHODS[1:]],
+    *[TransformationWrapper(func,
+                            create_allocation_filter(label))
+      for label, func in ALLOCATION_METHODS[1:]],
     TransformationWrapper(delete_allocation_method),
 )

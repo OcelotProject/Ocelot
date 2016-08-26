@@ -57,7 +57,7 @@ def add_hard_linked_production_volumes(data):
             ref_prod = [exc for exc in ds['exchanges']
                         if exc['type'] == 'reference product']
             allocatable_prod = [exc for exc in ref_prod
-                if exc['byproduct classification'] == 'allocatable product']
+                if exc['classification'] == 'allocatable product']
             if len(ref_prod) == 1:
                 scale = ref_prod[0]['production volume']['amount'] / ref_prod[0]['amount']
             else:

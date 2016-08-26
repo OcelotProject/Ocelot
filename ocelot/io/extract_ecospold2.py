@@ -128,14 +128,14 @@ def extract_exchange(dataset, exc):
     if exc.get('activityLinkId'):
         data['activity link'] = exc.get("activityLinkId")
 
-    # Byproduct classification, optional field
+    # Classification, optional field
     byproduct = [obj.classificationValue.text
                  for obj in exc.iterchildren()
                  if (_(obj.tag) == 'classification'
                  and obj.classificationSystem.text == 'By-product classification')]
     assert len(set(byproduct)) < 2
     if byproduct:
-        data['byproduct classification'] = BYPRODUCT_CLASSIFICATION[
+        data['classification'] = BYPRODUCT_CLASSIFICATION[
                 byproduct[0]]
 
     # Variable name and mathematical relation extraction

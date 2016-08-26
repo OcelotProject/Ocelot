@@ -20,7 +20,7 @@ def check_single_output_activity(dataset):
                  if exc['type'] == 'reference product')
     byproducts = any(1 for exc in dataset['exchanges']
                      if exc['type'] == 'byproduct'
-                     and exc['byproduct classification'] == 'allocatable product')
+                     and exc['classification'] == 'allocatable product')
     if num_rp != 1:
         raise InvalidMultioutputDataset("Found {} reference products".format(num_rp))
     if byproducts:

@@ -43,14 +43,14 @@ def allocatable_production(dataset):
     Production exchanges either:
 
     * Have type ``reference product``, or
-    * Have type ``byproduct`` and ``byproduct classification`` is ``allocatable product``
+    * Have type ``byproduct`` and ``classification`` is ``allocatable product``
 
     """
     for exc in dataset['exchanges']:
         if exc['type'] =='reference product':
             yield exc
         elif (exc['type'] == 'byproduct' and
-              exc['byproduct classification'] == 'allocatable product'):
+              exc['classification'] == 'allocatable product'):
             yield exc
 
 
@@ -60,14 +60,14 @@ def nonproduction_exchanges(dataset):
     Non-production exchanges must meet both criteria:
 
     * Not have type ``reference product``, or
-    * Not have type ``byproduct`` and ``byproduct classification`` ``allocatable product``
+    * Not have type ``byproduct`` and ``classification`` ``allocatable product``
 
     """
     for exc in dataset['exchanges']:
         if exc['type'] =='reference product':
             continue
         elif (exc['type'] == 'byproduct' and
-              exc['byproduct classification'] == 'allocatable product'):
+              exc['classification'] == 'allocatable product'):
             continue
         yield exc
 
@@ -233,7 +233,7 @@ def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
     The chosen product exchange is modified:
 
     * Uncertainty is set to ``undefined`` and made perfectly certain. Production exchanges by definition cannot have uncertainty.
-    * ``byproduct classification`` is deleted if present
+    * ``classification`` is deleted if present
     * ``type`` is set to ``reference product``
 
     Non-chosen product exchanges are also modified:
@@ -250,8 +250,8 @@ def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
         raise ZeroProduction(message.format(pformat(exchange), dataset['filepath']))
     rp = remove_exchange_uncertainty(deepcopy(exchange))
     rp['type'] = 'reference product'
-    if 'byproduct classification' in rp:
-        del rp['byproduct classification']
+    if 'classification' in rp:
+        del rp['classification']
     obj['exchanges'] = [rp] + [
         nonreference_product(deepcopy(exc))
         for exc in allocatable_production(dataset)

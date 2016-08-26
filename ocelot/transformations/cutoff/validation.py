@@ -59,7 +59,7 @@ def valid_recycling_activity(wrapped, instance, args, kwargs):
         exc
         for exc in dataset['exchanges']
         if exc['type'] == 'byproduct'
-        and exc['byproduct classification'] == 'allocatable product'
+        and exc['classification'] == 'allocatable product'
     )
     if not any(allocatable_byproducts):
         message = "No allocatable byproducts in recycling activity:\n{}"
@@ -71,13 +71,13 @@ def valid_recycling_activity(wrapped, instance, args, kwargs):
 def valid_waste_treatment_activity(wrapped, instance, args, kwargs):
     """Check to make sure the activity meets the assumptions for waste treatment allocation.
 
-    * There is a single reference product exchange with a negative amount and ``byproduct classification`` of ``waste``.
+    * There is a single reference product exchange with a negative amount and ``classification`` of ``waste``.
 
     """
     dataset = kwargs.get('dataset') or args[0]
     rp = get_single_reference_product(dataset)
-    if rp.get('byproduct classification') != 'waste':
         message = ("Wrong byproduct classification for waste treatment "
+    if rp.get('classification') != 'waste':
             "reference product:\n{}\nIn dataset:\n{}")
         raise InvalidExchange(message.format(pformat(rp), dataset['filepath']))
     if not rp['amount'] < 0:
