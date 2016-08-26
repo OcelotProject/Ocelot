@@ -13,6 +13,7 @@ from .transformations.cutoff import (
     cleanup_activity_links,
     cutoff_allocation,
     handle_waste_outputs,
+    ready_for_market_linking,
 )
 from .wrapper import TransformationWrapper
 
@@ -39,6 +40,7 @@ default_configuration = [
     manage_activity_links,
     handle_waste_outputs,
     cutoff_allocation,
+    ready_for_market_linking,
     relabel_global_to_row,
     drop_zero_pv_row_datasets,
 ]

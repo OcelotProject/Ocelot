@@ -72,6 +72,17 @@ def combined_production(dataset):
     return new_datasets
 
 
+def combined_production_without_products(dataset):
+    """A special case of combined production allocation where there are no allocatable products.
+
+    This special case occurs only once in ecoinvent 3.2, in the dataset ``treatment of manure and biowaste by anaerobic digestion``, which produces the following reference products:
+
+    """
+    print(dataset['name'])
+    print(dataset['filepath'])
+    return [dataset]
+
+
 def add_exchanges(to_dataset, from_dataset):
     """Add exchange amounts in ``from_dataset`` to ``to_dataset``.
 
