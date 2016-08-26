@@ -69,7 +69,6 @@ def add_hard_linked_production_volumes(data):
 
 
 manage_activity_links = Collection(
-    ensure_production_exchanges_have_production_volume,
     check_activity_link_validity,
     add_hard_linked_production_volumes,
 )

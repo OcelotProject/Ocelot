@@ -19,5 +19,4 @@ from .cleanup import remove_consequential_exchanges, drop_rp_activity_links
 cleanup_activity_links = Collection(
     remove_consequential_exchanges,
     drop_rp_activity_links,
-    check_activity_link_validity,
 )

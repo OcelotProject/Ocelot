@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from .transformations import (
-    create_pv_parameters,
+    pv_cleanup,
     drop_zero_pv_row_datasets,
     ensure_mandatory_properties,
     fix_ecoinvent_parameters,
@@ -34,7 +34,7 @@ default_configuration = [
     # ensure_mandatory_properties,
     validate_markets,
     fix_ecoinvent_parameters,
-    TransformationWrapper(create_pv_parameters),
+    pv_cleanup,
     cleanup_activity_links,
     manage_activity_links,
     handle_waste_outputs,
