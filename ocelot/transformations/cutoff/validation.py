@@ -76,8 +76,8 @@ def valid_waste_treatment_activity(wrapped, instance, args, kwargs):
     """
     dataset = kwargs.get('dataset') or args[0]
     rp = get_single_reference_product(dataset)
-        message = ("Wrong byproduct classification for waste treatment "
     if rp.get('classification') != 'waste':
+        message = ("Wrong byproduct classification for waste treatment "
             "reference product:\n{}\nIn dataset:\n{}")
         raise InvalidExchange(message.format(pformat(rp), dataset['filepath']))
     if not rp['amount'] < 0:

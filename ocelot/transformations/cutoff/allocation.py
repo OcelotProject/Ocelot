@@ -3,7 +3,11 @@ from ...collection import Collection
 from ...errors import InvalidMultioutputDataset
 from ...wrapper import TransformationWrapper
 from ..utils import allocatable_production
-from .combined import combined_production, combined_production_with_byproducts
+from .combined import (
+    combined_production,
+    combined_production_with_byproducts,
+    correct_waste_treatment_combined_production,
+)
 from .economic import economic_allocation
 from .markets import constrained_market_allocation
 from .utils import delete_allocation_method
@@ -149,6 +153,7 @@ def create_allocation_filter(label):
 
 
 cutoff_allocation = Collection(
+    correct_waste_treatment_combined_production,
     label_allocation_method,
     *[TransformationWrapper(func,
                             create_allocation_filter(label))
