@@ -34,7 +34,7 @@ def valid_economic_activity(wrapped, instance, args, kwargs):
         elif get_numerical_property(exchange, 'price') < 0:
             message = "Price must be greater than zero:\n{}\nIn dataset:\n{}"
             raise InvalidExchange(message.format(pformat(exchange), pformat(dataset['filepath'])))
-        elif exchange['amount'] <= 0:
+        elif exchange['amount'] < 0:
             message = "Exchange amount must be greater than zero:\n{}\nIn dataset:\n{}"
             raise InvalidExchange(message.format(pformat(exchange), pformat(dataset['filepath'])))
     return wrapped(*args, **kwargs)

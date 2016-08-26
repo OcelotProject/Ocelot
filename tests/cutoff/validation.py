@@ -135,21 +135,21 @@ def test_economic_activity_validation_errors():
     with pytest.raises(InvalidExchange):
         f(negative_amount)
 
-    zero_amount = {
-        'filepath': 'foo',
-        'exchanges': [
-            {
-                'type': 'reference product',
-                'properties': [{
-                    'name': 'price',
-                    'amount': 1
-                }],
-                'amount': 0
-            },
-        ]
-    }
-    with pytest.raises(InvalidExchange):
-        f(zero_amount)
+    # zero_amount = {
+    #     'filepath': 'foo',
+    #     'exchanges': [
+    #         {
+    #             'type': 'reference product',
+    #             'properties': [{
+    #                 'name': 'price',
+    #                 'amount': 1
+    #             }],
+    #             'amount': 0
+    #         },
+    #     ]
+    # }
+    # with pytest.raises(InvalidExchange):
+    #     f(zero_amount)
 
     # zero_price = {
     #     'filepath': 'foo',
