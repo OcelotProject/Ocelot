@@ -41,6 +41,7 @@ def test_check_activity_link_validity_byproduct():
     }]
     assert check_activity_link_validity(byproduct)
 
+@pytest.mark.skip(reason="`allocatable_production` doesn't check for production volumes anymore")
 def test_check_activity_link_validity_no_pv():
     missing = [{
         'id': 1,
