@@ -26,3 +26,31 @@ def fix_known_bad_formula_strings(data):
                         })
                         param['formula'] = param['formula'].replace(bad, good)
     return data
+
+
+def fix_specific_ecoinvent_issues(data):
+    """A set of data manipulations for specific ecoinvent issues.
+
+    Currently, this function does the following:
+
+    * Delete the exchange for ``refinery gas`` from the activity ``petroleum refinery operation``, because "This flow has been cut off in accordance with the ecoinvent centre due to special circumstances."
+
+    """
+    for ds in data:
+        if ds['name'] != "petroleum refinery operation":
+            continue
+        before = len(ds['exchanges'])
+        ds['exchanges'] = [exc for exc in ds['exchanges']
+                           if (exc['name'] != 'refinery gas' or exc['amount'])]
+        after = len(ds['exchanges'])
+        if before != after:
+            logging.info({
+                'type': 'table element',
+                'data': (ds['name'], ds['location'], before, after)
+            })
+    return data
+
+fix_specific_ecoinvent_issues.__table__ = {
+    'title': 'Delete a specific non-functional exchange from petroleum refineries.',
+    'columns': ["Activity name", "Locations", "Num. exchanges before", "Num. exchanges after"]
+}
