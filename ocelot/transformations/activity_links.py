@@ -41,7 +41,7 @@ def add_hard_linked_production_volumes(data):
 
     This should be run after the validity check ``check_activity_link_validity``.
 
-    TODO: Why does it matter that production volumes are subtracted?"""
+    Production volumes in the target dataset are used to indicate relative contributions to markets; some datasets have their entire production consumed by hard links, and therefore would not contribute anything to market datasets."""
     mapping = {ds['id']: ds for ds in data}
     for ds in data:
         for exc in (e for e in ds['exchanges'] if e.get('activity link')):
@@ -52,18 +52,27 @@ def add_hard_linked_production_volumes(data):
             assert len(found) == 1
             hard_link = found[0]
 
-            # Get a reference product for ``exc`` - doesn't matter which one.
+            # Get a scaling factor for calculating the production volume of `exc`.
+            # Messy code to handle special features of our real input data.
             ref_prod = [exc for exc in ds['exchanges']
-                        if exc['type'] == 'reference product'][0]
+                        if exc['type'] == 'reference product']
+            allocatable_prod = [exc for exc in ref_prod
+                if exc['byproduct classification'] == 'allocatable product']
+            if len(ref_prod) == 1:
+                scale = ref_prod[0]['production volume']['amount'] / ref_prod[0]['amount']
+            else:
+                # One way to choose among multiple ref. prod. exchanges
+                # with different PV/amount ratios is to choose the largest one.
+                scale = sorted([
+                    obj['production volume']['amount'] / obj['amount']
+                    for obj in allocatable_prod
+                ], reverse=True, key=lambda x: abs(x))[0]
 
-            # Then calculate the amount to subtract - the exchange amount times
-            # the ratio of ref. prod. prouction volume to its exchange amount.
-            pv = (ref_prod['production volume']['amount']
-                  / ref_prod['amount'] * exc['amount'])
+            # Add amount to subtract to hard link target
             hard_link['production volume']["subtracted activity link volume"] = (
                 hard_link['production volume'].get(
                     "subtracted activity link volume", 0
-                ) + pv
+                ) + exc['amount'] * scale
             )
     return data
 
