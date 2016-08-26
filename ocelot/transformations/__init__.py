@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-from .activity_links import check_activity_link_validity
+from .activity_links import (
+    check_activity_link_validity,
+    add_hard_linked_production_volumes,
+    manage_activity_links,
+)
 from .locations import relabel_global_to_row
 from .cleanup import (
     drop_zero_pv_row_datasets,
@@ -13,5 +17,6 @@ from .parameterization import (
 )
 from .validation import (
     ensure_mandatory_properties,
+    ensure_production_exchanges_have_production_volume,
     validate_markets,
 )

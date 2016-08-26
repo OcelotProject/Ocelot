@@ -2,11 +2,13 @@
 from .utils import allocatable_production
 from ..collection import Collection
 from ..errors import (
+    InvalidExchange,
     InvalidMarket,
     InvalidMarketExchange,
     InvalidMultioutputDataset,
     # MissingMandatoryProperty,
 )
+from pprint import pformat
 import logging
 
 
@@ -94,3 +96,13 @@ ensure_mandatory_properties.__table__ = {
     'title': 'Exchanges with properties should have all mandatory properties',
     'columns': ["Activity name", "Flow name", "Missing properties"]
 }
+
+
+def ensure_production_exchanges_have_production_volume(data):
+    """All production exchanges must have a ``production volume``."""
+    for ds in data:
+        for exc in allocatable_production(ds):
+            if 'production volume' not in exc:
+                message = "No production volume in production exchange:\n{}\nIn dataset: {}"
+                raise InvalidExchange(message.format(pformat(exc), ds['filepath']))
+    return data
