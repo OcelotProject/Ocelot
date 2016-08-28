@@ -19,6 +19,18 @@ def valid_no_allocation_dataset(wrapped, instance, args, kwargs):
 
 
 @wrapt.decorator
+def valid_merge_datasets(wrapped, instance, args, kwargs):
+    """Datasets to be merged based on common reference products should have no allocatable byproducts"""
+    data = kwargs.get('data') or args[0]
+    for ds in data:
+        if any(1 for exc in ds['exchanges']
+               if exc['type'] == 'byproduct'
+               and exc['classification'] == 'allocatable product'):
+            raise InvalidExchange("Exchanges with byproducts passes to ``merge_byproducts``")
+    return wrapped(*args, **kwargs)
+
+
+@wrapt.decorator
 def valid_economic_activity(wrapped, instance, args, kwargs):
     """Check to make sure the activity meets the assumptions for economic allocation.
 

@@ -9,6 +9,7 @@ from ..utils import (
 )
 from ..parameterization import recalculate
 from .economic import economic_allocation
+from .validation import valid_merge_datasets
 from copy import deepcopy
 
 
@@ -88,6 +89,8 @@ def add_exchanges(to_dataset, from_dataset):
 
     Uses ``id`` to uniquely identify each exchange.
 
+    Removes uncertainty from reference product exchanges.
+
     Returns a modified ``to_dataset``."""
     lookup = {exc['id']: exc['amount'] for exc in from_dataset['exchanges']}
     for exc in to_dataset['exchanges']:
@@ -98,10 +101,13 @@ def add_exchanges(to_dataset, from_dataset):
     return to_dataset
 
 
-def merge_byproducts(datasets):
+@valid_merge_datasets
+def merge_byproducts(data):
     """Generator which merges datasets which have the same reference product.
 
     Add exchange values together.
+
+    Used after economic allocation, so there should be no allocatable byproducts remaining.
 
     Don't need to change reference production volumes because they are unchanged from the original multioutput dataset.
 
@@ -110,7 +116,8 @@ def merge_byproducts(datasets):
     TODO: Parameter values can be different in merged datasets, but can't just be added. Maybe also create new parameters (but not clear how)? Or easier just to delete all parameterization...
 
     Yields a new dataset."""
-    for group in toolz.groupby(activity_grouper, datasets).values():
+
+    for group in toolz.groupby(activity_grouper, data).values():
         parent = group[0]
         for child in group[1:]:
             parent = add_exchanges(parent, child)

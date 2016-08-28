@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+from ocelot.errors import InvalidExchange
 from ocelot.transformations.cutoff.combined import (
     add_exchanges,
     combined_production,
     combined_production_with_byproducts,
+    combined_production_without_products,
     merge_byproducts,
     nonzero_reference_product_exchanges,
     selected_product,
@@ -164,6 +166,16 @@ def test_add_exchanges():
     ]}
     assert add_exchanges(first, second) == expected
 
+def test_merge_byproducts_error():
+    problem = [{
+        'exchanges': [{
+            'type': 'byproduct',
+            'classification': 'allocatable product'
+        }]
+    }]
+    with pytest.raises(InvalidExchange):
+        merge_byproducts(problem)
+
 def test_merge_byproducts():
     given = [{
         'name': 'first',
@@ -248,6 +260,58 @@ def no_combined_production(monkeypatch):
         'ocelot.transformations.cutoff.combined.combined_production',
         lambda x: x
     )
+    monkeypatch.setattr(
+        'ocelot.transformations.cutoff.combined.economic_allocation',
+        lambda x: [x]
+    )
 
 def test_combined_production_with_byproducts(no_combined_production):
-    pass
+    given = [{
+        'name': 'first',
+        'exchanges': [{
+            'id': 1,
+            'type': 'reference product',
+            'name': 'first rp',
+            'amount': 1
+        }, {
+            'id': 2,
+            'type': 'to environment',
+            'name': 'emission',
+            'amount': 8
+        }]
+    }, {
+        'name': 'first',
+        'exchanges': [{
+            'id': 1,
+            'type': 'reference product',
+            'name': 'first rp',
+            'amount': 1
+        }, {
+            'id': 2,
+            'type': 'to environment',
+            'name': 'emission',
+            'amount': 2
+        }]
+    }]
+    expected = [{
+        'name': 'first',
+        'exchanges': [{
+            'id': 1,
+            'type': 'reference product',
+            'name': 'first rp',
+            'amount': 2,
+            'uncertainty': {
+                'minimum': 2,
+                'maximum': 2,
+                'pedigree matrix': {},
+                'standard deviation 95%': 0,
+                'type': 'undefined'
+            }
+        }, {
+            'id': 2,
+            'type': 'to environment',
+            'name': 'emission',
+            'amount': 10
+        }]
+    }]
+    assert combined_production_with_byproducts(given) == expected
