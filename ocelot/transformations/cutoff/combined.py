@@ -10,6 +10,7 @@ from ..utils import (
 from ..parameterization import recalculate
 from .economic import economic_allocation
 from .validation import valid_merge_datasets
+from .wastes import waste_treatment_allocation, recycling_allocation
 from copy import deepcopy
 
 
@@ -73,15 +74,51 @@ def combined_production(dataset):
     return new_datasets
 
 
-def combined_production_without_products(dataset):
-    """A special case of combined production allocation where there are no allocatable products.
+def handle_split_dataset(ds):
+    """Allocate datasets based on their ``waste`` or ``recyclable`` classification."""
+    rp = get_single_reference_product(ds)
+    if rp['classification'] == 'waste':
+        return waste_treatment_allocation(ds)
+    else:
+        ds['name'] = "{}, from {}".format(ds['name'], rp['name'])
+        return recycling_allocation(ds)
 
-    This special case occurs only once in ecoinvent 3.2, in the dataset ``treatment of manure and biowaste by anaerobic digestion``, which produces the following reference products:
+
+def combined_production_without_products(dataset):
+    """A special case of combined production allocation where there are multiple recyclable reference products and no allocatable reference products.
+
+    This special case occurs only once in ecoinvent 3.2, in the dataset ``treatment of manure and biowaste by anaerobic digestion``. This activity has the following reference products:
+
+    * ``used vegetable cooking oil``: recyclable
+    * ``manure, liquid, cattle``: recyclable
+    * ``manure, solid, cattle``: recyclable
+    * ``manure, liquid, swine``: recyclable
+    * ``biowaste``: waste
+
+    And the following byproducts:
+
+    * ``biogas``: allocatable product
+    * ``digester sludge``: recyclable
+
+    After the combined production without byproducts algorithm is applied, the following datasets are returned:
+
+    * treatment of manure and biowaste by anaerobic digestion (Reference product: ``biowaste``)
+    * treatment of manure and biowaste by anaerobic digestion (Reference product: ``biogas``)
+    * treatment of manure and biowaste by anaerobic digestion, from used vegetable cooking oil (Reference product: ``biogas``)
+    * treatment of manure and biowaste by anaerobic digestion, from manure, liquid, cattle (Reference product: ``biogas``)
+    * treatment of manure and biowaste by anaerobic digestion, from manure, solid, cattle (Reference product: ``biogas``)
+    * treatment of manure and biowaste by anaerobic digestion, from manure, liquid, swine (Reference product: ``biogas``)
+
+    This might seem funny at first, but it is consistent with the other allocation procedures for combined production and recycling. First, the byproduct of ``digester sludge`` is switched to a negative input, and is treated the same as any other input. Next, combined production allocation creates five datasets, one for each reference product.
+
+    For the dataset treating ``biowaste``, our waste treatment allocation procedure tells us that "the useful products of waste treatment come with no environmental burdens". This means that the biogas produced by the treatment of ``biowaste`` comes for free. The same is not true for the recyclable products. No treatment is needed - this is what it means to be a ``recyclable`` - so the recyclable output is switched to a negative input, and the biogas is switched to the reference product.
+
+    The final step is to handle the fact that we have multiple processes with the same activity name and reference product. We handle this by appending the name of the recyclable to each treatment process that consumes a recyclable, so ``treatment of manure and biowaste by anaerobic digestion`` becaomes ``treatment of manure and biowaste by anaerobic digestion, from manure, liquid, cattle``.
 
     """
-    print(dataset['name'])
-    print(dataset['filepath'])
-    return [dataset]
+    return [ds
+            for obj in combined_production(dataset)
+            for ds in handle_split_dataset(obj)]
 
 
 def add_exchanges(to_dataset, from_dataset):
