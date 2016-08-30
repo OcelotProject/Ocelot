@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
-from ..utils import same_metadata
 from ocelot.io.extract_ecospold2 import generic_extractor
 from ocelot.io.validate_internal import dataset_schema
 from ocelot.transformations.cutoff.allocation import choose_allocation_method
 from ocelot.transformations.cutoff.wastes import waste_treatment_allocation
 import os
 import pytest
+
+
+def same_metadata(first, second):
+    """All the metadata except for ``exchanges`` should be the same"""
+    for key, value in first.items():
+        if key == 'exchanges':
+            continue
+        else:
+            assert key in second and second[key] == value
 
 
 ### Test artificial cases

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from ocelot.collection import Collection
 from ocelot.model import system_model
-from .mocks import fake_report
+from mocks import fake_report
 
 # Tests for `Collection` of functions
 
