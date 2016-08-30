@@ -27,7 +27,7 @@ class Topology(object):
     def contained(self, location):
         if location == 'GLO':
             return
-        faces = self.data[location]
+        faces = self(location)
         return {key
                 for key, value in self.data.items()
                 if key != location
@@ -37,8 +37,11 @@ class Topology(object):
     def intersects(self, location):
         if location == 'GLO':
             return
-        faces = self.data[location]
+        faces = self(location)
         return {key
                 for key, value in self.data.items()
                 if key != location
                 and value.intersection(faces)}
+
+    def __call__(self, location):
+        return self.data[location]
