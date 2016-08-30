@@ -17,7 +17,9 @@ def check_markets_dont_overlap(data):
     for rp, datasets in toolz.groupby('reference product', markets).items():
         faces = {ds['location']: topology(ds['location']) for ds in datasets}
         for first, second in itertools.combinations(faces, 2):
-            if first.intersection(second):
+            if first in ("GLO", "RoW") or second in ("GLO", "RoW"):
+                continue
+            if faces[first].intersection(faces[second]):
                 message = "Markets {} and {} for {} overlap"
                 raise OverlappingMarkets(message.format(first, second, rp))
     return data
