@@ -25,14 +25,14 @@ On Windows, then run:
 
     activate ocelot
     conda install -y pywin32
-    pip install --no-cache-dir git+https://github.com/OcelotProject/Ocelot.git#egg=ocelot
+    pip install --no-cache-dir https://github.com/OcelotProject/Ocelot/zipball/master
 
 Otherwise, do:
 
 .. code-block:: bash
 
     source activate ocelot
-    pip install --no-cache-dir git+https://github.com/OcelotProject/Ocelot.git#egg=ocelot
+    pip install --no-cache-dir https://github.com/OcelotProject/Ocelot/zipball/master
 
 .. note:: If you install from pypi, you will have to install the ``ocelot-lca`` package - someone pipped us during development!
 
@@ -48,6 +48,7 @@ Running on PyPy3
 ----------------
 
 Instructions from:
+
 * http://pypy.org/download.html
 * http://pypy.readthedocs.io/en/latest/faq.html#module-xyz-does-not-work-with-pypy-importerror
 * https://bitbucket.org/pypy/compatibility/wiki/lxml
