@@ -63,3 +63,8 @@ class UnresolvableActivityLink(OcelotError):
 class MissingMandatoryProperty(Exception):
     """Exchange is missing a mandatory property"""
     pass
+
+
+class OverlappingMarkets(OcelotError):
+    """Markets overlap, preventing correct linking"""
+    pass
