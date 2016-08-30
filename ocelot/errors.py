@@ -67,6 +67,11 @@ class MissingMandatoryProperty(Exception):
     pass
 
 
+class OverlappingMarkets(OcelotError):
+    """Markets overlap, preventing correct linking"""
+    pass
+
+
 class InvalidTransformationFunction(OcelotError):
     """Metadata could not be retrieved for this function"""
     pass
