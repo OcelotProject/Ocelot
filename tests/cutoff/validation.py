@@ -19,7 +19,7 @@ def test_no_allocation_validation():
         'filepath': 'foo',
         'exchanges': [
             {'type': 'reference product', 'amount': 1},
-            {'type': 'byproduct', 'classification': 'waste'},
+            {'type': 'byproduct', 'byproduct classification': 'waste'},
         ]
     }
     assert f(correct)
@@ -38,7 +38,7 @@ def test_no_allocation_validation():
         'filepath': 'foo',
         'exchanges': [
             {'type': 'reference product', 'amount': 1},
-            {'type': 'byproduct', 'classification': 'allocatable product'},
+            {'type': 'byproduct', 'byproduct classification': 'allocatable product'},
         ]
     }
     with pytest.raises(InvalidMultioutputDataset):
@@ -82,7 +82,7 @@ def test_recycling_activity_validation_errors():
             },
             {
                 'type': 'byproduct',
-                'classification': 'waste'
+                'byproduct classification': 'waste'
             }
         ]
     }
@@ -101,7 +101,7 @@ def test_recycling_activity_validation():
         },
         {
             'type': 'byproduct',
-            'classification': 'allocatable product'
+            'byproduct classification': 'allocatable product'
         }
     ]}
     assert f(correct) is correct
@@ -211,11 +211,11 @@ def test_waste_treatment_validation():
         {
             'type': 'reference product',
             'amount': -1,
-            'classification': 'waste'
+            'byproduct classification': 'waste'
         },
         {
             'type': 'byproduct',
-            'classification': 'allocatable product'
+            'byproduct classification': 'allocatable product'
         }
     ]}
     assert f(correct) is correct
@@ -231,7 +231,7 @@ def test_waste_treatment_validation_errors():
         'exchanges': [{
             'type': 'reference product',
             'amount': -1,
-            'classification': 'recyclable'
+            'byproduct classification': 'recyclable'
         }]
     }
     with pytest.raises(InvalidExchange):
@@ -242,7 +242,7 @@ def test_waste_treatment_validation_errors():
         'exchanges': [{
             'type': 'reference product',
             'amount': 0,
-            'classification': 'waste'
+            'byproduct classification': 'waste'
         }]
     }
     with pytest.raises(InvalidExchange):

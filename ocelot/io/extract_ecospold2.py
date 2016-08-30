@@ -135,7 +135,7 @@ def extract_exchange(dataset, exc):
                  and obj.classificationSystem.text == 'By-product classification')]
     assert len(set(byproduct)) < 2
     if byproduct:
-        data['classification'] = BYPRODUCT_CLASSIFICATION[
+        data['byproduct classification'] = BYPRODUCT_CLASSIFICATION[
                 byproduct[0]]
 
     # Variable name and mathematical relation extraction

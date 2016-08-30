@@ -52,7 +52,7 @@ def allocatable_production(dataset):
         if exc['type'] =='reference product':
             yield exc
         elif (exc['type'] == 'byproduct' and
-              exc['classification'] == 'allocatable product'):
+              exc['byproduct classification'] == 'allocatable product'):
             yield exc
 
 
@@ -69,7 +69,7 @@ def nonproduction_exchanges(dataset):
         if exc['type'] =='reference product':
             continue
         elif (exc['type'] == 'byproduct' and
-              exc['classification'] == 'allocatable product'):
+              exc['byproduct classification'] == 'allocatable product'):
             continue
         yield exc
 
@@ -252,8 +252,8 @@ def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
         raise ZeroProduction(message.format(pformat(exchange), dataset['filepath']))
     rp = remove_exchange_uncertainty(deepcopy(exchange))
     rp['type'] = 'reference product'
-    if 'classification' in rp:
-        del rp['classification']
+    if 'byproduct classification' in rp:
+        del rp['byproduct classification']
     obj['exchanges'] = [rp] + [
         nonreference_product(deepcopy(exc))
         for exc in allocatable_production(dataset)

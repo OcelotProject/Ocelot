@@ -25,7 +25,7 @@ def valid_merge_datasets(wrapped, instance, args, kwargs):
     for ds in data:
         if any(1 for exc in ds['exchanges']
                if exc['type'] == 'byproduct'
-               and exc['classification'] == 'allocatable product'):
+               and exc['byproduct classification'] == 'allocatable product'):
             raise InvalidExchange("Exchanges with byproducts passes to ``merge_byproducts``")
     return wrapped(*args, **kwargs)
 
@@ -71,7 +71,7 @@ def valid_recycling_activity(wrapped, instance, args, kwargs):
         exc
         for exc in dataset['exchanges']
         if exc['type'] == 'byproduct'
-        and exc['classification'] == 'allocatable product'
+        and exc['byproduct classification'] == 'allocatable product'
     )
     if not any(allocatable_byproducts):
         message = "No allocatable byproducts in recycling activity:\n{}"
@@ -88,7 +88,7 @@ def valid_waste_treatment_activity(wrapped, instance, args, kwargs):
     """
     dataset = kwargs.get('dataset') or args[0]
     rp = get_single_reference_product(dataset)
-    if rp.get('classification') != 'waste':
+    if rp.get('byproduct classification') != 'waste':
         message = ("Wrong byproduct classification for waste treatment "
             "reference product:\n{}\nIn dataset:\n{}")
         raise InvalidExchange(message.format(pformat(rp), dataset['filepath']))

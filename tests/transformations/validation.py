@@ -35,7 +35,7 @@ def test_correct_byproduct():
         'type': 'reference product',
     }, {
         'type': 'byproduct',
-        'classification': 'waste'
+        'byproduct classification': 'waste'
     }]}
     assert check_single_output_activity(ds)
 
@@ -44,7 +44,7 @@ def test_wrong_byproduct():
         'type': 'reference product',
     }, {
         'type': 'byproduct',
-        'classification': 'allocatable product'
+        'byproduct classification': 'allocatable product'
     }]}
     with pytest.raises(InvalidMultioutputDataset):
         check_single_output_activity(ds)

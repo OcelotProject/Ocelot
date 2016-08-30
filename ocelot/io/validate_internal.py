@@ -153,7 +153,7 @@ activity_exchange_schema = Schema({
     'type': Any('from technosphere', 'reference product', 'byproduct', 'dropped product'),
     'unit': str, # ecospold2 field 1035: unitName
     Optional('activity link'): str, # ecospold2 field 1520: activityLinkId
-    Optional('classification'): valid_byproducts, # ecospold2 field 310: classificationValue, if classificationSystem is 'By-product classification'.
+    Optional('byproduct classification'): valid_byproducts, # ecospold2 field 310: classificationValue, if classificationSystem is 'By-product classification'.
     Optional('conditional exchange'): bool,
     Optional('formula'): str, # ecospold2 field 1060: mathematicalRelation
     Optional('production volume'): valid_production_volume, # Only when needed for multioutput

@@ -170,7 +170,7 @@ def test_merge_byproducts_error():
     problem = [{
         'exchanges': [{
             'type': 'byproduct',
-            'classification': 'allocatable product'
+            'byproduct classification': 'allocatable product'
         }]
     }]
     with pytest.raises(InvalidExchange):

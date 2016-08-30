@@ -72,7 +72,7 @@ def choose_allocation_method(dataset):
     Economic allocation uses "true value" properties whenever they are present.
 
     """
-    reference_product_classifications = [exc.get('classification')
+    reference_product_classifications = [exc.get('byproduct classification')
                                          for exc in dataset['exchanges']
                                          if exc['type'] == 'reference product'
                                          and exc['amount'] != 0]
@@ -85,7 +85,7 @@ def choose_allocation_method(dataset):
                                  and exc['amount'] != 0)
     allocatable_products = any(1 for exc in allocatable_production(dataset)
                                if exc['type'] == 'reference product'
-                               and exc.get('classification') == 'allocatable product')
+                               and exc.get('byproduct classification') == 'allocatable product')
     has_conditional_exchange = any(1 for exc in dataset['exchanges']
                                    if exc.get('conditional exchange'))
 

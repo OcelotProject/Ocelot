@@ -77,7 +77,7 @@ def combined_production(dataset):
 def handle_split_dataset(ds):
     """Allocate datasets based on their ``waste`` or ``recyclable`` classification."""
     rp = get_single_reference_product(ds)
-    if rp['classification'] == 'waste':
+    if rp['byproduct classification'] == 'waste':
         return waste_treatment_allocation(ds)
     else:
         ds['name'] = "{}, from {}".format(ds['name'], rp['name'])

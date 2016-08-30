@@ -15,18 +15,18 @@ def test_flip_non_allocatable_byproducts():
         {
             'type': 'byproduct',
             'name': 2,
-            'classification': 'allocatable product',
+            'byproduct classification': 'allocatable product',
             'amount': 2,
         },
         {
             'type': 'byproduct',
-            'classification': 'waste',
+            'byproduct classification': 'waste',
             'name': 3,
             'amount': 3,
         },
         {
             'type': 'byproduct',
-            'classification': 'recyclable',
+            'byproduct classification': 'recyclable',
             'amount': 4,
             'formula': 'foo',
             'name': "Fix me!",
@@ -42,7 +42,7 @@ def test_flip_non_allocatable_byproducts():
         },
         {
             'type': 'byproduct',
-            'classification': 'allocatable product',
+            'byproduct classification': 'allocatable product',
             'name': 2,
             'amount': 2,
         },
@@ -113,11 +113,11 @@ def test_create_recycled_content_datasets(monkeypatch):
             'type': 'nope'
         }, {
             'type': 'byproduct',
-            'classification': 'recyclable',
+            'byproduct classification': 'recyclable',
             'name': 'henry',
         }, {
             'type': 'byproduct',
-            'classification': 'recyclable',
+            'byproduct classification': 'recyclable',
             'name': 'henrietta',
         }]
     }]
@@ -127,11 +127,11 @@ def test_create_recycled_content_datasets(monkeypatch):
             'type': 'nope'
         }, {
             'type': 'byproduct',
-            'classification': 'recyclable',
+            'byproduct classification': 'recyclable',
             'name': 'henry',
         }, {
             'type': 'byproduct',
-            'classification': 'recyclable',
+            'byproduct classification': 'recyclable',
             'name': 'henrietta',
         }]
     }

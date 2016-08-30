@@ -98,7 +98,7 @@ def create_recycled_content_datasets(data):
         recyclables = (exc
                        for exc in ds['exchanges']
                        if exc['type'] == 'byproduct'
-                       and exc['classification'] == 'recyclable')
+                       and exc['byproduct classification'] == 'recyclable')
         for exc in recyclables:
             rc = create_new_recycled_content_dataset(ds, exc)
             new_datasets[rc['name']] = rc
@@ -129,14 +129,14 @@ def flip_non_allocatable_byproducts(dataset):
     """
     for exc in dataset['exchanges']:
         if (exc['type'] == 'byproduct' and
-            exc['classification'] != 'allocatable product'):
+            exc['byproduct classification'] != 'allocatable product'):
             logging.info({
                 'type': 'table element',
-                'data': (dataset['name'], exc['name'], exc['classification']),
+                'data': (dataset['name'], exc['name'], exc['byproduct classification']),
             })
-            if exc['classification'] == 'recyclable':
+            if exc['byproduct classification'] == 'recyclable':
                 exc['name'] += ', Recycled Content cut-off'
-            del exc['classification']
+            del exc['byproduct classification']
             exc['type'] = 'from technosphere'
             # TODO: Use rescale_exchange when new uncertainties code is merged
             exc['amount'] = -1 * exc['amount']
