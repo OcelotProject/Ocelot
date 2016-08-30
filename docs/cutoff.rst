@@ -93,7 +93,28 @@ We end the manipulation step with two functions related to the treatment of wast
 Split multioutput activities
 ============================
 
-People love to talk about allocation, though we are not sure "talk" is the most precise word. This step splits multioutput datasets into several single-output datasets using several algorithms, depending on the characteristics of each dataset.
+Introduction
+------------
+
+There are a number of choices to be made when constructing an individual dataset, including what the inputs and outputs of a process are. From a mathematical point of view, the different is simple: inputs have a negative number in the technosphere matrix, while outputs have a postive number. The corresponds to our physical understanding of the system, where inputs are consumed and outputs are produced. However, things are never that simple - for example, in a waste treatment process, it is common to consider the treated waste as an output (with a negative sign), even though it is consumed.
+
+In Ocelot, at least in the current version, we don't make these choices ourselves - the inputs and outputs are defined in the undefined datasets, and our job is instead to handle multioutput datasets so that our constructed technosphere matrix is not singular.
+
+In the undefined datasets, we distinguish between two types of outputs: reference products and byproducts. In general, reference products are the reason that producers do a transforming activity (which is why each dataset must have at least one reference product), and byproducts are what comes along for the ride. However, as with many of the definitions used in LCA, what was a sharp diving line from a distance tends to blur a bit at the boundaries.
+
+We further distinguish three types of products (both reference and byproducts): allocatable, recyclable and waste. Formally, in the internal data format, outputs will have a ``type`` of either ``reference product`` or ``byproduct``, and a ``byproduct classification`` of ``allocatable product``, ``recyclable``, or ``waste``.
+
+Where is the "cutoff" in the cutoff system model?
+-------------------------------------------------
+
+
+
+In the cutoff approach, the difference between reference products and byproducts lies in how we split multiple outputs of each.
+
+* If we have multiple reference products, we assume that these datasets are parameterized, and we can use the formulas in the different exchanges to split the dataset into multiple datasets with one reference product each.
+* If we have multiple byproducts, we use economic allocation to split emissions and inputs between the reference product and the allocatable byproducts.
+
+
 
 The first thing to do is to label datasets based on the allocation method that will be used.
 
