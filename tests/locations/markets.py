@@ -48,3 +48,111 @@ def test_apportion_suppliers_to_consumers():
 
     apportion_suppliers_to_consumers(consumers, suppliers)
     assert consumers == expected
+
+def test_add_suppliers_to_markets():
+    given = [{
+        'type': 'skip me',
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'CA',
+        'exchanges': [{'type': 'reference product', 'l': 'CA'}],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'MX',
+        'exchanges': [{'type': 'reference product', 'l': 'MX'}],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'BR',
+        'exchanges': [{'type': 'reference product', 'l': 'BR'}],
+    }, {
+        'type': 'market activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'NAFTA',
+    }, {
+        'type': 'market activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'GLO',
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'bar',
+        'name': '',
+        'location': 'DE',
+        'exchanges': [{'type': 'reference product', 'l': 'DE'}],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'bar',
+        'name': '',
+        'location': 'ZA',
+        'exchanges': [{'type': 'reference product', 'l': 'ZA'}],
+    }, {
+        'type': 'market activity',
+        'reference product': 'bar',
+        'name': '',
+        'location': 'RoW',
+    }]
+    expected = [{
+        'type': 'skip me',
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'CA',
+        'exchanges': [{'type': 'reference product', 'l': 'CA'}],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'MX',
+        'exchanges': [{'type': 'reference product', 'l': 'MX'}],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'BR',
+        'exchanges': [{'type': 'reference product', 'l': 'BR'}],
+    }, {
+        'type': 'market activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'NAFTA',
+        'suppliers': [
+            {'l': 'CA', 'type': 'reference product'},
+            {'l': 'MX', 'type': 'reference product'}
+        ]
+    }, {
+        'type': 'market activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'GLO',
+        'suppliers': [{'l': 'BR', 'type': 'reference product'}]
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'bar',
+        'name': '',
+        'location': 'DE',
+        'exchanges': [{'type': 'reference product', 'l': 'DE'}],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'bar',
+        'name': '',
+        'location': 'ZA',
+        'exchanges': [{'type': 'reference product', 'l': 'ZA'}],
+    }, {
+        'type': 'market activity',
+        'reference product': 'bar',
+        'name': '',
+        'location': 'RoW',
+        'suppliers': [
+            {'l': 'DE', 'type': 'reference product'},
+            {'l': 'ZA', 'type': 'reference product'}
+        ]
+    }]
+    assert add_suppliers_to_markets(given) == expected
