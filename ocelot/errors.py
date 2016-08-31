@@ -72,6 +72,11 @@ class OverlappingMarkets(OcelotError):
     pass
 
 
+class IdenticalDatasets(OcelotError):
+    """Multiple datasets with the same identifying attributes were found"""
+    pass
+
+
 class InvalidTransformationFunction(OcelotError):
     """Metadata could not be retrieved for this function"""
     pass
