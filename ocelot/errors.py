@@ -68,3 +68,8 @@ class MissingMandatoryProperty(Exception):
 class OverlappingMarkets(OcelotError):
     """Markets overlap, preventing correct linking"""
     pass
+
+
+class IdenticalDatasets(OcelotError):
+    """Multiple datasets with the same identifying attributes were found"""
+    pass
