@@ -213,6 +213,9 @@ def extract_ecospold2_directory(dirpath, use_mp=True):
     """Extract all the ``.spold`` files in the directory ``dirpath``.
 
     Use a multiprocessing pool if ``use_mp``, which is the default."""
+    if os.name == 'nt':
+        use_mp = False
+
     assert os.path.isdir(dirpath), "Can't find directory {}".format(dirpath)
     filelist = [os.path.join(dirpath, filename)
                 for filename in os.listdir(dirpath)
