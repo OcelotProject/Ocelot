@@ -30,8 +30,7 @@ class Topology(object):
         faces = self(location)
         return {key
                 for key, value in self.data.items()
-                if key != location
-                and not value.difference(faces)}
+                if not value.difference(faces)}
 
     def contains(self, parent, child):
         """Return boolean of whether ``parent`` contains ``child``"""
@@ -44,8 +43,7 @@ class Topology(object):
         faces = self(location)
         return {key
                 for key, value in self.data.items()
-                if key != location
-                and value.intersection(faces)}
+                if value.intersection(faces)}
 
     def overlaps(self, group):
         """Return a boolean if any elements in ``group`` overlap each other"""
