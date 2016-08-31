@@ -25,7 +25,7 @@ class Topology(object):
 
     @functools.lru_cache(maxsize=512)
     def contained(self, location):
-        if location == 'GLO':
+        if location in ('GLO', 'RoW'):
             return set()
         faces = self(location)
         return {key
@@ -39,7 +39,7 @@ class Topology(object):
 
     @functools.lru_cache(maxsize=512)
     def intersects(self, location):
-        if location == 'GLO':
+        if location in ('GLO', 'RoW'):
             return set()
         faces = self(location)
         return {key
@@ -47,5 +47,14 @@ class Topology(object):
                 if key != location
                 and value.intersection(faces)}
 
+    def overlaps(self, group):
+        """Return a boolean if any elements in ``group`` overlap each other"""
+        if not group:
+            return None
+        faces = [self(obj) for obj in group]
+        return len([o for f in faces for o in f]) != len(set.union(*faces))
+
     def __call__(self, location):
+        if location in ('GLO', 'RoW'):
+            return set()
         return self.data[location]

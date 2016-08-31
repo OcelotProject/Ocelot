@@ -65,7 +65,7 @@ class MissingMandatoryProperty(Exception):
     pass
 
 
-class OverlappingMarkets(OcelotError):
+class OverlappingActivities(OcelotError):
     """Markets overlap, preventing correct linking"""
     pass
 

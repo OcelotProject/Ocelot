@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from ...errors import MultipleGlobalDatasets, OverlappingMarkets
+from ...errors import MultipleGlobalDatasets, OverlappingActivities
 from . import topology
 from ... import toolz
 import itertools
+import wrapt
 
 
 def check_single_global_dataset(datasets):
@@ -11,15 +12,41 @@ def check_single_global_dataset(datasets):
         raise MultipleGlobalDatasets
 
 
-def check_markets_dont_overlap(data):
-    """Raise ``OverlappingMarkets`` if markets overlap."""
-    markets = (ds for ds in data if ds['type'] == 'market activity')
-    for rp, datasets in toolz.groupby('reference product', markets).items():
-        faces = {ds['location']: topology(ds['location']) for ds in datasets}
-        for first, second in itertools.combinations(faces, 2):
-            if first in ("GLO", "RoW") or second in ("GLO", "RoW"):
-                continue
-            if faces[first].intersection(faces[second]):
-                message = "Markets {} and {} for {} overlap"
-                raise OverlappingMarkets(message.format(first, second, rp))
-    return data
+# def check_markets_dont_overlap(data):
+#     """Raise ``OverlappingActivities`` if markets overlap."""
+#     markets = (ds for ds in data if ds['type'] == 'market activity')
+#     for rp, datasets in toolz.groupby('reference product', markets).items():
+#         # Short circuit if don't need error message
+#         if not topology.overlaps([ds['location'] for ds in datasets]):
+#             continue
+
+#         faces = {ds['location']: topology(ds['location']) for ds in datasets}
+#         for first, second in itertools.combinations(faces, 2):
+#             if first in ("GLO", "RoW") or second in ("GLO", "RoW"):
+#                 continue
+#             if faces[first].intersection(faces[second]):
+#                 message = "Markets {} and {} for {} overlap"
+#                 raise OverlappingActivities(message.format(first, second, rp))
+#     return data
+
+
+@wrapt.decorator
+def no_overlaps(wrapped, instance, args, kwargs):
+    """Check to make sure neither ``consumers`` nor ``suppliers`` have overlaps."""
+    consumers = [x['location'] for x in (kwargs.get('consumers') or args[0])]
+    suppliers = [x['location'] for x in (kwargs.get('suppliers') or args[1])]
+    if topology.overlaps(consumers) or topology.overlaps(suppliers):
+        raise OverlappingActivities
+    return wrapped(*args, **kwargs)
+
+
+@wrapt.decorator
+def no_geo_duplicates(wrapped, instance, args, kwargs):
+    """Check to make sure neither ``consumers`` nor ``suppliers`` have duplicate locations."""
+    consumers = kwargs.get('consumers') or args[0]
+    suppliers = kwargs.get('suppliers') or args[1]
+    if len(suppliers) != len({o['location'] for o in suppliers}):
+        raise ValueError("`suppliers` has duplicate locations")
+    if len(consumers) != len({o['location'] for o in consumers}):
+        raise ValueError("`consumers` has duplicate locations")
+    return wrapped(*args, **kwargs)
