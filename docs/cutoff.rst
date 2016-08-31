@@ -132,6 +132,8 @@ The first thing to do is to label datasets based on the allocation method that w
 
 .. autofunction:: ocelot.transformations.cutoff.combined.combined_production_with_byproducts
 
+.. autofunction:: ocelot.transformations.cutoff.combined.combined_production_without_products
+
 Link in space and time
 ======================
 
