@@ -37,11 +37,11 @@ def flip_non_allocatable_byproducts(dataset):
 
 
 def label_reference_products(data):
-    """Add field ``reference product`` to transforming activity datasets.
+    """Add field ``reference product`` to all datasets.
 
     The field ``reference product`` has the name of the reference product exchange.
 
     Raises ``InvalidMultioutputDataset`` if multiple reference products are present, or ``ValueError`` if no reference products are present."""
-    for ds in (obj for obj in data if obj['type'] == 'transforming activity'):
+    for ds in data:
         ds['reference product'] = get_single_reference_product(ds)['name']
     return data
