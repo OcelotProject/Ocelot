@@ -24,7 +24,8 @@ Here is the validation schema for an activity dataset:
         'economic scenario': str, # ecospold2 field 700: macroEconomicScenarioId
         'end date': str, # Starting and ending dates for dataset validity, in format '2015-12-31'
         'filepath': str,
-        'id': str,
+        'id': str,  # Imported UUID. May not be unique due to allocation.
+        Optional("code"): str,  # Guaranteed unique hash code based on attributes
         'location': str, # ecospold2 field 410: shortname
         'name': str, # ecospold2 field 100: activityName
         'start date': str,
@@ -32,6 +33,7 @@ Here is the validation schema for an activity dataset:
         'type': valid_activity_types, # ecospold2 field 115: specialActivityType
         Optional('allocation method'): valid_allocation_method,  # Allocation method used. Added by a transformation.
         Optional('reference product'): str, # Name of the reference product. Added by a transformation.
+        Optional('suppliers'): list,  # Exchanges which supply a market
     }, required=True)
 
 Technosphere exchanges (``activity_exchange_schema``)
