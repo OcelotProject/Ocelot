@@ -26,17 +26,21 @@ class Topology(object):
     @functools.lru_cache(maxsize=512)
     def contained(self, location):
         if location == 'GLO':
-            return
+            return set()
         faces = self(location)
         return {key
                 for key, value in self.data.items()
                 if key != location
                 and not value.difference(faces)}
 
+    def contains(self, parent, child):
+        """Return boolean of whether ``parent`` contains ``child``"""
+        return child in self.contained(parent)
+
     @functools.lru_cache(maxsize=512)
     def intersects(self, location):
         if location == 'GLO':
-            return
+            return set()
         faces = self(location)
         return {key
                 for key, value in self.data.items()
