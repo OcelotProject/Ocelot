@@ -7,7 +7,7 @@ def test_topology_loading():
     assert len(topology.data) > 400
 
 def test_topology_contained():
-    assert topology.contained('RU') == {'Russia (Asia)', 'Russia (Europe)'}
+    assert topology.contained('RU') == {'Russia (Asia)', 'Russia (Europe)', 'RU'}
     assert topology.contained('GLO') == set()
     assert topology.contained('RoW') == set()
     # Test compatibility labels
@@ -17,6 +17,7 @@ def test_topology_contained():
 
 def test_topology_intersects():
     assert 'UN-EUROPE' in topology.intersects('DE')
+    assert 'DE' in topology.intersects('DE')
     assert 'RER w/o AT+BE+CH+DE+FR+IT' not in topology.intersects('CH')
     assert topology.intersects('GLO') == set()
     assert topology.intersects('RoW') == set()
@@ -37,4 +38,5 @@ def test_topology_overlaps():
 
 def test_topology_contains():
     assert topology.contains("RER", "CH")
+    assert topology.contains("CH", "CH")
     assert not topology.contains("US", "CH")
