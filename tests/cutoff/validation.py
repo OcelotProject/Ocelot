@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from ocelot.errors import InvalidExchange, InvalidMultioutputDataset
 from ocelot.transformations.cutoff.validation import (
-    ready_for_market_linking,
     valid_combined_production_activity,
     valid_economic_activity,
     valid_recycling_activity,
@@ -129,41 +128,3 @@ def test_combined_production_validation_errors():
         }
     ]}
     assert f(yes_variable)
-
-def test_ready_for_market_linking():
-    valid = [{
-        'type': 'transforming activity',
-        'reference product': True,
-        'exchanges': [{'type': 'reference product'}]
-    }]
-    assert ready_for_market_linking(valid)
-
-def test_ready_for_market_linking_no_rp_attribute():
-    invalid = [{
-        'type': 'transforming activity',
-        'exchanges': [{'type': 'reference product'}]
-    }]
-    with pytest.raises(ValueError):
-        ready_for_market_linking(invalid)
-
-def test_ready_for_market_linking_no_exchanges():
-    invalid = [{
-        'type': 'transforming activity',
-        'reference product': True,
-        'exchanges': [{'type': 'nope'}]
-    }]
-    with pytest.raises(ValueError):
-        ready_for_market_linking(invalid)
-
-def test_ready_for_market_linking_multiple_rp():
-    invalid = [{
-        'name': 'one',
-        'type': 'transforming activity',
-        'reference product': True,
-        'exchanges': [
-            {'type': 'reference product'},
-            {'type': 'reference product'},
-        ]
-    }]
-    with pytest.raises(InvalidMultioutputDataset):
-        ready_for_market_linking(invalid)

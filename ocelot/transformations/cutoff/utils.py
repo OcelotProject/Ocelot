@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-from ..utils import choose_reference_product_exchange
+from ..utils import (
+    choose_reference_product_exchange,
+    get_single_reference_product,
+)
 
 
 def apply_allocation_factors(dataset, factors):
@@ -31,3 +34,14 @@ def flip_non_allocatable_byproducts(dataset):
             if 'formula' in exc:
                 exc['formula'] = '-1 * ({})'.format(exc['formula'])
     return dataset
+
+
+def label_reference_products(data):
+    """Add field ``reference product`` to transforming activity datasets.
+
+    The field ``reference product`` has the name of the reference product exchange.
+
+    Raises ``InvalidMultioutputDataset`` if multiple reference products are present, or ``ValueError`` if no reference products are present."""
+    for ds in (obj for obj in data if obj['type'] == 'transforming activity'):
+        ds['reference product'] = get_single_reference_product(ds)['name']
+    return data
