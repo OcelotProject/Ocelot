@@ -97,20 +97,3 @@ def valid_waste_treatment_activity(wrapped, instance, args, kwargs):
             "negative:\n{}\nIn dataset:\n{}")
         raise InvalidExchange(message.format(pformat(rp), dataset['filepath']))
     return wrapped(*args, **kwargs)
-
-
-def ready_for_market_linking(data):
-    """All transforming activities must have exactly one reference product.
-
-    * Datasets must have the attribute ``reference product``
-    * Datasets must have one reference product exchange.
-
-    Will raise ``ValueError`` or ``InvalidMultioutputDataset`` if these conditions aren't met.
-
-    """
-    for ds in data:
-        if ds['type'] == 'transforming activity':
-            assert get_single_reference_product(ds)
-            if not ds.get('reference product'):
-                raise ValueError("Dataset doesn't have ``reference product``")
-    return data
