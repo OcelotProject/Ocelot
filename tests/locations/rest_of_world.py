@@ -117,6 +117,15 @@ def test_multiple_global_datasets():
 def test_drop_zero_pv_row_datasets():
     data = [
         {
+            'type': 'party activity',
+            'location': 'RoW',
+            'exchanges': [{
+                'type': 'reference product',
+                'production volume': {'amount': 0}
+            }]
+        },
+        {
+            'type': 'market activity',
             'location': 'RoW',
             'exchanges': [{
                 'type': 'reference product',
@@ -124,6 +133,7 @@ def test_drop_zero_pv_row_datasets():
             }]
         },
         {
+            'type': 'market activity',
             'location': 'Nowhere',
             'exchanges': [{
                 'type': 'reference product',
@@ -131,6 +141,7 @@ def test_drop_zero_pv_row_datasets():
             }]
         },
         {
+            'type': 'market activity',
             'name': 'foo',
             'location': 'RoW',
             'exchanges': [{
@@ -142,6 +153,15 @@ def test_drop_zero_pv_row_datasets():
     ]
     expected = [
         {
+            'type': 'party activity',
+            'location': 'RoW',
+            'exchanges': [{
+                'type': 'reference product',
+                'production volume': {'amount': 0}
+            }]
+        },
+        {
+            'type': 'market activity',
             'location': 'RoW',
             'exchanges': [{
                 'type': 'reference product',
@@ -149,6 +169,7 @@ def test_drop_zero_pv_row_datasets():
             }]
         },
         {
+            'type': 'market activity',
             'location': 'Nowhere',
             'exchanges': [{
                 'type': 'reference product',

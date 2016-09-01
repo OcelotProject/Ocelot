@@ -42,7 +42,9 @@ def drop_zero_pv_row_datasets(data):
                 'data': (ds['name'], reference_products_as_string(ds))
             })
     return [ds for ds in data
-            if (ds['location'] != 'RoW' or production_volume(ds) != 0)]
+            if (ds['location'] != 'RoW'
+                or production_volume(ds) != 0
+                or ds['type'] != 'market activity')]
 
 drop_zero_pv_row_datasets.__table__ = {
     'title': 'Drop `RoW` datasets with zero production volumes',
