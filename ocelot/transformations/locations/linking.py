@@ -17,6 +17,9 @@ def actualize_activity_links(data):
                       if ds['reference product'] == link['name']]
         if len(references) != 1:
             message = "Can't resolve activity link: {}"
+            # Bug in combined production means that
+            # coproducts aren't given their own activities
+            continue
             raise UnresolvableActivityLink(message.format(link['activity link']))
         link['code'] = references[0]['code']
     return data
