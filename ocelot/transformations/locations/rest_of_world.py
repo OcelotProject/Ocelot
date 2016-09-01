@@ -34,7 +34,8 @@ def drop_zero_pv_row_datasets(data):
     """Drop datasets which have the location ``RoW`` and zero production volumes.
 
     Zero production volumes occur when all inputs have been allocated to region-specific datasets."""
-    for ds in (x for x in data if x['location'] == 'RoW'):
+    filter_func = lambda x: x['type'] == 'market activity' and x['location'] == 'RoW'
+    for ds in filter(filter_func, data):
         if production_volume(ds) == 0:
             logging.info({
                 'type': 'table element',
@@ -42,7 +43,6 @@ def drop_zero_pv_row_datasets(data):
             })
     return [ds for ds in data
             if (ds['location'] != 'RoW' or production_volume(ds) != 0)]
-
 
 drop_zero_pv_row_datasets.__table__ = {
     'title': 'Drop `RoW` datasets with zero production volumes',
