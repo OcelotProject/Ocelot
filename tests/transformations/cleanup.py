@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-from ocelot.transformations import (
-    drop_zero_pv_row_datasets,
-    ensure_all_datasets_have_production_volume,
-)
+from ocelot.transformations import ensure_all_datasets_have_production_volume
 from ocelot.transformations.cleanup import deparameterize
 from ocelot.transformations.validation import (
     ensure_markets_only_have_one_reference_product,
@@ -10,55 +7,6 @@ from ocelot.transformations.validation import (
 )
 import pytest
 
-
-### Test drop_zero_pv_row_datasets function
-
-def test_drop_zero_pv_row_datasets():
-    data = [
-        {
-            'location': 'RoW',
-            'exchanges': [{
-                'type': 'reference product',
-                'production volume': {'amount': 10}
-            }]
-        },
-        {
-            'location': 'Nowhere',
-            'exchanges': [{
-                'type': 'reference product',
-                'production volume': {'amount': 0}
-            }]
-        },
-        {
-            'name': 'foo',
-            'location': 'RoW',
-            'exchanges': [{
-                'type': 'reference product',
-                'production volume': {'amount': 0},
-                'name': 'bar'
-            }]
-        },
-    ]
-    expected = [
-        {
-            'location': 'RoW',
-            'exchanges': [{
-                'type': 'reference product',
-                'production volume': {'amount': 10}
-            }]
-        },
-        {
-            'location': 'Nowhere',
-            'exchanges': [{
-                'type': 'reference product',
-                'production volume': {'amount': 0}
-            }]
-        },
-    ]
-    assert drop_zero_pv_row_datasets(data) == expected
-
-
-### Test ensure_all_datasets_have_production_volume function
 
 def test_ensure_all_datasets_have_production_volume_pass():
     data = [

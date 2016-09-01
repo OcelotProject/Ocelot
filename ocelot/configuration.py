@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from .transformations import (
     pv_cleanup,
-    drop_zero_pv_row_datasets,
     ensure_mandatory_properties,
     fix_ecoinvent_parameters,
     manage_activity_links,
@@ -39,5 +38,4 @@ default_configuration = [
     handle_waste_outputs,
     cutoff_allocation,
     relabel_global_to_row,
-    drop_zero_pv_row_datasets,
 ]

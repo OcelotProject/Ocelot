@@ -138,5 +138,3 @@ Link in space and time
 ======================
 
 .. autofunction:: ocelot.transformations.locations.relabel_global_to_row
-
-.. autofunction:: ocelot.transformations.cleanup.drop_zero_pv_row_datasets

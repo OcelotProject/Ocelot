@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from ocelot.errors import MultipleGlobalDatasets
-from ocelot.transformations.locations import relabel_global_to_row
+from ocelot.transformations.locations import (
+    drop_zero_pv_row_datasets,
+    relabel_global_to_row,
+)
 from copy import deepcopy
 import pytest
 
@@ -110,3 +113,47 @@ def test_multiple_global_datasets():
     }]
     with pytest.raises(MultipleGlobalDatasets):
         relabel_global_to_row(given)
+
+def test_drop_zero_pv_row_datasets():
+    data = [
+        {
+            'location': 'RoW',
+            'exchanges': [{
+                'type': 'reference product',
+                'production volume': {'amount': 10}
+            }]
+        },
+        {
+            'location': 'Nowhere',
+            'exchanges': [{
+                'type': 'reference product',
+                'production volume': {'amount': 0}
+            }]
+        },
+        {
+            'name': 'foo',
+            'location': 'RoW',
+            'exchanges': [{
+                'type': 'reference product',
+                'production volume': {'amount': 0},
+                'name': 'bar'
+            }]
+        },
+    ]
+    expected = [
+        {
+            'location': 'RoW',
+            'exchanges': [{
+                'type': 'reference product',
+                'production volume': {'amount': 10}
+            }]
+        },
+        {
+            'location': 'Nowhere',
+            'exchanges': [{
+                'type': 'reference product',
+                'production volume': {'amount': 0}
+            }]
+        },
+    ]
+    assert drop_zero_pv_row_datasets(data) == expected

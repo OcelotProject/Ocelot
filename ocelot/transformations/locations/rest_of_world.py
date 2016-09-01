@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ... import toolz
+from ...data_helpers import reference_products_as_string, production_volume
 from ..utils import activity_grouper
 from .validation import check_single_global_dataset
 import logging
@@ -25,5 +26,25 @@ def relabel_global_to_row(data):
 
 relabel_global_to_row.__table__ = {
     'title': 'Activities changed from `GLO` to `RoW`',
+    'columns': ["Name", "Product(s)"]
+}
+
+
+def drop_zero_pv_row_datasets(data):
+    """Drop datasets which have the location ``RoW`` and zero production volumes.
+
+    Zero production volumes occur when all inputs have been allocated to region-specific datasets."""
+    for ds in (x for x in data if x['location'] == 'RoW'):
+        if production_volume(ds) == 0:
+            logging.info({
+                'type': 'table element',
+                'data': (ds['name'], reference_products_as_string(ds))
+            })
+    return [ds for ds in data
+            if (ds['location'] != 'RoW' or production_volume(ds) != 0)]
+
+
+drop_zero_pv_row_datasets.__table__ = {
+    'title': 'Drop `RoW` datasets with zero production volumes',
     'columns': ["Name", "Product(s)"]
 }
