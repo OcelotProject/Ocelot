@@ -154,11 +154,43 @@ def test_activity_grouper():
     assert activity_grouper(given) == ('bar', ('a', 'b'))
 
 def test_label_reference_product():
-    given = {'exchanges': [{
-        'type': 'reference product',
-        'name': 'foo'
-    }]}
-    assert label_reference_product(given)['reference product'] == 'foo'
+    valid = [{
+        'type': 'transforming activity',
+        'exchanges': [{
+            'type': 'reference product',
+            'name': 'foo'
+        }]
+    }]
+    expected = [{
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'exchanges': [{
+            'type': 'reference product',
+            'name': 'foo'
+        }]
+    }]
+    assert label_reference_product(valid) == expected
+
+def test_label_reference_product_no_exchanges():
+    invalid = [{
+        'filepath': '',
+        'type': 'transforming activity',
+        'exchanges': [{'type': 'nope'}]
+    }]
+    with pytest.raises(ValueError):
+        label_reference_product(invalid)
+
+def test_label_reference_product_multiple_rp():
+    invalid = [{
+        'filepath': '',
+        'type': 'transforming activity',
+        'exchanges': [
+            {'type': 'reference product'},
+            {'type': 'reference product'},
+        ]
+    }]
+    with pytest.raises(InvalidMultioutputDataset):
+        label_reference_product(invalid)
 
 def test_remove_uncertainty():
     expected = {
