@@ -6,7 +6,7 @@ from pprint import pformat
 
 
 def variable_names_are_unique(data):
-    """Variable names must be globally unique within a dataset.
+    """Variable names must be globally unique within a dataset, including properties, exchanges, production volumes, and parameters.
 
     Raises ``ParameterizationError`` if duplicates are found."""
     has_variable = lambda x: x.get('variable')

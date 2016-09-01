@@ -4,6 +4,7 @@ class OcelotError(Exception):
     """Base for custom ocelot errors"""
     pass
 
+
 class ZeroProduction(OcelotError):
     """Reference production exchange has amount of zero"""
     pass
@@ -12,6 +13,7 @@ class ZeroProduction(OcelotError):
 class IdenticalVariables(OcelotError):
     """The same variable name is used twice"""
     pass
+
 
 class InvalidMultioutputDataset(OcelotError):
     pass
@@ -62,4 +64,9 @@ class UnresolvableActivityLink(OcelotError):
 
 class MissingMandatoryProperty(Exception):
     """Exchange is missing a mandatory property"""
+    pass
+
+
+class InvalidTransformationFunction(OcelotError):
+    """Metadata could not be retrieved for this function"""
     pass

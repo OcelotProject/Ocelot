@@ -105,6 +105,7 @@ valid_production_volume = Schema({
     Optional('formula'): str, # ecospold2 field 1534: productionVolumeMathematicalRelation
     Optional('uncertainty'): valid_uncertainty,  # ecospold2 field 1539: productionVolumeUncertainty
     Optional('variable'): str, # ecospold2 field 1532: productionVolumeVariableName
+    Optional('subtracted activity link volume'): float,
 }, required=True)
 
 valid_property = Schema({

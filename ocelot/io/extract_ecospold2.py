@@ -111,7 +111,7 @@ def extract_property(prop):
     return data
 
 
-def extract_exchange(exc):
+def extract_exchange(dataset, exc):
     # Basic data
     data = {
         'id': exc.get('id'),
@@ -128,7 +128,7 @@ def extract_exchange(exc):
     if exc.get('activityLinkId'):
         data['activity link'] = exc.get("activityLinkId")
 
-    # Byproduct classification, optional field
+    # Classification, optional field
     byproduct = [obj.classificationValue.text
                  for obj in exc.iterchildren()
                  if (_(obj.tag) == 'classification'
@@ -162,11 +162,11 @@ def extract_exchange(exc):
         data['uncertainty'] = extract_uncertainty(exc.uncertainty)
 
     # Conditional exchange
-    # TODO: Describe what this means
     if 'environment' not in data['type']:
         data['conditional exchange'] = (
             'activity link' in data
-            and data['type'] == 'market activity'
+            and dataset['type'] == 'market activity'
+            and data['type'] == 'byproduct'
             and data['amount'] < 0
         )
 
@@ -186,13 +186,13 @@ def extract_ecospold2_dataset(elem, filepath):
         'economic scenario': elem.activityDescription.macroEconomicScenario.name.text,
         'access restricted': ACCESS_RESTRICTED[elem.administrativeInformation.\
             dataGeneratorAndPublication.get('accessRestrictedTo')],
-        'exchanges': [extract_exchange(exc)
-                      for exc in elem.flowData.iterchildren()
-                      if 'Exchange' in _(exc.tag)],
         'parameters': [extract_parameter(exc)
                        for exc in elem.flowData.iterchildren()
                        if 'parameter' in _(exc.tag)],
     }
+    data['exchanges'] = [extract_exchange(data, exc)
+                         for exc in elem.flowData.iterchildren()
+                         if 'Exchange' in _(exc.tag)]
     data['combined production'] = is_combined_production(data)
     return data
 

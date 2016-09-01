@@ -8,12 +8,9 @@ import os
 import pytest
 
 
-### Test artificial cases
-
-
 ### Test real test data
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def paper():
     fp = os.path.join(os.path.dirname(__file__), "..", "data",
                       "treatment-waste-graphical-paper.spold")
@@ -23,7 +20,7 @@ def test_load_validate_paper_dataset(paper):
     assert dataset_schema(paper)
 
 def test_choice_allocation_method(paper):
-    assert choose_allocation_method(paper) == waste_treatment_allocation
+    assert choose_allocation_method(paper) == "waste treatment"
 
 def test_allocation_function_output_valid(paper):
     for new_ds in waste_treatment_allocation(paper):

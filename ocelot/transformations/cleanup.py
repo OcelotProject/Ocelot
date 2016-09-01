@@ -35,9 +35,7 @@ drop_zero_pv_row_datasets.__table__ = {
 
 
 def deparameterize(dataset):
-    """Delete all variables and formulas from the dataset.
-
-    This takes an individual dataset as inputs, not the entire database!"""
+    """Delete all variables and formulas from the dataset."""
     if 'parameters' in dataset:
         dataset['parameters'] = []
     for exc in dataset['exchanges']:

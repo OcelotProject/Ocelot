@@ -17,6 +17,15 @@ def test_allocatable_production():
         assert x == y
     assert len(list(allocatable_production(dataset))) == 3
 
+def test_allocatable_production_include_all_reference_products():
+    given = {"exchanges": [
+        {'type': 'reference product', 'byproduct classification': 'recyclable'},
+        {'type': 'reference product', 'byproduct classification': 'allocatable product'},
+        {'type': 'reference product', 'byproduct classification': 'waste'},
+        {'type': 'reference product', 'byproduct classification': 'foo'},
+    ]}
+    assert len(list(allocatable_production(given))) == 4
+
 def test_nonproduction_exchanges():
     exchanges = [
         {'type': 'reference product'},
@@ -69,22 +78,28 @@ def test_single_reference_product():
     assert get_single_reference_product(given) == expected
 
 def test_single_reference_product_multiple():
-    given = {'exchanges': [
-        {
-            'type': 'reference product',
-            'name': 'sandwich'
-        },
-        {
-            'type': 'reference product',
-            'name': 'hamburger'
-        },
-    ]}
+    given = {
+        'filepath': 'foo',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'name': 'sandwich'
+            },
+            {
+                'type': 'reference product',
+                'name': 'hamburger'
+            },
+        ]
+    }
     with pytest.raises(InvalidMultioutputDataset):
         get_single_reference_product(given)
 
 def test_single_reference_product_none():
     with pytest.raises(ValueError):
-        get_single_reference_product({'exchanges': []})
+        get_single_reference_product({
+            'filepath': 'foo',
+            'exchanges': [{'type': 'something'}]
+        })
 
 def test_normalize_reference_production_amount():
     given = {'exchanges': [
@@ -110,12 +125,13 @@ def test_normalize_reference_production_amount():
     assert normalize_reference_production_amount(given) == expected
 
 def test_normalize_reference_production_amount_zero_amount():
-    given = {'exchanges': [
-        {
+    given = {
+        'filepath': 'foo',
+        'exchanges': [{
             'type': 'reference product',
             'amount': 0
-        },
-    ]}
+        }]
+    }
     with pytest.raises(ZeroProduction):
         normalize_reference_production_amount(given)
 
@@ -271,10 +287,13 @@ def test_choose_reference_product_exchange_byproducts(no_normalization):
         assert one is not two
 
 def test_choose_reference_product_exchange_zero_production(no_normalization):
-    given = {'exchanges': [{
-        'type': 'reference product',
-        'amount': 0
-    }]}
+    given = {
+        'filepath': 'foo',
+        'exchanges': [{
+            'type': 'reference product',
+            'amount': 0
+        }]
+    }
     with pytest.raises(ZeroProduction):
         choose_reference_product_exchange(given, given['exchanges'][0])
 
@@ -318,3 +337,16 @@ def test_iterate_all_parameters(parameterized_ds):
     assert next(generator) == parameterized_ds['exchanges'][1]['properties'][0]
     assert next(generator) == parameterized_ds['parameters'][0]
     assert next(generator) == parameterized_ds['parameters'][1]
+
+def test_activity_hash():
+    given = {
+        'name': 'a',
+        'reference product': 'b',
+        'unit': 'c',
+        'location': 'd',
+        'start date': 'e',
+        'end date': 'f',
+        'foo': 'bar',
+    }
+    assert activity_hash({})
+    assert activity_hash(given)

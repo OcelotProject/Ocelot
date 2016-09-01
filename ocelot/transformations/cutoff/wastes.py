@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from ...collection import Collection
+from ...wrapper import TransformationWrapper
 from ..utils import (
     allocatable_production,
     choose_reference_product_exchange,
@@ -7,6 +9,7 @@ from ..utils import (
 from .economic import economic_allocation
 from .validation import valid_recycling_activity, valid_waste_treatment_activity
 from copy import deepcopy
+import logging
 
 
 @valid_recycling_activity
@@ -15,12 +18,18 @@ def recycling_allocation(dataset):
 
     Returns a list of new activities.
 
-    A recycling dataset has a reference product of the material to be recycled, and a byproduct of the material that can enter a market. For example, TODO.
+    A recycling dataset has a reference product of the material to be recycled, and a byproduct of the material that can enter a market. For example, aluminium recycling has a reference production of -1 kg of ``aluminium scrap, post-consumer, prepared for melting``, and allocatable byproducts of ``aluminium, cast alloy`` and ``aluminium oxide``.
 
-    This function will change the reference product to an input (meaning that it is now an allocatable input instead of an output), and then perform economic allocation."""
+    This function will change the reference product to an input (meaning that this activity will consume e.g. aluminium scrap), and then perform economic allocation on the byproducts.
+
+    Note that recycling allocation is not applied to ``recyclable`` byproducts, as the cutoff system model breaks the chain between production and consumption of these types of materials.
+
+    The net effect of ``recycling_allocation`` and ``flip_non_allocatable_byproducts`` is that all outputs that are not allocatable byproducts are moved to technosphere inputs.
+
+    """
     rp = get_single_reference_product(dataset)
     rp['type'] = 'from technosphere'
-    # TODO: Figure out about uncertainties
+    # TODO: Use rescale_exchange when new uncertainties code is merged
     rp['amount'] = -1 * rp['amount']
     return economic_allocation(dataset)
 
@@ -49,3 +58,99 @@ def waste_treatment_allocation(dataset):
         for exchange in allocatable_production(dataset)
         if exchange is not rp
     ]
+
+
+def create_new_recycled_content_dataset(ds, exc):
+    """Create a new dataset that consume recycled content production."""
+    common = ('access restricted', 'economic scenario', 'end date',
+            'filepath', 'id', 'start date', 'technology level')
+    name = exc['name'] + ', Recycled Content cut-off'
+    obj = {
+        "combined production": False,
+        "exchanges": [{
+            'amount': 1,
+            'id': exc['id'],
+            'name': name,
+            'tag': 'intermediateExchange',
+            'type': 'reference product',
+            'unit': exc['unit'],
+        }],
+        "parameters": [],
+        'name': name,
+        'location': 'GLO',
+        'type': "transforming activity",
+        'reference product': name
+    }
+    obj.update({key: ds[key] for key in common})
+    return deepcopy(obj)
+
+
+def create_recycled_content_datasets(data):
+    """Create new datasets that consume the recyclable content from recycling or waste treatment activities in the cutoff system model.
+
+    In the cutoff system model, no credit is given for the production of recyclable materials. Rather, consumers get these materials with no environmental burdens. So the production of a recyclable material (i.e. a flow with the classification ``recyclable``) during any transforming activity will create a new flow which has no consumer. This function creates consuming activities for these flows. These new activities have no environmental burdens, and serve no purpose other than to balance the output of a recyclable material.
+
+    These new datasets have the name of the recyclable flow, followed by the string ``, Recycled Content cut-off``, e.g. ``scrap lead acid battery, Recycled Content cut-off``.
+
+    """
+    new_datasets = {}
+    for ds in data:
+        recyclables = (exc
+                       for exc in ds['exchanges']
+                       if exc['type'] == 'byproduct'
+                       and exc['byproduct classification'] == 'recyclable')
+        for exc in recyclables:
+            rc = create_new_recycled_content_dataset(ds, exc)
+            new_datasets[rc['name']] = rc
+    for name in new_datasets:
+        logging.info({
+            'type': 'table element',
+            'data': (name,),
+        })
+    return data + list(new_datasets.values())
+
+create_recycled_content_datasets.__table__ = {
+    'title': 'Create new datasets to consume recyclable byproducts',
+    'columns': ["Activity name"]
+}
+
+
+def flip_non_allocatable_byproducts(dataset):
+    """Change non-allocatable byproducts (i.e. classification ``recyclable`` or ``waste``) from outputs to technosphere to inputs from technosphere.
+
+    This has no effect on the technosphere matrix, and should not change the behaviour of any transformation functions, which should be testing for classification instead of exchange type. However, this is the current behaviour of the existing ecoinvent system model.
+
+    Production of recyclable materials are handled by the function ``create_recycled_content_datasets``, which creates consuming activities for these materials. Note, however, that the name of these materials changes - the string ``, Recycled Content cut-off`` is added to indicate that these materials are cutoff from the rest of the supply chain.
+
+    Production of wastes will be handled by existing waste treatment activities.
+
+    Change something from an output to an input requires flipping the sign of all numeric fields.
+
+    """
+    for exc in dataset['exchanges']:
+        if (exc['type'] == 'byproduct' and
+            exc['byproduct classification'] != 'allocatable product'):
+            logging.info({
+                'type': 'table element',
+                'data': (dataset['name'], exc['name'], exc['byproduct classification']),
+            })
+            if exc['byproduct classification'] == 'recyclable':
+                exc['name'] += ', Recycled Content cut-off'
+            del exc['byproduct classification']
+            exc['type'] = 'from technosphere'
+            # TODO: Use rescale_exchange when new uncertainties code is merged
+            exc['amount'] = -1 * exc['amount']
+            if 'formula' in exc:
+                exc['formula'] = '-1 * ({})'.format(exc['formula'])
+    return [dataset]
+
+flip_non_allocatable_byproducts.__table__ = {
+    'title': 'Flip recyclable and waste outputs to inputs for cutoff or treatment',
+    'columns': ["Activity name", "Flow", "Classification"]
+}
+
+
+handle_waste_outputs = Collection(
+    create_recycled_content_datasets,
+    TransformationWrapper(flip_non_allocatable_byproducts),
+)

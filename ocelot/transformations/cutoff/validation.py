@@ -19,17 +19,36 @@ def valid_no_allocation_dataset(wrapped, instance, args, kwargs):
 
 
 @wrapt.decorator
+def valid_merge_datasets(wrapped, instance, args, kwargs):
+    """Datasets to be merged based on common reference products should have no allocatable byproducts"""
+    data = kwargs.get('data') or args[0]
+    for ds in data:
+        if any(1 for exc in ds['exchanges']
+               if exc['type'] == 'byproduct'
+               and exc['byproduct classification'] == 'allocatable product'):
+            raise InvalidExchange("Exchanges with byproducts passes to ``merge_byproducts``")
+    return wrapped(*args, **kwargs)
+
+
+@wrapt.decorator
 def valid_economic_activity(wrapped, instance, args, kwargs):
     """Check to make sure the activity meets the assumptions for economic allocation.
 
-    * All allocatable products must have a price.
+    * All allocatable products must have a positive price.
+    * All allocatable products must have a positive exchange amount.
 
     """
     dataset = kwargs.get('dataset') or args[0]
     for exchange in allocatable_production(dataset):
         if get_numerical_property(exchange, 'price') is None:
             message = "No price given for exchange:\n{}\nIn dataset:\n{}"
-            raise InvalidExchange(message.format(pformat(exchange), pformat(dataset)))
+            raise InvalidExchange(message.format(pformat(exchange), pformat(dataset['filepath'])))
+        elif get_numerical_property(exchange, 'price') < 0:
+            message = "Price must be greater than zero:\n{}\nIn dataset:\n{}"
+            raise InvalidExchange(message.format(pformat(exchange), pformat(dataset['filepath'])))
+        elif exchange['amount'] < 0:
+            message = "Exchange amount must be greater than zero:\n{}\nIn dataset:\n{}"
+            raise InvalidExchange(message.format(pformat(exchange), pformat(dataset['filepath'])))
     return wrapped(*args, **kwargs)
 
 
@@ -38,19 +57,25 @@ def valid_recycling_activity(wrapped, instance, args, kwargs):
     """Check to make sure the activity meets the assumptions for recycling allocation.
 
     * There is exactly one reference product exchange with a positive production amount
-    * There is at least one byproduct exchange.
+    * There is at least one byproduct exchange with classification ``allocatable byproduct``.
+    * Each of these allocatable byproducts must meet the requirements for economic allocation.
 
     """
     dataset = kwargs.get('dataset') or args[0]
     rp = get_single_reference_product(dataset)
-    if not rp['amount'] > 0:
-        message = "Reference product exchange amount not greater than 0:\n{}"
-        raise InvalidExchange(message.format(pformat(dataset)))
-    if not any(exc for exc in dataset['exchanges']
-               if exc['type'] == 'byproduct'
-               and exc['byproduct classification'] == 'allocatable product'):
+    if not rp['amount'] < 0:
+        message = "Reference product exchange amount shouldn't be positive:\n{}"
+        raise InvalidExchange(message.format(pformat(dataset['filepath'])))
+
+    allocatable_byproducts = (
+        exc
+        for exc in dataset['exchanges']
+        if exc['type'] == 'byproduct'
+        and exc['byproduct classification'] == 'allocatable product'
+    )
+    if not any(allocatable_byproducts):
         message = "No allocatable byproducts in recycling activity:\n{}"
-        raise InvalidExchange(message.format(pformat(dataset)))
+        raise InvalidExchange(message.format(pformat(dataset['filepath'])))
     return wrapped(*args, **kwargs)
 
 
@@ -58,7 +83,7 @@ def valid_recycling_activity(wrapped, instance, args, kwargs):
 def valid_waste_treatment_activity(wrapped, instance, args, kwargs):
     """Check to make sure the activity meets the assumptions for waste treatment allocation.
 
-    * There is a single reference product exchange with a negative amount and ``byproduct classification`` of ``waste``.
+    * There is a single reference product exchange with a negative amount and ``classification`` of ``waste``.
 
     """
     dataset = kwargs.get('dataset') or args[0]
@@ -66,29 +91,11 @@ def valid_waste_treatment_activity(wrapped, instance, args, kwargs):
     if rp.get('byproduct classification') != 'waste':
         message = ("Wrong byproduct classification for waste treatment "
             "reference product:\n{}\nIn dataset:\n{}")
-        raise InvalidExchange(message.format(pformat(exchange), pformat(dataset)))
+        raise InvalidExchange(message.format(pformat(rp), dataset['filepath']))
     if not rp['amount'] < 0:
         message = ("Waste treatment ref. product exchange amount must be "
             "negative:\n{}\nIn dataset:\n{}")
-        raise InvalidExchange(message.format(pformat(exchange), pformat(dataset)))
-    return wrapped(*args, **kwargs)
-
-
-@wrapt.decorator
-def valid_combined_production_activity(wrapped, instance, args, kwargs):
-    """Check to make sure the activity meets the assumptions for combined production allocation.
-
-    * Each refernce product exchange must be a variable name, so that the amount of inputs can vary depending on whether that reference product is chosen in subdivision.
-
-    """
-    dataset = kwargs.get('dataset') or args[0]
-    for exc in dataset['exchanges']:
-        if (exc['type'] == 'reference product'
-            and exc['amount']
-            and not exc.get('variable')):
-            message = ("Ref. product exchange in combined production must have"
-                " variable name:\n{}\nIn dataset:\n{}")
-            raise InvalidExchange(message.format(pformat(exc), pformat(dataset)))
+        raise InvalidExchange(message.format(pformat(rp), dataset['filepath']))
     return wrapped(*args, **kwargs)
 
 

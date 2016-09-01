@@ -27,6 +27,14 @@ def test_fix_math_formulas():
     }]
     assert fix_math_formulas(given) == expected
 
+def test_fix_math_formulas_no_formula():
+    given = [{
+        'name': 'a name',
+        'exchanges': [{'amount': 1,}],
+        'parameters': [{'amount': 2}]
+    }]
+    assert fix_math_formulas(given)
+
 def test_find_if_clause():
     ds = {'name': ''}
     string = "if(T1_kW/hp_to_kW<750;T123_co_750hp;T124_co_750php)"

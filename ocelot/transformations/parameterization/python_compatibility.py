@@ -94,7 +94,7 @@ fix_math_formulas.__table__ = {
 def lowercase_all_parameters(data):
     """Convert all formulas and parameters to lower case.
 
-    Ecoinvent formulas and variables names are case-insensitive, and often provided in many variants, e.g. ``clinker_PV`` and ``clinker_pv``. There are too many of these to fix manually, so we use a sledgehammer."""
+    Ecoinvent formulas and variables names are case-insensitive, and often provided in many variants, e.g. ``clinker_PV`` and ``clinker_pv``. There are too many of these to fix manually, so we use a sledgehammer approach to guarantee consistency within datasets."""
     for ds in data:
         for exc in iterate_all_parameters(ds):
             if 'formula' in exc:

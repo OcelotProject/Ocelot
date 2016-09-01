@@ -3,6 +3,7 @@ from ocelot.transformations import (
     drop_zero_pv_row_datasets,
     ensure_all_datasets_have_production_volume,
 )
+from ocelot.transformations.cleanup import deparameterize
 from ocelot.transformations.validation import (
     ensure_markets_only_have_one_reference_product,
     ensure_markets_dont_consume_their_ref_product,
@@ -54,7 +55,6 @@ def test_drop_zero_pv_row_datasets():
             }]
         },
     ]
-    # TODO: Test for logging?
     assert drop_zero_pv_row_datasets(data) == expected
 
 
@@ -83,3 +83,29 @@ def test_ensure_all_datasets_have_production_volume_fail():
     ]
     with pytest.raises(AssertionError):
         ensure_all_datasets_have_production_volume(data)
+
+def test_deparameterize():
+    given = {
+        'parameters': [
+            {'formula': 'yes'},
+            {'variable': 'no'}
+        ],
+        'exchanges': [{
+            'formula': 'peter',
+            'variable': 'paul',
+            'production volume': {
+                'variable': 'red',
+                'formula': 'green',
+                'key': 'value'
+            },
+            'properties': [
+                {'formula': 'up', 'other': 'stuff'},
+                {'variable': 'down', 'help': 'me'}
+            ]
+        }]
+    }
+    expected = {
+        'parameters': [],
+        'exchanges': [{'production volume': {'key': 'value'}}]
+    }
+    assert deparameterize(given) == expected

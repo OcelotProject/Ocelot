@@ -18,3 +18,8 @@ class Collection(Iterable):
 
     def __len__(self):
         return len(self.functions)
+
+    def __call__(self, data):
+        for func in self:
+            data = func(data)
+        return data
