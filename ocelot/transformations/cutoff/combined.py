@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ... import toolz
+from ...errors import InvalidExchange
 from ..utils import (
     activity_grouper,
     allocatable_production,
@@ -79,9 +80,11 @@ def handle_split_dataset(ds):
     rp = get_single_reference_product(ds)
     if rp['byproduct classification'] == 'waste':
         return waste_treatment_allocation(ds)
-    else:
+    elif rp['byproduct classification'] == 'recyclable':
         ds['name'] = "{}, from {}".format(ds['name'], rp['name'])
         return recycling_allocation(ds)
+    else:
+        raise InvalidExchange("Invalid byproduct classification")
 
 
 def combined_production_without_products(dataset):
