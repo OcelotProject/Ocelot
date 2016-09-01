@@ -54,10 +54,6 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
         raise ValueError("Missing consumer datasets")
     if len(suppliers) != sum(len(o) for o in spatial_dict.values()):
         raise ValueError("Missing supplier datasets")
-    if len(suppliers) != len({ds['location']
-                              for lst in spatial_dict.values()
-                              for ds in lst}):
-        raise ValueError("Missing supplier locations")
 
     for ds in consumers:
         ds['suppliers'] = [annotate_exchange(get_single_reference_product(obj),
