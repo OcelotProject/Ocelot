@@ -260,5 +260,60 @@ def test_allocate_suppliers():
     }]
     assert allocate_suppliers(deepcopy(given))[0]['exchanges'] == expected
 
+def test_update_market_production_volumes():
+    given = [{
+        'name': '',
+        'type': 'foo',
+        'exchanges': [{
+            'name': '',
+            'type': 'reference product',
+            'production volume': {}
+        }],
+        'suppliers': [
+            {'production volume': {'amount': 10}},
+            {'production volume': {'amount': 20}},
+        ]
+    }]
+    ds = update_market_production_volumes(given, 'foo')[0]
+    assert ds['exchanges'][0]['production volume']['amount'] == 30
 
+def test_update_market_production_volumes_activity_link():
+    given = [{
+        'name': '',
+        'type': 'foo',
+        'exchanges': [{
+            'name': '',
+            'type': 'reference product',
+            'production volume': {'subtracted activity link volume': 15}
+        }],
+        'suppliers': [
+            {'production volume': {'amount': 10}},
+            {'production volume': {'amount': 20}},
+        ]
+    }]
+    ds = update_market_production_volumes(given, 'foo')[0]
+    assert ds['exchanges'][0]['production volume']['amount'] == 15
 
+def test_update_market_production_volumes_negative_sum():
+    given = [{
+        'name': '',
+        'type': 'foo',
+        'exchanges': [{
+            'name': '',
+            'type': 'reference product',
+            'production volume': {'subtracted activity link volume': 40}
+        }],
+        'suppliers': [
+            {'production volume': {'amount': 10}},
+            {'production volume': {'amount': 20}},
+        ]
+    }]
+    ds = update_market_production_volumes(given, 'foo')[0]
+    assert ds['exchanges'][0]['production volume']['amount'] == 0
+
+def test_delete_suppliers_list():
+    given = [{'suppliers': 1}]
+    assert delete_suppliers_list(given) == [{}]
+
+def test_link_consumers_to_markets():
+    pass
