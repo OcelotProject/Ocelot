@@ -84,6 +84,7 @@ def test_label_reference_products():
 
 def test_label_reference_products_no_exchanges():
     invalid = [{
+        'filepath': '',
         'type': 'transforming activity',
         'exchanges': [{'type': 'nope'}]
     }]
@@ -92,6 +93,7 @@ def test_label_reference_products_no_exchanges():
 
 def test_label_reference_products_multiple_rp():
     invalid = [{
+        'filepath': '',
         'type': 'transforming activity',
         'exchanges': [
             {'type': 'reference product'},
