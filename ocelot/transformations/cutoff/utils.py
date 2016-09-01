@@ -45,6 +45,8 @@ def label_reference_products(data):
     for ds in data:
         ds['reference product'] = get_single_reference_product(ds)['name']
     return data
+
+
 def delete_allocation_method(dataset):
     """Delete key ``allocation method`` if present"""
     if "allocation method" in dataset:
