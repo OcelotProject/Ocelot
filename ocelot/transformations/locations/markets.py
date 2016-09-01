@@ -175,14 +175,17 @@ def link_consumers_to_markets(data):
     Add the field ``code`` to each exchange with the code of the linked market activity."""
     filter_func = lambda x: x['type'] == "market activity"
     # Cache markets by reference product so don't need to iterate through whole list each time
-    market_mapping = toolz.groupby('reference product', filter(filter_func, data))
+    market_mapping = toolz.groupby(
+        'reference product',
+        filter(filter_func, data)
+    )
     for ds in data:
         for exc in ds['exchanges']:
             if (exc.get('code') or exc.get('activity link')
                 or not exc['type'] == 'from technosphere'):
                 continue
             contributors = [m for m in market_mapping[exc['name']]
-                            if topolgy.contains(m['location'], ds['location'])]
+                            if topology.contains(m['location'], ds['location'])]
             if len(contributors) == 1:
                 exc['code'] = contributors[0]['code']
             else:

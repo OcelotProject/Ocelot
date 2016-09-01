@@ -316,4 +316,82 @@ def test_delete_suppliers_list():
     assert delete_suppliers_list(given) == [{}]
 
 def test_link_consumers_to_markets():
-    pass
+    given = [{
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'location': 'RER',
+        'code': 'Made in the EU',
+        'exchanges': [],
+    }, {
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'location': 'BR',
+        'code': 'olympics',
+        'exchanges': [],
+    }, {
+        'type': 'market group',
+        'location': 'BR',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese'
+        }]
+    }, {
+        'type': 'transforming activity',
+        'location': 'DE',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese'
+        }, {
+            'type': 'from technosphere',
+            'name': 'cheese',
+            'code': 'already here',
+        }, {
+            'type': 'from technosphere',
+            'name': 'cheese',
+            'activity link': 'skip me too',
+        }, {
+            'type': 'something else',
+            'name': 'cheese',
+        }]
+    }]
+    expected = [{
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'location': 'RER',
+        'code': 'Made in the EU',
+        'exchanges': [],
+    }, {
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'location': 'BR',
+        'code': 'olympics',
+        'exchanges': [],
+    }, {
+        'type': 'market group',
+        'location': 'BR',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese',
+            'code': 'olympics',
+        }]
+    }, {
+        'type': 'transforming activity',
+        'location': 'DE',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese',
+            'code': 'Made in the EU',
+        }, {
+            'type': 'from technosphere',
+            'name': 'cheese',
+            'code': 'already here',
+        }, {
+            'type': 'from technosphere',
+            'name': 'cheese',
+            'activity link': 'skip me too',
+        }, {
+            'type': 'something else',
+            'name': 'cheese',
+        }]
+    }]
+    assert link_consumers_to_markets(given) == expected
