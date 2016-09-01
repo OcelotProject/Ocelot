@@ -32,21 +32,17 @@ def check_single_global_dataset(datasets):
 
 @wrapt.decorator
 def no_overlaps(wrapped, instance, args, kwargs):
-    """Check to make sure neither ``consumers`` nor ``suppliers`` have overlaps."""
+    """Check to make sure ``consumers`` doesn't have overlaps."""
     consumers = [x['location'] for x in (kwargs.get('consumers') or args[0])]
-    suppliers = [x['location'] for x in (kwargs.get('suppliers') or args[1])]
-    if topology.overlaps(consumers) or topology.overlaps(suppliers):
+    if topology.overlaps(consumers):
         raise OverlappingActivities
     return wrapped(*args, **kwargs)
 
 
 @wrapt.decorator
 def no_geo_duplicates(wrapped, instance, args, kwargs):
-    """Check to make sure neither ``consumers`` nor ``suppliers`` have duplicate locations."""
+    """Check to make sure ``consumers`` doesn't have duplicate locations."""
     consumers = kwargs.get('consumers') or args[0]
-    suppliers = kwargs.get('suppliers') or args[1]
-    if len(suppliers) != len({o['location'] for o in suppliers}):
-        raise ValueError("`suppliers` has duplicate locations")
     if len(consumers) != len({o['location'] for o in consumers}):
         raise ValueError("`consumers` has duplicate locations")
     return wrapped(*args, **kwargs)
