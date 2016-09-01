@@ -41,7 +41,62 @@ def add_hard_linked_production_volumes(data):
 
     This should be run after the validity check ``check_activity_link_validity``.
 
-    Production volumes in the target dataset are used to indicate relative contributions to markets; some datasets have their entire production consumed by hard links, and therefore would not contribute anything to market datasets."""
+    Production volumes in the target dataset are used to indicate relative contributions to markets; some datasets have their entire production consumed by hard links, and therefore would not contribute anything to market datasets.
+
+    Example input:
+
+    .. code-block:: python
+
+        [{
+            'id': 'link to me',
+            'exchanges': [{
+                'name': 'François',
+                'production volume': {'amount': 100},
+                'type': 'reference product',
+            }]
+        }, {
+            'id': 'not useful',
+            'exchanges': [{
+                'activity link': 'link to me',
+                'amount': 2,
+                'name': 'François',
+                'type': 'from technosphere',
+            }, {
+                'amount': 5,
+                'production volume': {'amount': 100},
+                'type': 'reference product',
+            }]
+        }]
+
+    And corresponding output:
+
+    .. code-block:: python
+
+        [{
+            'id': 'link to me',
+            'exchanges': [{
+                'name': 'François',
+                'production volume': {
+                    'amount': 100,
+                    'subtracted activity link volume': 2 * 100 / 5  # <- This is added
+                },
+                'type': 'reference product',
+            }],
+        }, {
+            'id': 'not useful',
+            'exchanges': [{
+                'activity link': 'link to me',
+                'amount': 2,
+                'name': 'François',
+                'type': 'from technosphere',
+            }, {
+                'amount': 5,
+                'production volume': {'amount': 100},
+                'type': 'reference product',
+            }],
+        }]
+
+    """
     mapping = {ds['id']: ds for ds in data}
     for ds in data:
         for exc in (e for e in ds['exchanges'] if e.get('activity link')):
@@ -56,13 +111,13 @@ def add_hard_linked_production_volumes(data):
             # Messy code to handle special features of our real input data.
             ref_prod = [exc for exc in ds['exchanges']
                         if exc['type'] == 'reference product']
-            allocatable_prod = [exc for exc in ref_prod
-                if exc['byproduct classification'] == 'allocatable product']
             if len(ref_prod) == 1:
                 scale = ref_prod[0]['production volume']['amount'] / ref_prod[0]['amount']
             else:
                 # One way to choose among multiple ref. prod. exchanges
                 # with different PV/amount ratios is to choose the largest one.
+                allocatable_prod = [exc for exc in ref_prod
+                    if exc['byproduct classification'] == 'allocatable product']
                 scale = sorted([
                     obj['production volume']['amount'] / obj['amount']
                     for obj in allocatable_prod
