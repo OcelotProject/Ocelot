@@ -4,7 +4,6 @@ from .transformations import (
     ensure_mandatory_properties,
     fix_ecoinvent_parameters,
     manage_activity_links,
-    relabel_global_to_row,
     validate_markets,
     variable_names_are_unique,
 )
@@ -37,5 +36,4 @@ default_configuration = [
     manage_activity_links,
     handle_waste_outputs,
     cutoff_allocation,
-    relabel_global_to_row,
 ]

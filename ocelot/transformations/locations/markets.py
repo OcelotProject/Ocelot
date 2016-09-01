@@ -83,12 +83,27 @@ def allocate_suppliers(data):
     Works on both market activities and market groups.
 
     The sum of the suppliers inputs should add up to the production amount of the market (reference product exchange amount), minus any constrained market links. Constrained market exchanges should already be in the list of dataset exchanges, with the attribute ``constrained``."""
-    pass
 
 allocate_suppliers.__table__ = {
     'title': 'Allocate suppliers exchange amounts to markets',
-    'columns': ["Name", "Product", "Market location", "Supplier locations"]
+    'columns': ["Name", "Product", "Location", "Supplier location", "Amount"]
 }
+
+
+def update_market_production_volumes(data):
+    """Update market production volumes to sum to the production volumes of all applicable inputs, minus any hard (activity) links.
+
+    Activity link amounts are added by ``add_hard_linked_production_volumes`` and are given in the field ``rp_exchange['production volume']['subtracted activity link volume']``.
+
+    Production volume is set to zero is the net production volume is less than 1e-6."""
+    pass
+
+
+def delete_suppliers_list(data):
+    """Delete the list of suppliers added by ``add_suppliers_to_markets``.
+
+    This information was used by ``allocate_suppliers`` and ``update_market_production_volumes``, but is no longer useful."""
+    pass
 
 
 def link_consumers_to_markets(data):
