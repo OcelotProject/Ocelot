@@ -15,7 +15,6 @@ from .transformations.cutoff import (
     handle_waste_outputs,
     ready_for_market_linking,
 )
-from .wrapper import TransformationWrapper
 
 
 class Configuration(object):

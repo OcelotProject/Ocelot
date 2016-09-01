@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from ..collection import Collection
 from ..errors import UnresolvableActivityLink
-from .utils import allocatable_production, get_numerical_property
+from .utils import allocatable_production
 from .validation import ensure_production_exchanges_have_production_volume
 from pprint import pformat
-import logging
 
 
 def check_activity_link_validity(data):
