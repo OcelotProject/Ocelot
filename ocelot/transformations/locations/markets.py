@@ -109,6 +109,10 @@ def allocate_suppliers(data):
             amount = supply_exc['production volume']['amount'] / total_pv * scale_factor
             ds['exchanges'].append(remove_exchange_uncertainty({
                 'amount': amount,
+                'name': supply_exc['name'],
+                'unit': supply_exc['unit'],
+                'type': 'from technosphere',
+                'tag': 'intermediateExchange',
                 'code': supply_exc['code']
             }))
             logging.info({

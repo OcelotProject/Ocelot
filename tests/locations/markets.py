@@ -203,31 +203,39 @@ def test_add_suppliers_to_markets():
 
 def test_allocate_suppliers():
     given = [{
+        'location': 'dining room',
         'name': 'dinner',
         'type': 'market activity',
-        'location': 'dining room',
         'exchanges': [{
-            'type': 'reference product',
+            'amount': 24,
             'name': 'salad',
-            'amount': 24
+            'type': 'reference product',
         }],
         'suppliers': [{
-            'location': 'upstairs',
-            'production volume': {'amount': 2},
             'code': 'up',
+            'location': 'upstairs',
+            'name': '',
+            'production volume': {'amount': 2},
+            'unit': '',
         }, {
-            'location': 'downstairs',
-            'production volume': {'amount': 10},
             'code': 'do',
+            'location': 'downstairs',
+            'name': '',
+            'production volume': {'amount': 10},
+            'unit': '',
         }]
     }]
     expected = [{
         'amount': 24,
         'name': 'salad',
-        'type': 'reference product'
+        'type': 'reference product',
     }, {
         'amount': 2 / 12 * 24,
         'code': 'up',
+        'name': '',
+        'tag': 'intermediateExchange',
+        'type': 'from technosphere',
+        'unit': '',
         'uncertainty': {
             'maximum': 2 / 12 * 24,
             'minimum': 2 / 12 * 24,
@@ -238,6 +246,10 @@ def test_allocate_suppliers():
     }, {
         'amount': 10 / 12 * 24,
         'code': 'do',
+        'name': '',
+        'tag': 'intermediateExchange',
+        'type': 'from technosphere',
+        'unit': '',
         'uncertainty': {
             'maximum': 10 / 12 * 24,
             'minimum': 10 / 12 * 24,
