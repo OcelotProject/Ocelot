@@ -30,13 +30,12 @@ def check_single_global_dataset(datasets):
 #     return data
 
 
-@wrapt.decorator
-def no_overlaps(wrapped, instance, args, kwargs):
-    """Check to make sure ``consumers`` doesn't have overlaps."""
-    consumers = [x['location'] for x in (kwargs.get('consumers') or args[0])]
-    if topology.overlaps(consumers):
+def no_overlaps(data):
+    """Check to make sure activities in ``data`` doesn't have geographic overlaps."""
+    locations = [x['location'] for x in data]
+    if topology.overlaps(locations):
         raise OverlappingActivities
-    return wrapped(*args, **kwargs)
+    return True
 
 
 @wrapt.decorator

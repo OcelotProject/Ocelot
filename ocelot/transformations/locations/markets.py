@@ -18,7 +18,6 @@ def annotate_exchange(exc, ds):
     return exc
 
 
-@no_overlaps
 @no_geo_duplicates
 def apportion_suppliers_to_consumers(consumers, suppliers):
     """Apportion suppliers to consumers based on their geographic relationships.
@@ -85,6 +84,9 @@ def add_suppliers_to_markets(data, from_type="transforming activity",
         suppliers = [ds for ds in datasets if ds['type'] == from_type]
         consumers = [ds for ds in datasets if ds['type'] == to_type]
         if consumers:
+            if to_type == 'market activity':
+                # Overlaps aren't allowed for markets, only market groups
+                no_overlaps(consumers)
             apportion_suppliers_to_consumers(consumers, suppliers)
     return data
 

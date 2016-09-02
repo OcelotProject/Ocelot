@@ -43,18 +43,10 @@ def test_check_single_global_dataset():
 #         check_markets_dont_overlap(given)
 
 def test_no_overlaps():
-    @no_overlaps
-    def f(consumers, suppliers):
-        return True
-
-    consumers = [{'location': 'US'}, {'location': 'CH'}]
-    suppliers = []
-    assert f(consumers, suppliers)
-    assert f(suppliers, consumers)
+    assert no_overlaps([{'location': 'US'}, {'location': 'CH'}])
 
     with pytest.raises(OverlappingActivities):
-        consumers = [{'location': 'DE'}, {'location': 'RER'}]
-        f(consumers, suppliers)
+        no_overlaps([{'location': 'DE'}, {'location': 'RER'}])
 
 def test_no_geo_duplicates():
     @no_geo_duplicates
