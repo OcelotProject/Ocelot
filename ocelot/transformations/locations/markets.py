@@ -52,8 +52,12 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
     # Validation checks
     if len(spatial_dict) != len(consumers):
         raise ValueError("Missing consumer datasets")
-    if len(suppliers) != sum(len(o) for o in spatial_dict.values()):
-        raise ValueError("Missing supplier datasets")
+
+    # TODO: Need to do something here if there are
+    # suppliers who aren't linked to consuming markets.
+    # Maybe just log them...
+    # if len(suppliers) != sum(len(o) for o in spatial_dict.values()):
+    #     raise ValueError("Missing supplier datasets")
 
     for ds in consumers:
         ds['suppliers'] = [annotate_exchange(get_single_reference_product(obj),
@@ -77,10 +81,11 @@ def add_suppliers_to_markets(data, from_type="transforming activity",
     Does not change the exchanges list or do allocation between various suppliers."""
     filter_func = lambda x: x['type'] in (from_type, to_type)
     grouped = toolz.groupby("reference product", filter(filter_func, data))
-    for datasets in grouped.values():
+    for rp, datasets in grouped.items():
         suppliers = [ds for ds in datasets if ds['type'] == from_type]
         consumers = [ds for ds in datasets if ds['type'] == to_type]
-        apportion_suppliers_to_consumers(consumers, suppliers)
+        if consumers:
+            apportion_suppliers_to_consumers(consumers, suppliers)
     return data
 
 add_suppliers_to_markets.__table__ = {
