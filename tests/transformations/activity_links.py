@@ -203,11 +203,6 @@ def test_add_hard_linked_production_volumes_choose_scale_value():
             'byproduct classification': 'allocatable product',
             'production volume': {'amount': 100},
             'type': 'reference product',
-        }, {
-            'amount': 5,
-            'byproduct classification': 'not used',
-            'production volume': {'amount': 1000},
-            'type': 'reference product',
         }]
     }]
     ds = add_hard_linked_production_volumes(given)[0]

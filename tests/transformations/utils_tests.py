@@ -356,22 +356,14 @@ def test_get_biggest_pv_to_exchange_ratio():
         'amount': 2,
         'production volume': {'amount': 10},
         'type': 'reference product',
-        'byproduct classification': 'allocatable product',
     }, {
         'amount': 5,
         'production volume': {'amount': 20},
         'type': 'reference product',
-        'byproduct classification': 'allocatable product',
     }, {
         'amount': 1,
         'production volume': {'amount': 20},
         'type': 'not reference product',
-        'byproduct classification': 'allocatable product',
-    }, {
-        'amount': 1,
-        'production volume': {'amount': 20},
-        'type': 'reference product',
-        'byproduct classification': 'not allocatable product',
     }]}
     assert get_biggest_pv_to_exchange_ratio(given) == 5
 
@@ -380,12 +372,10 @@ def test_get_biggest_pv_to_exchange_ratio_neg_numbers():
         'amount': -2,
         'production volume': {'amount': 10},
         'type': 'reference product',
-        'byproduct classification': 'allocatable product',
     }, {
         'amount': -5,
         'production volume': {'amount': 20},
         'type': 'reference product',
-        'byproduct classification': 'allocatable product',
     }]}
     assert get_biggest_pv_to_exchange_ratio(given) == -5
 
