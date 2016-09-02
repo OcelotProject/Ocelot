@@ -67,6 +67,7 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
             'data': (ds['name'], ds['reference product'], ds['location'],
                      ";".join([o['location'] for o in spatial_dict[ds['location']]]))
         })
+    return True
 
 
 def add_suppliers_to_markets(data, from_type="transforming activity",

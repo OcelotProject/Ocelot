@@ -67,6 +67,24 @@ def test_apportion_suppliers_to_consumers():
     apportion_suppliers_to_consumers(consumers, suppliers)
     assert consumers == expected
 
+def test_apportion_suppliers_to_consumers_no_suppliers():
+    consumers = [
+        generate_dataset('UCTE without France'),
+    ]
+    assert apportion_suppliers_to_consumers(consumers, [])
+
+def test_apportion_suppliers_to_consumers_nonlinked_suppliers():
+    consumers = [
+        generate_dataset('UCTE without France'),
+    ]
+    suppliers = [
+        generate_dataset('FR'),
+        generate_dataset('DE'),
+    ]
+    for s in suppliers:
+        s.update({'exchanges': [{'type': 'reference product'}]})
+    assert apportion_suppliers_to_consumers(consumers, suppliers)
+
 def test_add_suppliers_to_markets():
     given = [{
         'type': 'skip me',
