@@ -86,8 +86,15 @@ def add_suppliers_to_markets(data, from_type="transforming activity",
     for rp, datasets in grouped.items():
         suppliers = [ds for ds in datasets if ds['type'] == from_type]
         consumers = [ds for ds in datasets if ds['type'] == to_type]
-        if consumers:
-            if to_type == 'market activity':
+        if to_type == 'market activity':
+            if not suppliers:
+                # Best way I can think of to do this. Can't change the
+                # name of the flow itself.
+                suppliers = [
+                    ds for ds in datasets
+                    if ds['type'] == from_type
+                    and ds['reference product'] == rp + ", Recycled Content cut-off"]
+            if consumers:
                 # Overlaps aren't allowed for markets, only market groups
                 no_overlaps(consumers)
             apportion_suppliers_to_consumers(consumers, suppliers)
@@ -113,7 +120,7 @@ def allocate_suppliers(data):
                        for o in ds['suppliers'])
         if not total_pv:
             # TODO: Raise error here
-            print("Skipping zero total PV")
+            print("Skipping zero total PV: {}/{} ({}, {} suppliers)".format(ds['name'], rp['name'], ds['location'], len(ds['suppliers'])))
             continue
         for supply_exc in ds['suppliers']:
             amount = supply_exc['production volume']['amount'] / total_pv * scale_factor
