@@ -90,3 +90,8 @@ class IdenticalDatasets(OcelotError):
 class InvalidTransformationFunction(OcelotError):
     """Metadata could not be retrieved for this function"""
     pass
+
+
+class MissingSupplier(OcelotError):
+    """Input from global or RoW market is needed, but this market doesn't exist"""
+    pass

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from ocelot.errors import OverlappingMarkets, MissingSupplier
 from ocelot.transformations.locations.markets import *
 from copy import deepcopy
 import pytest
@@ -413,3 +414,9 @@ def test_link_consumers_to_markets():
         }]
     }]
     assert link_consumers_to_markets(given) == expected
+
+# Do something with overlapping markets
+# Do something with no markets containing -> GLO market supplies
+# Check special case of recycled content
+# Check ValueError if not market for product
+# Raise error if need GLO/RoW supplier but doesn't exist

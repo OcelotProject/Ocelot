@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import topology
 from ... import toolz
+from ...errors import OverlappingMarkets, MissingSupplier
 from ..utils import (
     activity_grouper,
     get_single_reference_product,
@@ -36,6 +37,7 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
                                   for supplier in spatial_dict.values()
                                   for obj in supplier])
     except TypeError:
+        # Union of empty set raises TypeError
         found_faces = set()
 
     # Add suppliers for GLO or RoW dataset
@@ -109,6 +111,10 @@ def allocate_suppliers(data):
         scale_factor = rp['amount']
         total_pv = sum(o['production volume']['amount']
                        for o in ds['suppliers'])
+        if not total_pv:
+            # TODO: Raise error here
+            print("Skipping zero total PV")
+            continue
         for supply_exc in ds['suppliers']:
             amount = supply_exc['production volume']['amount'] / total_pv * scale_factor
             ds['exchanges'].append(remove_exchange_uncertainty({
@@ -177,23 +183,79 @@ def link_consumers_to_markets(data):
     Should only be run after ``add_suppliers_to_markets``. Skips hard (activity) links, and exchanges which have already been linked.
 
     Add the field ``code`` to each exchange with the code of the linked market activity."""
-    filter_func = lambda x: x['type'] == "market activity"
+
     # Cache markets by reference product so don't need to iterate through whole list each time
+    filter_func = lambda x: x['type'] == "market activity"
     market_mapping = toolz.groupby(
         'reference product',
         filter(filter_func, data)
     )
+
+    # Special case where linking doesn't go through a market;
+    # Recyclable byproducts in cutoff system model
+    RC = 'Recycled Content cut-off'
+    recycled_content_filter = lambda x: RC in x['reference product']
+    recycled_content_mapping = toolz.groupby(
+        'reference product',
+        filter(recycled_content_filter, data)
+    )
+
     for ds in data:
         for exc in ds['exchanges']:
             if (exc.get('code') or exc.get('activity link')
                 or not exc['type'] == 'from technosphere'):
                 continue
-            contributors = [m for m in market_mapping[exc['name']]
-                            if topology.contains(m['location'], ds['location'])]
-            if len(contributors) == 1:
-                exc['code'] = contributors[0]['code']
+
+            # Handle special case for recyclable byproducts in
+            # cutoff system model
+            if exc['name'] not in market_mapping:
+                if not exc['name'].endswith(RC):
+                    raise ValueError(
+                        "No market for desired product {}".format(exc['name'])
+                    )
+                contributors = recycled_content_mapping[exc['name']]
             else:
-                print("Need to split exchanges")
-                # total_pv = sum(get_single_reference_product(m)['production volume']['amount']
-                #                for m in contributors)
+                contributors = market_mapping[exc['name']]
+
+            contained = [m for m in contributors
+                         if topology.contains(m['location'], ds['location'])]
+            if not contained:
+                # Use global or rest-of-world market
+                global_suppliers = [x for x in contributors
+                                    if x['location'] in ("GLO", "RoW")]
+                if not global_suppliers:
+                    message = ("No regional or global supplier found for "
+                        "activity {} for product {} in {}")
+                    raise MissingSupplier(message.format(
+                        exc['name'], ds['name'], ds['location']
+                    ))
+                else:
+                    assert len(global_suppliers) == 1
+                    exc['code'] = global_suppliers[0]['code']
+                    logging.info({
+                        'type': 'table element',
+                        'data': (exc['name'], ds['location'],
+                                 global_suppliers[0]['name'],
+                                 global_suppliers[0]['location'])
+                    })
+            elif len(contained) == 1:
+                exc['code'] = contained[0]['code']
+                logging.info({
+                    'type': 'table element',
+                    'data': (exc['name'], ds['location'],
+                             global_suppliers[0]['name'],
+                             global_suppliers[0]['location'])
+                })
+            else:
+                message = "Multiple markets contain {} in {}:\n{}"
+                raise OverlappingMarkets(message.format(
+                    exc['name'],
+                    ds['location'],
+                    [x['location'] for x in contained])
+                )
     return data
+
+link_consumers_to_markets.__table__ = {
+    'title': 'Link input exchanges to correct supplying market',
+    'columns': ["Product", "Location", "Market name", "Market location"]
+}
