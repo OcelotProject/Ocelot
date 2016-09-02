@@ -32,11 +32,11 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
         for consumer in consumers
         if consumer['location'] not in ("GLO", "RoW")
     }
-    if spatial_dict:
+    try:
         found_faces = set.union(*[topology(obj['location'])
                                   for supplier in spatial_dict.values()
                                   for obj in supplier])
-    else:
+    except TypeError:
         found_faces = set()
 
     # Add suppliers for GLO or RoW dataset
