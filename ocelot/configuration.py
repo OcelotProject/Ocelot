@@ -37,7 +37,7 @@ default_configuration = [
     manage_activity_links,
     handle_waste_outputs,
     cutoff_allocation,
-    # link_markets,
+    link_markets,
     # extrapolate to database reference year
     # normalize_reference_production_amount
     # final output processing
