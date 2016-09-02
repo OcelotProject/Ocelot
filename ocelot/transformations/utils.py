@@ -104,6 +104,29 @@ def iterate_all_parameters(dataset):
         if "variable" in parameter or "formula" in parameter:
             yield parameter
 
+
+def get_biggest_pv_to_exchange_ratio(dataset):
+    """Return the largest ration of production volume to exchange amount.
+
+    Considers only reference product exchanges with the ``allocatable product`` classification.
+
+    In theory, this ratio should always be the same in a multioutput dataset. However, this is quite often not the case, and when calculating production volume for other exchanges (byproducts, activity links) we need one number for the dataset.
+
+    So, we look for the biggest absolute value. This may not be perfect, but it is consistent.
+
+    Returns a float."""
+    production_volumes = sorted([
+        exc['production volume']['amount'] / exc['amount']
+        for exc in dataset['exchanges']
+        if exc['type'] == 'reference product'
+        and exc['amount']
+    ], reverse=True, key=lambda x: abs(x))
+    if not production_volumes:
+        message = "No suitable reference product exchanges in {}"
+        raise ZeroProduction(message.format(dataset['name']))
+    return production_volumes[0]
+
+
 ### Exchange groupers
 
 def extract_products_as_tuple(dataset):
