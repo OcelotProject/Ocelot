@@ -546,6 +546,7 @@ def test_link_consumers_to_markets_no_global_market():
         'type': 'transforming activity',
         'reference product': 'crackers',
         'name': '',
+        "filepath": '',
         'location': 'DE',
         'exchanges': [{
             'type': 'from technosphere',

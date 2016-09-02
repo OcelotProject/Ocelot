@@ -226,9 +226,9 @@ def link_consumers_to_markets(data):
                                     if x['location'] in ("GLO", "RoW")]
                 if not global_suppliers:
                     message = ("No regional or global supplier found for "
-                        "activity {} for product {} in {}")
+                        "activity `{}` for product `{}` in `{}`\n{}")
                     raise MissingSupplier(message.format(
-                        exc['name'], ds['name'], ds['location']
+                        ds['name'], exc['name'], ds['location'], ds['filepath']
                     ))
                 else:
                     assert len(global_suppliers) == 1
