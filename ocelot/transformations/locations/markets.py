@@ -243,8 +243,8 @@ def link_consumers_to_markets(data):
                 logging.info({
                     'type': 'table element',
                     'data': (exc['name'], ds['location'],
-                             global_suppliers[0]['name'],
-                             global_suppliers[0]['location'])
+                             contained[0]['name'],
+                             contained[0]['location'])
                 })
             else:
                 message = "Multiple markets contain {} in {}:\n{}"

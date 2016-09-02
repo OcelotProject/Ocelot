@@ -338,17 +338,21 @@ def test_link_consumers_to_markets():
     given = [{
         'type': 'market activity',
         'reference product': 'cheese',
+        'name': '',
         'location': 'RER',
         'code': 'Made in the EU',
         'exchanges': [],
     }, {
         'type': 'market activity',
         'reference product': 'cheese',
+        'name': '',
         'location': 'BR',
         'code': 'olympics',
         'exchanges': [],
     }, {
         'type': 'market group',
+        'reference product': 'sandwiches',
+        'name': '',
         'location': 'BR',
         'exchanges': [{
             'type': 'from technosphere',
@@ -356,6 +360,8 @@ def test_link_consumers_to_markets():
         }]
     }, {
         'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': '',
         'location': 'DE',
         'exchanges': [{
             'type': 'from technosphere',
@@ -376,17 +382,21 @@ def test_link_consumers_to_markets():
     expected = [{
         'type': 'market activity',
         'reference product': 'cheese',
+        'name': '',
         'location': 'RER',
         'code': 'Made in the EU',
         'exchanges': [],
     }, {
         'type': 'market activity',
         'reference product': 'cheese',
+        'name': '',
         'location': 'BR',
         'code': 'olympics',
         'exchanges': [],
     }, {
         'type': 'market group',
+        'reference product': 'sandwiches',
+        'name': '',
         'location': 'BR',
         'exchanges': [{
             'type': 'from technosphere',
@@ -395,6 +405,8 @@ def test_link_consumers_to_markets():
         }]
     }, {
         'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': '',
         'location': 'DE',
         'exchanges': [{
             'type': 'from technosphere',
