@@ -41,7 +41,6 @@ def test_actualize_activity_links():
     }]
     assert actualize_activity_links(given) == expected
 
-@pytest.mark.skip(reason="Bug in combined production means skip for now")
 def test_actualize_activity_links_errors():
     too_many = [{
         'code': 'find me',
