@@ -17,6 +17,7 @@ from .parameterization import (
     recalculate,
     variable_names_are_unique,
 )
+from .production_volumes import add_pv_to_allocatable_byproducts
 from .validation import (
     ensure_mandatory_properties,
     ensure_production_exchanges_have_production_volume,
@@ -25,5 +26,6 @@ from .validation import (
 
 pv_cleanup = Collection(
     ensure_production_exchanges_have_production_volume,
+    add_pv_to_allocatable_byproducts,
     TransformationWrapper(create_pv_parameters),
 )
