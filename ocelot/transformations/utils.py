@@ -119,6 +119,7 @@ def get_biggest_pv_to_exchange_ratio(dataset):
         exc['production volume']['amount'] / exc['amount']
         for exc in dataset['exchanges']
         if exc['type'] == 'reference product'
+        and exc['amount']
     ], reverse=True, key=lambda x: abs(x))
     if not production_volumes:
         message = "No suitable reference product exchanges in {}"
