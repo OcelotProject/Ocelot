@@ -350,3 +350,49 @@ def test_activity_hash():
     }
     assert activity_hash({})
     assert activity_hash(given)
+
+def test_get_biggest_pv_to_exchange_ratio():
+    given = {'exchanges': [{
+        'amount': 2,
+        'production volume': {'amount': 10},
+        'type': 'reference product',
+        'byproduct classification': 'allocatable product',
+    }, {
+        'amount': 5,
+        'production volume': {'amount': 20},
+        'type': 'reference product',
+        'byproduct classification': 'allocatable product',
+    }, {
+        'amount': 1,
+        'production volume': {'amount': 20},
+        'type': 'not reference product',
+        'byproduct classification': 'allocatable product',
+    }, {
+        'amount': 1,
+        'production volume': {'amount': 20},
+        'type': 'reference product',
+        'byproduct classification': 'not allocatable product',
+    }]}
+    assert get_biggest_pv_to_exchange_ratio(given) == 5
+
+def test_get_biggest_pv_to_exchange_ratio_neg_numbers():
+    given = {'exchanges': [{
+        'amount': -2,
+        'production volume': {'amount': 10},
+        'type': 'reference product',
+        'byproduct classification': 'allocatable product',
+    }, {
+        'amount': -5,
+        'production volume': {'amount': 20},
+        'type': 'reference product',
+        'byproduct classification': 'allocatable product',
+    }]}
+    assert get_biggest_pv_to_exchange_ratio(given) == -5
+
+def test_get_biggest_pv_to_exchange_ratio_no_rps():
+    error = {
+        'exchanges': [],
+        'name': ''
+    }
+    with pytest.raises(ZeroProduction):
+        get_biggest_pv_to_exchange_ratio(error)

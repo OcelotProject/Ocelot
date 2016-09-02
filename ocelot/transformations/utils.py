@@ -123,7 +123,7 @@ def get_biggest_pv_to_exchange_ratio(dataset):
     ], reverse=True, key=lambda x: abs(x))
     if not production_volumes:
         message = "No suitable reference product exchanges in {}"
-        raise ZeroProduction(message.format(ds['name']))
+        raise ZeroProduction(message.format(dataset['name']))
     return production_volumes[0]
 
 
