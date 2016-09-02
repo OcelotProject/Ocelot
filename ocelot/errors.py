@@ -77,7 +77,7 @@ class IdenticalDatasets(OcelotError):
     pass
 
 
-class OverlappingActivities(OcelotError):
+class OverlappingMarkets(OcelotError):
     """Markets overlap, preventing correct linking"""
     pass
 
