@@ -90,6 +90,7 @@ def create_new_recycled_content_dataset(ds, exc):
             'name': exc['name'],
             'tag': 'intermediateExchange',
             'type': 'reference product',
+            'production volume': {'amount': 4},  # Bo's magic number
             'unit': exc['unit'],
         }],
         "parameters": [],
