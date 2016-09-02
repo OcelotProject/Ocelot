@@ -427,8 +427,152 @@ def test_link_consumers_to_markets():
     }]
     assert link_consumers_to_markets(given) == expected
 
-# Do something with overlapping markets
-# Do something with no markets containing -> GLO market supplies
-# Check special case of recycled content
-# Check ValueError if not market for product
-# Raise error if need GLO/RoW supplier but doesn't exist
+def test_link_consumers_to_markets_overlapping_markets():
+    error = [{
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'name': '',
+        'location': 'RER',
+        'code': '',
+        'exchanges': [],
+    }, {
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'name': '',
+        'location': 'UCTE without Germany',
+        'code': '',
+        'exchanges': [],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': '',
+        'location': 'FR',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese'
+        }]
+    }]
+    with pytest.raises(OverlappingMarkets):
+        link_consumers_to_markets(error)
+
+def test_link_consumers_to_markets_use_global():
+    given = [{
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'name': '',
+        'location': 'RER',
+        'code': '',
+        'exchanges': [],
+    }, {
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'name': '',
+        'location': 'GLO',
+        'code': 'yes!',
+        'exchanges': [],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': '',
+        'location': 'US',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese'
+        }]
+    }]
+    result = link_consumers_to_markets(given)
+    assert result[2]['reference product'] == 'crackers'
+    assert result[2]['exchanges'][0]['code'] == 'yes!'
+
+def test_link_consumers_to_markets_use_row():
+    given = [{
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'name': '',
+        'location': 'RER',
+        'code': '',
+        'exchanges': [],
+    }, {
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'name': '',
+        'location': 'RoW',
+        'code': 'yes!',
+        'exchanges': [],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': '',
+        'location': 'US',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese'
+        }]
+    }]
+    result = link_consumers_to_markets(given)
+    assert result[2]['reference product'] == 'crackers'
+    assert result[2]['exchanges'][0]['code'] == 'yes!'
+
+def test_link_consumers_to_markets_no_market():
+    error = [{
+        'type': 'market activity',
+        'reference product': 'nope',
+        'name': '',
+        'location': 'RER',
+        'code': '',
+        'exchanges': [],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': '',
+        'location': 'DE',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese'
+        }]
+    }]
+    with pytest.raises(ValueError):
+        link_consumers_to_markets(error)
+
+def test_link_consumers_to_markets_no_global_market():
+    error = [{
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'name': '',
+        'location': 'CA',
+        'code': '',
+        'exchanges': [],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': '',
+        'location': 'DE',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese'
+        }]
+    }]
+    with pytest.raises(MissingSupplier):
+        link_consumers_to_markets(error)
+
+def test_link_consumers_to_markets_recycled_content():
+    given = [{
+        'type': 'transforming activity',
+        'reference product': 'cheese, Recycled Content cut-off',
+        'name': '',
+        'location': 'RER',
+        'code': 'found it',
+        'exchanges': [],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': '',
+        'location': 'DE',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese, Recycled Content cut-off'
+        }]
+    }]
+    result = link_consumers_to_markets(given)
+    assert result[1]['reference product'] == 'crackers'
+    assert result[1]['exchanges'][0]['code'] == 'found it'

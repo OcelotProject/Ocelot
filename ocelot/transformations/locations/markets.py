@@ -194,7 +194,8 @@ def link_consumers_to_markets(data):
     # Special case where linking doesn't go through a market;
     # Recyclable byproducts in cutoff system model
     RC = 'Recycled Content cut-off'
-    recycled_content_filter = lambda x: RC in x['reference product']
+    recycled_content_filter = lambda x: (RC in x['reference product']
+                                         and x['type'] == 'transforming activity')
     recycled_content_mapping = toolz.groupby(
         'reference product',
         filter(recycled_content_filter, data)
