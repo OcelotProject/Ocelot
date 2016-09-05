@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from ocelot.errors import InvalidExchange, InvalidMultioutputDataset
 from ocelot.transformations.cutoff.validation import (
-    ready_for_market_linking,
+    valid_combined_production_activity,
     valid_economic_activity,
     valid_no_allocation_dataset,
     valid_recycling_activity,
@@ -266,43 +266,25 @@ def test_economic_activity_validation():
     assert f(data) is data
     assert f(dataset=data) is data
 
-def test_ready_for_market_linking():
-    valid = [{
-        'type': 'transforming activity',
-        'reference product': True,
-        'exchanges': [{'type': 'reference product'}]
-    }]
-    assert ready_for_market_linking(valid)
+def test_combined_production_validation_errors():
+    @valid_combined_production_activity
+    def f(dataset):
+        return dataset
 
-def test_ready_for_market_linking_no_rp_attribute():
-    invalid = [{
-        'filepath': 'foo',
-        'type': 'transforming activity',
-        'exchanges': [{'type': 'reference product'}]
-    }]
-    with pytest.raises(ValueError):
-        ready_for_market_linking(invalid)
+    no_variable = {'exchanges': [
+        {
+            'type': 'reference product',
+            'amount': 1
+        }
+    ]}
+    with pytest.raises(InvalidExchange):
+        f(no_variable)
 
-def test_ready_for_market_linking_no_exchanges():
-    invalid = [{
-        'filepath': 'foo',
-        'type': 'transforming activity',
-        'reference product': True,
-        'exchanges': [{'type': 'nope'}]
-    }]
-    with pytest.raises(ValueError):
-        ready_for_market_linking(invalid)
-
-def test_ready_for_market_linking_multiple_rp():
-    invalid = [{
-        'filepath': 'foo',
-        'name': 'one',
-        'type': 'transforming activity',
-        'reference product': True,
-        'exchanges': [
-            {'type': 'reference product'},
-            {'type': 'reference product'},
-        ]
-    }]
-    with pytest.raises(InvalidMultioutputDataset):
-        ready_for_market_linking(invalid)
+    yes_variable = {'exchanges': [
+        {
+            'type': 'reference product',
+            'variable': 'yes minister!',
+            'amount': 1
+        }
+    ]}
+    assert f(yes_variable)

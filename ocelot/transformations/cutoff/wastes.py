@@ -60,26 +60,44 @@ def waste_treatment_allocation(dataset):
     ]
 
 
+def rename_recyclable_content_exchanges(data):
+    """Rename recyclable byproducts to indicate the cuts in their supply chain.
+
+    Changes name of byproducts.
+
+    The name of the recyclable flow has the following suffix added: ``, Recycled Content cut-off``, e.g. ``scrap lead acid battery, Recycled Content cut-off``."""
+    found = set()
+    recyclable_iterator = (exc
+                           for ds in data
+                           for exc in ds['exchanges']
+                           if exc['type'] == 'byproduct'
+                           and exc['byproduct classification'] == 'recyclable')
+    for exc in recyclable_iterator:
+        found.add(exc['name'])
+        exc['name'] += ', Recycled Content cut-off'
+    return data
+
+
 def create_new_recycled_content_dataset(ds, exc):
     """Create a new dataset that consume recycled content production."""
     common = ('access restricted', 'economic scenario', 'end date',
             'filepath', 'id', 'start date', 'technology level')
-    name = exc['name'] + ', Recycled Content cut-off'
     obj = {
         "combined production": False,
         "exchanges": [{
             'amount': 1,
             'id': exc['id'],
-            'name': name,
+            'name': exc['name'],
             'tag': 'intermediateExchange',
             'type': 'reference product',
+            'production volume': {'amount': 4},  # Bo's magic number
             'unit': exc['unit'],
         }],
         "parameters": [],
-        'name': name,
+        'name': exc['name'],
         'location': 'GLO',
         'type': "transforming activity",
-        'reference product': name
+        'reference product': exc['name']
     }
     obj.update({key: ds[key] for key in common})
     return deepcopy(obj)
@@ -88,11 +106,7 @@ def create_new_recycled_content_dataset(ds, exc):
 def create_recycled_content_datasets(data):
     """Create new datasets that consume the recyclable content from recycling or waste treatment activities in the cutoff system model.
 
-    In the cutoff system model, no credit is given for the production of recyclable materials. Rather, consumers get these materials with no environmental burdens. So the production of a recyclable material (i.e. a flow with the classification ``recyclable``) during any transforming activity will create a new flow which has no consumer. This function creates consuming activities for these flows. These new activities have no environmental burdens, and serve no purpose other than to balance the output of a recyclable material.
-
-    These new datasets have the name of the recyclable flow, followed by the string ``, Recycled Content cut-off``, e.g. ``scrap lead acid battery, Recycled Content cut-off``.
-
-    """
+    In the cutoff system model, no credit is given for the production of recyclable materials. Rather, consumers get these materials with no environmental burdens. So the production of a recyclable material (i.e. a flow with the classification ``recyclable``) during any transforming activity will create a new flow which has no consumer. This function creates consuming activities for these flows. These new activities have no environmental burdens, and serve no purpose other than to balance the output of a recyclable material."""
     new_datasets = {}
     for ds in data:
         recyclables = (exc
@@ -120,9 +134,7 @@ def flip_non_allocatable_byproducts(dataset):
 
     This has no effect on the technosphere matrix, and should not change the behaviour of any transformation functions, which should be testing for classification instead of exchange type. However, this is the current behaviour of the existing ecoinvent system model.
 
-    Production of recyclable materials are handled by the function ``create_recycled_content_datasets``, which creates consuming activities for these materials. Note, however, that the name of these materials changes - the string ``, Recycled Content cut-off`` is added to indicate that these materials are cutoff from the rest of the supply chain.
-
-    Production of wastes will be handled by existing waste treatment activities.
+    Production of recyclable materials are handled by the function ``create_recycled_content_datasets``, which creates consuming activities for these materials. Production of wastes will be handled by existing waste treatment activities.
 
     Change something from an output to an input requires flipping the sign of all numeric fields.
 
@@ -134,8 +146,6 @@ def flip_non_allocatable_byproducts(dataset):
                 'type': 'table element',
                 'data': (dataset['name'], exc['name'], exc['byproduct classification']),
             })
-            if exc['byproduct classification'] == 'recyclable':
-                exc['name'] += ', Recycled Content cut-off'
             del exc['byproduct classification']
             exc['type'] = 'from technosphere'
             # TODO: Use rescale_exchange when new uncertainties code is merged
@@ -151,6 +161,7 @@ flip_non_allocatable_byproducts.__table__ = {
 
 
 handle_waste_outputs = Collection(
+    rename_recyclable_content_exchanges,
     create_recycled_content_datasets,
     TransformationWrapper(flip_non_allocatable_byproducts),
 )

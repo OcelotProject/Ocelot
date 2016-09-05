@@ -210,12 +210,15 @@ def normalize_reference_production_amount(dataset):
     return dataset
 
 
-def label_reference_product(dataset):
-    """Set ``reference product`` key for ``dataset``.
+def label_reference_product(data):
+    """Add field ``reference product`` to all datasets.
 
-    Uses ``get_single_reference_product``."""
-    dataset['reference product'] = get_single_reference_product(dataset)['name']
-    return dataset
+    The field ``reference product`` has the name of the reference product exchange.
+
+    Raises ``InvalidMultioutputDataset`` if multiple reference products are present, or ``ValueError`` if no reference products are present."""
+    for dataset in data:
+        dataset['reference product'] = get_single_reference_product(dataset)['name']
+    return data
 
 
 def remove_exchange_uncertainty(exchange):

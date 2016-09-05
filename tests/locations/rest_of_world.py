@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from ocelot.errors import MultipleGlobalDatasets
 from ocelot.transformations.locations import (
-    check_single_global_dataset,
+    drop_zero_pv_row_datasets,
     relabel_global_to_row,
-    Topology,
 )
 from copy import deepcopy
 import pytest
@@ -115,26 +114,67 @@ def test_multiple_global_datasets():
     with pytest.raises(MultipleGlobalDatasets):
         relabel_global_to_row(given)
 
-@pytest.fixture(scope="module")
-def topo():
-    return Topology()
-
-def test_topology_loading(topo):
-    assert len(topo.data) > 400
-
-def test_topology_contained(topo):
-    assert topo.contained('RU') == {'Russia (Asia)', 'Russia (Europe)'}
-    assert topo.contained('GLO') is None
-    # Test compatibility labels
-    assert topo.contained('IAI Area 8')
-    with pytest.raises(KeyError):
-        topo.contained('foo')
-
-def test_topology_intersects(topo):
-    assert 'UN-EUROPE' in topo.intersects('DE')
-    assert 'RER w/o AT+BE+CH+DE+FR+IT' not in topo.intersects('CH')
-    assert topo.intersects('GLO') is None
-    # Test compatibility labels
-    assert topo.intersects('IAI Area 8')
-    with pytest.raises(KeyError):
-        topo.intersects('foo')
+def test_drop_zero_pv_row_datasets():
+    data = [
+        {
+            'type': 'party activity',
+            'location': 'RoW',
+            'exchanges': [{
+                'type': 'reference product',
+                'production volume': {'amount': 0}
+            }]
+        },
+        {
+            'type': 'market activity',
+            'location': 'RoW',
+            'exchanges': [{
+                'type': 'reference product',
+                'production volume': {'amount': 10}
+            }]
+        },
+        {
+            'type': 'market activity',
+            'location': 'Nowhere',
+            'exchanges': [{
+                'type': 'reference product',
+                'production volume': {'amount': 0}
+            }]
+        },
+        {
+            'type': 'market activity',
+            'name': 'foo',
+            'location': 'RoW',
+            'exchanges': [{
+                'type': 'reference product',
+                'production volume': {'amount': 0},
+                'name': 'bar'
+            }]
+        },
+    ]
+    expected = [
+        {
+            'type': 'party activity',
+            'location': 'RoW',
+            'exchanges': [{
+                'type': 'reference product',
+                'production volume': {'amount': 0}
+            }]
+        },
+        {
+            'type': 'market activity',
+            'location': 'RoW',
+            'exchanges': [{
+                'type': 'reference product',
+                'production volume': {'amount': 10}
+            }]
+        },
+        {
+            'type': 'market activity',
+            'location': 'Nowhere',
+            'exchanges': [{
+                'type': 'reference product',
+                'production volume': {'amount': 0}
+            }]
+        },
+    ]
+    assert drop_zero_pv_row_datasets(data) == expected

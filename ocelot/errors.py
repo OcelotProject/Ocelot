@@ -67,6 +67,31 @@ class MissingMandatoryProperty(Exception):
     pass
 
 
+class OverlappingActivities(OcelotError):
+    """Markets overlap, preventing correct linking"""
+    pass
+
+
+class IdenticalDatasets(OcelotError):
+    """Multiple datasets with the same identifying attributes were found"""
+    pass
+
+
+class OverlappingMarkets(OcelotError):
+    """Markets overlap, preventing correct linking"""
+    pass
+
+
+class IdenticalDatasets(OcelotError):
+    """Multiple datasets with the same identifying attributes were found"""
+    pass
+
+
 class InvalidTransformationFunction(OcelotError):
     """Metadata could not be retrieved for this function"""
+    pass
+
+
+class MissingSupplier(OcelotError):
+    """Input from global or RoW market is needed, but this market doesn't exist"""
     pass

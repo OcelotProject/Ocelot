@@ -104,21 +104,16 @@ In the undefined datasets, we distinguish between two types of outputs: referenc
 
 We further distinguish three types of products (both reference and byproducts): allocatable, recyclable and waste. Formally, in the internal data format, outputs will have a ``type`` of either ``reference product`` or ``byproduct``, and a ``byproduct classification`` of ``allocatable product``, ``recyclable``, or ``waste``.
 
-Where is the "cutoff" in the cutoff system model?
--------------------------------------------------
-
-
-
 In the cutoff approach, the difference between reference products and byproducts lies in how we split multiple outputs of each.
 
 * If we have multiple reference products, we assume that these datasets are parameterized, and we can use the formulas in the different exchanges to split the dataset into multiple datasets with one reference product each.
 * If we have multiple byproducts, we use economic allocation to split emissions and inputs between the reference product and the allocatable byproducts.
 
-
-
-The first thing to do is to label datasets based on the allocation method that will be used.
+The first step in allocation is to label datasets based on the allocation method that will be used.
 
 .. autofunction:: ocelot.transformations.cutoff.allocation.choose_allocation_method
+
+We then apply the allocation functions in order:
 
 .. autofunction:: ocelot.transformations.cutoff.economic.economic_allocation
 
@@ -134,9 +129,8 @@ The first thing to do is to label datasets based on the allocation method that w
 
 .. autofunction:: ocelot.transformations.cutoff.combined.combined_production_without_products
 
-Link in space and time
-======================
+After allocation, we can drop a category of hard (activity) links - those from a reference product. These hard links don't have any meaning, as reference products are produced by the activity, and don't need to be linked.
 
-.. autofunction:: ocelot.transformations.locations.relabel_global_to_row
+.. autofunction:: ocelot.transformations.cutoff.cleanup.drop_rp_activity_links
 
-.. autofunction:: ocelot.transformations.cleanup.drop_zero_pv_row_datasets
+The next set is :ref:`space`.

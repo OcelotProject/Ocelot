@@ -99,18 +99,19 @@ def valid_waste_treatment_activity(wrapped, instance, args, kwargs):
     return wrapped(*args, **kwargs)
 
 
-def ready_for_market_linking(data):
-    """All transforming activities must have exactly one reference product.
+@wrapt.decorator
+def valid_combined_production_activity(wrapped, instance, args, kwargs):
+    """Check to make sure the activity meets the assumptions for combined production allocation.
 
-    * Datasets must have the attribute ``reference product``
-    * Datasets must have one reference product exchange.
-
-    Will raise ``ValueError`` or ``InvalidMultioutputDataset`` if these conditions aren't met.
+    * Each refernce product exchange must be a variable name, so that the amount of inputs can vary depending on whether that reference product is chosen in subdivision.
 
     """
-    for ds in data:
-        if ds['type'] == 'transforming activity':
-            assert get_single_reference_product(ds)
-            if not ds.get('reference product'):
-                raise ValueError("Dataset doesn't have ``reference product``")
-    return data
+    dataset = kwargs.get('dataset') or args[0]
+    for exc in dataset['exchanges']:
+        if (exc['type'] == 'reference product'
+            and exc['amount']
+            and not exc.get('variable')):
+            message = ("Ref. product exchange in combined production must have"
+                " variable name:\n{}\nIn dataset:\n{}")
+            raise InvalidExchange(message.format(pformat(exc), pformat(dataset)))
+    return wrapped(*args, **kwargs)

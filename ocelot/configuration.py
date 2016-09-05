@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 from .transformations import (
     pv_cleanup,
-    drop_zero_pv_row_datasets,
     ensure_mandatory_properties,
     fix_ecoinvent_parameters,
     manage_activity_links,
-    relabel_global_to_row,
     validate_markets,
     variable_names_are_unique,
 )
@@ -13,8 +11,9 @@ from .transformations.cutoff import (
     cleanup_activity_links,
     cutoff_allocation,
     handle_waste_outputs,
-    ready_for_market_linking,
 )
+from .transformations.cutoff.cleanup import drop_rp_activity_links
+from .transformations.locations import link_markets
 
 
 class Configuration(object):
@@ -39,7 +38,9 @@ default_configuration = [
     manage_activity_links,
     handle_waste_outputs,
     cutoff_allocation,
-    ready_for_market_linking,
-    relabel_global_to_row,
-    drop_zero_pv_row_datasets,
+    drop_rp_activity_links,
+    link_markets,
+    # extrapolate to database reference year
+    # normalize_reference_production_amount
+    # final output processing
 ]
