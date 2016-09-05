@@ -124,7 +124,7 @@ def link_consumers_to_regional_markets(data):
 
 
 def link_consumers_to_global_markets(data):
-    """Link technosphere exchange inputs to global or RoW markets.
+    """Link technosphere exchange inputs to ``GLO`` or ``RoW`` markets.
 
     Add the field ``code`` to each exchange with the code of the linked market activity."""
     filter_func = lambda x: x['type'] == "market activity"

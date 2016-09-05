@@ -19,6 +19,7 @@ Contents:
    installation
    cli
    cutoff
+   space
    data_format
    foundation
    filesystem

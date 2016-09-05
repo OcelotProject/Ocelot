@@ -173,7 +173,7 @@ def allocate_suppliers(data):
 def update_market_production_volumes(data, kind="market activity"):
     """Update market production volumes to sum to the production volumes of all applicable inputs, minus any hard (activity) links.
 
-    By default works only on market activities, but can be curried to work on market groups.
+    By default works only on markets with type ``market activity``, but can be curried to work on ``market group`` types as well.
 
     Activity link amounts are added by ``add_hard_linked_production_volumes`` and are given in the field ``rp_exchange['production volume']['subtracted activity link volume']``.
 
@@ -210,9 +210,9 @@ def delete_suppliers_list(data):
 
 
 def delete_allowed_zero_pv_market_datsets(data):
-    """Remove some global markets with zero production volume.
+    """Remove some (but not all) global markets with zero production volume.
 
-    Uses a white list of markets which are not in the ecoinvent release."""
+    Uses a white list of markets which are not in the ecoinvent 3.2 release."""
     can_delete_markets = {
         "market for heat, diffusion absorption heat pump",
         "market for heat, solar+electric, multiple-dwelling, for hot water",
