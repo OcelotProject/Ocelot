@@ -117,10 +117,10 @@ def link_consumers_to_regional_markets(data):
                 )
     return data
 
-link_consumers_to_regional_markets.__table__ = {
-    'title': 'Link input exchanges to regional supply market',
-    'columns': ["Product", "Location", "Market name", "Market location"]
-}
+# link_consumers_to_regional_markets.__table__ = {
+#     'title': 'Link input exchanges to regional supply market',
+#     'columns': ["Product", "Location", "Market name", "Market location"]
+# }
 
 
 def link_consumers_to_global_markets(data):
@@ -152,10 +152,10 @@ def link_consumers_to_global_markets(data):
             # })
     return data
 
-link_consumers_to_global_markets.__table__ = {
-    'title': 'Link input exchanges to correct supplying market',
-    'columns': ["Market name", "Activity name", "Product", "Location"]
-}
+# link_consumers_to_global_markets.__table__ = {
+#     'title': 'Link input exchanges to correct supplying market',
+#     'columns': ["Market name", "Activity name", "Product", "Location"]
+# }
 
 
 def log_unlinked_exchanges(data):

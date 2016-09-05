@@ -156,17 +156,18 @@ def allocate_suppliers(data):
                 'tag': 'intermediateExchange',
                 'code': supply_exc['code']
             }))
-            logging.info({
-                'type': 'table element',
-                'data': (ds['name'], rp['name'], ds['location'],
-                         supply_exc['location'], amount)
-            })
+            # TODO: Log to a separate file
+            # logging.info({
+            #     'type': 'table element',
+            #     'data': (ds['name'], rp['name'], ds['location'],
+            #              supply_exc['location'], amount)
+            # })
     return data
 
-allocate_suppliers.__table__ = {
-    'title': 'Allocate suppliers exchange amounts to markets',
-    'columns': ["Name", "Product", "Location", "Supplier location", "Amount"]
-}
+# allocate_suppliers.__table__ = {
+#     'title': 'Allocate suppliers exchange amounts to markets',
+#     'columns': ["Name", "Product", "Location", "Supplier location", "Amount"]
+# }
 
 
 def update_market_production_volumes(data, kind="market activity"):
