@@ -46,7 +46,6 @@ def test_actualize_activity_links():
     }]
     assert actualize_activity_links(given) == expected
 
-@pytest.mark.skip(reason="Logging errors instead of raise an exception because ecoinvent is weird...")
 def test_actualize_activity_links_errors():
     too_many = [{
         'code': 'find me',
@@ -63,10 +62,12 @@ def test_actualize_activity_links_errors():
         'exchanges': [{
             'activity link': 'the right one',
             'name': 'foo',
+            'amount': 1,
         }]
     }]
-    with pytest.raises(UnresolvableActivityLink):
-        actualize_activity_links(too_many)
+    # with pytest.raises(UnresolvableActivityLink):
+    #     actualize_activity_links(too_many)
+    actualize_activity_links(too_many)
 
     too_few = [{
         'code': 'find me',
@@ -78,10 +79,12 @@ def test_actualize_activity_links_errors():
         'exchanges': [{
             'activity link': 'the right one',
             'name': 'foo',
+            'amount': 1,
         }]
     }]
-    with pytest.raises(UnresolvableActivityLink):
-        actualize_activity_links(too_few)
+    # with pytest.raises(UnresolvableActivityLink):
+    #     actualize_activity_links(too_few)
+    actualize_activity_links(too_few)
 
 def test_link_consumers_to_regional_markets():
     given = [{
@@ -167,6 +170,26 @@ def test_link_consumers_to_regional_markets():
         }]
     }]
     assert link_consumers_to_regional_markets(given) == expected
+
+def test_link_consumers_to_regional_markets_no_market():
+    missing = [{
+        'type': 'market activity',
+        'reference product': 'granola',
+        'name': '',
+        'location': 'UCTE without Germany',
+        'code': '',
+        'exchanges': [],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': '',
+        'location': 'FR',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese'
+        }]
+    }]
+    link_consumers_to_regional_markets(missing)
 
 def test_link_consumers_to_regional_markets_overlapping_markets():
     error = [{

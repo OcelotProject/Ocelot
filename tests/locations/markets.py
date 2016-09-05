@@ -64,7 +64,6 @@ def test_apportion_suppliers_to_consumers():
             }
         ]
     }]
-
     apportion_suppliers_to_consumers(consumers, suppliers)
     assert consumers == expected
 
@@ -337,7 +336,7 @@ def test_delete_suppliers_list():
 def test_assign_fake_pv_to_confidential_datasets():
     given = [{
         'name': "latex production",
-        'type': 'market activity',
+        'type': 'transforming activity',
         'location': 'GLO',
         'exchanges': [{
             'type': 'reference product',
@@ -347,7 +346,7 @@ def test_assign_fake_pv_to_confidential_datasets():
     }]
     expected = [{
         'name': "latex production",
-        'type': 'market activity',
+        'type': 'transforming activity',
         'location': 'GLO',
         'exchanges': [{
             'type': 'reference product',
@@ -358,12 +357,9 @@ def test_assign_fake_pv_to_confidential_datasets():
     assert assign_fake_pv_to_confidential_datasets(given) == expected
     del given[0]['exchanges'][0]['production volume']['amount']
     assert given != expected
-    given[0]['location'] = 'FR'
-    assert assign_fake_pv_to_confidential_datasets(given) != expected
-    given[0]['location'] = 'GLO'
-    given[0]['type'] = 'market group'
-    assert assign_fake_pv_to_confidential_datasets(given) != expected
     given[0]['type'] = 'market activity'
+    assert assign_fake_pv_to_confidential_datasets(given) != expected
+    given[0]['type'] = 'transforming activity'
     assert assign_fake_pv_to_confidential_datasets(given) == expected
 
 def test_delete_allowed_zero_pv_market_datsets():

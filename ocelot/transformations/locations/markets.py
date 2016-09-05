@@ -264,8 +264,10 @@ def assign_fake_pv_to_confidential_datasets(data):
         "zeolite production, powder",
         r"zeolite production, slurry, without water, in 50% solution state",
     }
-    confidential_filter = lambda x: (x['type'] == 'transforming activity'
-                                  and x['name'] in confidential_names)
+    confidential_filter = lambda x: (
+        x['type'] == 'transforming activity'
+        and x['name'] in confidential_names
+    )
     for ds in filter(confidential_filter, data):
         rp = get_single_reference_product(ds)
         logging.info({

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from ... import toolz
 from ...data_helpers import reference_products_as_string, production_volume
-from ..utils import activity_grouper
+from ..utils import activity_grouper, get_single_reference_product
 from .validation import check_single_global_dataset
 import logging
 

@@ -32,8 +32,6 @@ def actualize_activity_links(data):
         link['code'] = references[0]['code']
     return data
 
-    return data
-
 actualize_activity_links.__table__ = {
     'title': "Turn activity links into references to activity codes. This table lists references that couldn't be resolved.",
     'columns': ["Activity link", "Name", "Amount"]
