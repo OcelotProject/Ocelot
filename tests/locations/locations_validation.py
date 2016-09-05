@@ -48,6 +48,9 @@ def test_no_overlaps():
     with pytest.raises(OverlappingActivities):
         no_overlaps([{'location': 'DE'}, {'location': 'RER'}])
 
+    with pytest.raises(OverlappingActivities):
+        no_overlaps([{'location': 'DE'}, {'location': 'GLO'}])
+
 def test_no_geo_duplicates():
     @no_geo_duplicates
     def f(consumers, suppliers):

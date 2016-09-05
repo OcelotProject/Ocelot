@@ -104,11 +104,11 @@ def test_add_suppliers_to_markets():
         'location': 'MX',
         'exchanges': [{'type': 'reference product'}],
     }, {
-        'code': 'cBR',
+        'code': 'cFR',
         'type': 'transforming activity',
         'reference product': 'foo',
         'name': '',
-        'location': 'BR',
+        'location': 'FR',
         'exchanges': [{'type': 'reference product'}],
     }, {
         'code': 'cNAFTA',
@@ -117,11 +117,11 @@ def test_add_suppliers_to_markets():
         'name': '',
         'location': 'NAFTA',
     }, {
-        'code': 'cGLO',
+        'code': 'cRER',
         'type': 'market activity',
         'reference product': 'foo',
         'name': '',
-        'location': 'GLO',
+        'location': 'RER',
     }, {
         'code': 'cDE',
         'type': 'transforming activity',
@@ -163,8 +163,8 @@ def test_add_suppliers_to_markets():
         'type': 'transforming activity',
         'reference product': 'foo',
         'name': '',
-        'location': 'BR',
-        'code': 'cBR',
+        'location': 'FR',
+        'code': 'cFR',
         'exchanges': [{'type': 'reference product'}],
     }, {
         'type': 'market activity',
@@ -180,12 +180,12 @@ def test_add_suppliers_to_markets():
         'type': 'market activity',
         'reference product': 'foo',
         'name': '',
-        'location': 'GLO',
-        'code': 'cGLO',
+        'location': 'RER',
+        'code': 'cRER',
         'suppliers': [{
-            'code': 'cBR',
+            'code': 'cFR',
             'type': 'reference product',
-            'location': 'BR'
+            'location': 'FR'
         }]
     }, {
         'type': 'transforming activity',
@@ -334,246 +334,54 @@ def test_delete_suppliers_list():
     given = [{'suppliers': 1}]
     assert delete_suppliers_list(given) == [{}]
 
-def test_link_consumers_to_markets():
+def test_assign_fake_pv_to_confidential_datasets():
     given = [{
+        'name': "latex production",
         'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'RER',
-        'code': 'Made in the EU',
-        'exchanges': [],
-    }, {
-        'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'BR',
-        'code': 'olympics',
-        'exchanges': [],
-    }, {
-        'type': 'market group',
-        'reference product': 'sandwiches',
-        'name': '',
-        'location': 'BR',
+        'location': 'GLO',
         'exchanges': [{
-            'type': 'from technosphere',
-            'name': 'cheese'
-        }]
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'crackers',
-        'name': '',
-        'location': 'DE',
-        'exchanges': [{
-            'type': 'from technosphere',
-            'name': 'cheese'
-        }, {
-            'type': 'from technosphere',
-            'name': 'cheese',
-            'code': 'already here',
-        }, {
-            'type': 'from technosphere',
-            'name': 'cheese',
-            'activity link': 'skip me too',
-        }, {
-            'type': 'something else',
-            'name': 'cheese',
+            'type': 'reference product',
+            'name': '',
+            'production volume': {}
         }]
     }]
     expected = [{
+        'name': "latex production",
         'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'RER',
-        'code': 'Made in the EU',
-        'exchanges': [],
-    }, {
-        'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'BR',
-        'code': 'olympics',
-        'exchanges': [],
-    }, {
-        'type': 'market group',
-        'reference product': 'sandwiches',
-        'name': '',
-        'location': 'BR',
-        'exchanges': [{
-            'type': 'from technosphere',
-            'name': 'cheese',
-            'code': 'olympics',
-        }]
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'crackers',
-        'name': '',
-        'location': 'DE',
-        'exchanges': [{
-            'type': 'from technosphere',
-            'name': 'cheese',
-            'code': 'Made in the EU',
-        }, {
-            'type': 'from technosphere',
-            'name': 'cheese',
-            'code': 'already here',
-        }, {
-            'type': 'from technosphere',
-            'name': 'cheese',
-            'activity link': 'skip me too',
-        }, {
-            'type': 'something else',
-            'name': 'cheese',
-        }]
-    }]
-    assert link_consumers_to_markets(given) == expected
-
-def test_link_consumers_to_markets_overlapping_markets():
-    error = [{
-        'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'RER',
-        'code': '',
-        'exchanges': [],
-    }, {
-        'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'UCTE without Germany',
-        'code': '',
-        'exchanges': [],
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'crackers',
-        'name': '',
-        'location': 'FR',
-        'exchanges': [{
-            'type': 'from technosphere',
-            'name': 'cheese'
-        }]
-    }]
-    with pytest.raises(OverlappingMarkets):
-        link_consumers_to_markets(error)
-
-def test_link_consumers_to_markets_use_global():
-    given = [{
-        'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'RER',
-        'code': '',
-        'exchanges': [],
-    }, {
-        'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
         'location': 'GLO',
-        'code': 'yes!',
-        'exchanges': [],
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'crackers',
-        'name': '',
-        'location': 'US',
         'exchanges': [{
-            'type': 'from technosphere',
-            'name': 'cheese'
+            'type': 'reference product',
+            'name': '',
+            'production volume': {'amount': 1}
         }]
     }]
-    result = link_consumers_to_markets(given)
-    assert result[2]['reference product'] == 'crackers'
-    assert result[2]['exchanges'][0]['code'] == 'yes!'
+    assert assign_fake_pv_to_confidential_datasets(given) == expected
+    del given[0]['exchanges'][0]['production volume']['amount']
+    assert given != expected
+    given[0]['location'] = 'FR'
+    assert assign_fake_pv_to_confidential_datasets(given) != expected
+    given[0]['location'] = 'GLO'
+    given[0]['type'] = 'market group'
+    assert assign_fake_pv_to_confidential_datasets(given) != expected
+    given[0]['type'] = 'market activity'
+    assert assign_fake_pv_to_confidential_datasets(given) == expected
 
-def test_link_consumers_to_markets_use_row():
+def test_delete_allowed_zero_pv_market_datsets():
     given = [{
         'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'RER',
-        'code': '',
-        'exchanges': [],
+        'name': 'not market for refinery gas',
+        'location': 'GLO',
+        'reference product': '',
     }, {
         'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'RoW',
-        'code': 'yes!',
-        'exchanges': [],
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'crackers',
-        'name': '',
-        'location': 'US',
-        'exchanges': [{
-            'type': 'from technosphere',
-            'name': 'cheese'
-        }]
+        'name': 'market for refinery gas',
+        'location': 'GLO',
+        'reference product': '',
     }]
-    result = link_consumers_to_markets(given)
-    assert result[2]['reference product'] == 'crackers'
-    assert result[2]['exchanges'][0]['code'] == 'yes!'
-
-def test_link_consumers_to_markets_no_market():
-    error = [{
+    expected = [{
         'type': 'market activity',
-        'reference product': 'nope',
-        'name': '',
-        'location': 'RER',
-        'code': '',
-        'exchanges': [],
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'crackers',
-        'name': '',
-        'location': 'DE',
-        'exchanges': [{
-            'type': 'from technosphere',
-            'name': 'cheese'
-        }]
+        'name': 'not market for refinery gas',
+        'location': 'GLO',
+        'reference product': '',
     }]
-    with pytest.raises(ValueError):
-        link_consumers_to_markets(error)
-
-def test_link_consumers_to_markets_no_global_market():
-    error = [{
-        'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'CA',
-        'code': '',
-        'exchanges': [],
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'crackers',
-        'name': '',
-        "filepath": '',
-        'location': 'DE',
-        'exchanges': [{
-            'type': 'from technosphere',
-            'name': 'cheese'
-        }]
-    }]
-    with pytest.raises(MissingSupplier):
-        link_consumers_to_markets(error)
-
-def test_link_consumers_to_markets_recycled_content():
-    given = [{
-        'type': 'transforming activity',
-        'reference product': 'cheese, Recycled Content cut-off',
-        'name': '',
-        'location': 'RER',
-        'code': 'found it',
-        'exchanges': [],
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'crackers',
-        'name': '',
-        'location': 'DE',
-        'exchanges': [{
-            'type': 'from technosphere',
-            'name': 'cheese, Recycled Content cut-off'
-        }]
-    }]
-    result = link_consumers_to_markets(given)
-    assert result[1]['reference product'] == 'crackers'
-    assert result[1]['exchanges'][0]['code'] == 'found it'
+    assert delete_allowed_zero_pv_market_datsets(given) == expected

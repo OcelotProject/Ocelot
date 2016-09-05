@@ -1,14 +1,39 @@
 # -*- coding: utf-8 -*-
 import logging
 
-def drop_rp_activity_links(data):
-    """Delete hard (activity) links from reference product exchanges.
 
-    These links have no meaning in the cutoff system model."""
+def drop_zero_amount_activity_links(data):
+    """Drop activity links that have an exchange amount of zero."""
     for ds in data:
         filtered_exchanges = (exc
                               for exc in ds['exchanges']
-                              if exc['type'] == 'reference product'
+                              if not exc['amount']
+                              and exc.get('activity link'))
+        for exc in filtered_exchanges:
+            logging.info({
+                'type': 'table element',
+                'data': (ds['name'], exc['name'])
+            })
+            del exc['activity link']
+    return data
+
+drop_zero_amount_activity_links.__table__ = {
+    'title': 'Drop hard (activity) links from zero-amount exchanges',
+    'columns': ["Activity", "Reference product"]
+}
+
+
+def drop_rp_activity_links(data):
+    """Delete hard (activity) links from reference product exchanges.
+
+    Also drops activity links from ``dropped product`` exchanges, as these have amounts of zero and were formerly reference products.
+
+    These links have no meaning in the cutoff system model."""
+    KINDS = ('reference product', 'dropped product')
+    for ds in data:
+        filtered_exchanges = (exc
+                              for exc in ds['exchanges']
+                              if exc['type'] in KINDS
                               and exc.get('activity link'))
         for exc in filtered_exchanges:
             logging.info({

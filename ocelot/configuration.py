@@ -12,6 +12,7 @@ from .transformations.cutoff import (
     cutoff_allocation,
     handle_waste_outputs,
 )
+from .transformations.cutoff.cleanup import drop_rp_activity_links
 from .transformations.locations import link_markets
 
 
@@ -37,6 +38,7 @@ default_configuration = [
     manage_activity_links,
     handle_waste_outputs,
     cutoff_allocation,
+    drop_rp_activity_links,
     link_markets,
     # extrapolate to database reference year
     # normalize_reference_production_amount

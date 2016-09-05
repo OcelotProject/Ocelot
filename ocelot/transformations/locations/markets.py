@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from . import topology
+from . import topology, RC_STRING
 from ... import toolz
 from ...errors import OverlappingMarkets, MissingSupplier
 from ..utils import (
@@ -10,6 +10,7 @@ from ..utils import (
 from .validation import no_overlaps, no_geo_duplicates
 from copy import deepcopy
 import logging
+
 
 
 def annotate_exchange(exc, ds):
@@ -23,53 +24,74 @@ def annotate_exchange(exc, ds):
 def apportion_suppliers_to_consumers(consumers, suppliers):
     """Apportion suppliers to consumers based on their geographic relationships.
 
+    A supplier must be completely contained within a consumer, or it is rejected, and the global or RoW activity is chosen.
+
     Modifies in place."""
-    spatial_dict = {
-        consumer['location']: [supplier
-                   for supplier in suppliers
-                   if topology.contains(consumer['location'], supplier['location'])
-        ]
-        for consumer in consumers
-        if consumer['location'] not in ("GLO", "RoW")
-    }
-    try:
-        found_faces = set.union(*[topology(obj['location'])
-                                  for supplier in spatial_dict.values()
-                                  for obj in supplier])
-    except TypeError:
-        # Union of empty set raises TypeError
-        found_faces = set()
+    row_excluded_faces = set.union(*[
+        topology(obj['location'])
+        for obj in consumers
+    ])
 
-    # Add suppliers for GLO or RoW dataset
-    row_consumers = [x for x in consumers if x['location'] in ("GLO", "RoW")]
-    if row_consumers:
-        spatial_dict[row_consumers.pop()['location']] = [
-            supplier
-            for supplier in suppliers
-            if not topology(supplier['location']).intersection(found_faces)
-        ]
-        assert not row_consumers, "Multiple global market datasets found"
+    for consumer in consumers:
+        contained = []
+        for group in toolz.groupby('name', suppliers).values():
+            if consumer['location'] == 'GLO':
+                candidates = group
+            elif consumer['location'] == 'RoW':
+                candidates = [
+                    ds for ds in group
+                    if (ds['location'] in ('GLO', 'RoW'))
+                    or (not topology(ds['location']).intersection(row_excluded_faces))
+                ]
+            else:
+                candidates = [ds for ds in group
+                              if topology.contains(consumer['location'], ds['location'])]
+            if not candidates:
+                candidates = [ds for ds in group
+                              if ds['location'] in ("GLO", "RoW")]
+            contained.extend(candidates)
 
-    # Validation checks
-    if len(spatial_dict) != len(consumers):
-        raise ValueError("Missing consumer datasets")
-
-    # TODO: Need to do something here if there are
-    # suppliers who aren't linked to consuming markets.
-    # Maybe just log them...
-    # if len(suppliers) != sum(len(o) for o in spatial_dict.values()):
-    #     raise ValueError("Missing supplier datasets")
-
-    for ds in consumers:
-        ds['suppliers'] = [annotate_exchange(get_single_reference_product(obj),
-                                             obj)
-                           for obj in spatial_dict[ds['location']]]
+        consumer['suppliers'] = [annotate_exchange(
+            get_single_reference_product(obj),
+            obj
+        ) for obj in contained]
         logging.info({
             'type': 'table element',
-            'data': (ds['name'], ds['reference product'], ds['location'],
-                     ";".join([o['location'] for o in spatial_dict[ds['location']]]))
+            'data': (consumer['name'],
+                     consumer['reference product'],
+                     consumer['location'],
+                     ";".join([o['location'] for o in contained]))
         })
     return True
+
+
+def add_recycled_content_suppliers_to_markets(data):
+    """Link markets to recycled content producing activities."""
+    from_type, to_type = "transforming activity", "market activity"
+    filter_func = lambda x: x['type'] in (from_type, to_type)
+    grouped = toolz.groupby("reference product", filter(filter_func, data))
+
+    recycled_content_datasets = [
+        x for x in data
+        if x['type'] == from_type
+        and RC_STRING in x['reference product']
+    ]
+
+    for rp, datasets in grouped.items():
+        suppliers = [
+            ds for ds in recycled_content_datasets
+            if ds['reference product'] == rp + RC_STRING
+        ]
+        consumers = [ds for ds in datasets if ds['type'] == to_type]
+        if consumers and suppliers:
+            no_overlaps(consumers)
+            apportion_suppliers_to_consumers(consumers, suppliers)
+    return data
+
+add_recycled_content_suppliers_to_markets.__table__ = {
+    'title': 'Allocate recycled content suppliers exchange amounts to markets',
+    'columns': []
+}
 
 
 def add_suppliers_to_markets(data, from_type="transforming activity",
@@ -83,21 +105,17 @@ def add_suppliers_to_markets(data, from_type="transforming activity",
     Does not change the exchanges list or do allocation between various suppliers."""
     filter_func = lambda x: x['type'] in (from_type, to_type)
     grouped = toolz.groupby("reference product", filter(filter_func, data))
+
     for rp, datasets in grouped.items():
         suppliers = [ds for ds in datasets if ds['type'] == from_type]
-        consumers = [ds for ds in datasets if ds['type'] == to_type]
+        consumers = [ds for ds in datasets
+                     if ds['type'] == to_type
+                     and not ds.get('suppliers')]
+        if not consumers:
+            continue
         if to_type == 'market activity':
-            if not suppliers:
-                # Best way I can think of to do this. Can't change the
-                # name of the flow itself.
-                suppliers = [
-                    ds for ds in datasets
-                    if ds['type'] == from_type
-                    and ds['reference product'] == rp + ", Recycled Content cut-off"]
-            if consumers:
-                # Overlaps aren't allowed for markets, only market groups
-                no_overlaps(consumers)
-            apportion_suppliers_to_consumers(consumers, suppliers)
+            no_overlaps(consumers)
+        apportion_suppliers_to_consumers(consumers, suppliers)
     return data
 
 add_suppliers_to_markets.__table__ = {
@@ -118,12 +136,18 @@ def allocate_suppliers(data):
         scale_factor = rp['amount']
         total_pv = sum(o['production volume']['amount']
                        for o in ds['suppliers'])
-        if not total_pv:
+
+        if len(ds['suppliers']) == 1:
+            total_pv, scale_factor = 1, 1
+        elif not total_pv:
             # TODO: Raise error here
-            print("Skipping zero total PV: {}/{} ({}, {} suppliers)".format(ds['name'], rp['name'], ds['location'], len(ds['suppliers'])))
+            print("Skipping zero total PV with multiple inputs:\n\t{}/{} ({}, {} suppliers)".format(ds['name'], rp['name'], ds['location'], len(ds['suppliers'])))
             continue
+
         for supply_exc in ds['suppliers']:
             amount = supply_exc['production volume']['amount'] / total_pv * scale_factor
+            if not amount:
+                continue
             ds['exchanges'].append(remove_exchange_uncertainty({
                 'amount': amount,
                 'name': supply_exc['name'],
@@ -184,86 +208,73 @@ def delete_suppliers_list(data):
     return data
 
 
-def link_consumers_to_markets(data):
-    """Link technosphere exchange inputs to markets.
+def delete_allowed_zero_pv_market_datsets(data):
+    """Remove some global markets with zero production volume.
 
-    Should only be run after ``add_suppliers_to_markets``. Skips hard (activity) links, and exchanges which have already been linked.
+    Uses a white list of markets which are not in the ecoinvent release."""
+    can_delete_markets = {
+        "market for heat, diffusion absorption heat pump",
+        "market for heat, solar+electric, multiple-dwelling, for hot water",
+        "market for heat, solar+gas, multiple-dwelling, for hot water",
+        "market for heat, solar+gas, one-family house, for combined system",
+        "market for heat, solar+gas, one-family house, for hot water",
+        "market for heat, solar+wood, one-family house, for combined system",
+        "market for nitro-compound",
+        r"market for petrol, 85% ethanol by volume from biomass",
+        "market for refinery gas",
+        "market for spent oxychlor catalyst for ethylene dichloride production",
+        "market for waste emulsion paint, on wall",
+    }
+    delete_me = lambda x: (x['type'] == 'market activity'
+                           and x['name'] in can_delete_markets
+                           and x['location'] == 'GLO')
+    for ds in filter(delete_me, data):
+        logging.info({
+            'type': 'table element',
+            'data': (ds['name'], ds['reference product'])
+        })
+    return [ds for ds in data if not delete_me(ds)]
 
-    Add the field ``code`` to each exchange with the code of the linked market activity."""
+delete_allowed_zero_pv_market_datsets.__table__ = {
+    'title': 'Delete some global markets with zero production volume',
+    'columns': ["Name", "Product"]
+}
 
-    # Cache markets by reference product so don't need to iterate through whole list each time
-    filter_func = lambda x: x['type'] == "market activity"
-    market_mapping = toolz.groupby(
-        'reference product',
-        filter(filter_func, data)
-    )
 
-    # Special case where linking doesn't go through a market;
-    # Recyclable byproducts in cutoff system model
-    RC = 'Recycled Content cut-off'
-    recycled_content_filter = lambda x: (RC in x['reference product']
-                                         and x['type'] == 'transforming activity')
-    recycled_content_mapping = toolz.groupby(
-        'reference product',
-        filter(recycled_content_filter, data)
-    )
+def assign_fake_pv_to_confidential_datasets(data):
+    """Confidential datasets have production volumes of zero, because. Just because.
 
-    for ds in data:
-        for exc in ds['exchanges']:
-            if (exc.get('code') or exc.get('activity link')
-                or not exc['type'] == 'from technosphere'):
-                continue
-
-            # Handle special case for recyclable byproducts in
-            # cutoff system model
-            if exc['name'] not in market_mapping:
-                if not exc['name'].endswith(RC):
-                    raise ValueError(
-                        "No market for desired product {}".format(exc['name'])
-                    )
-                contributors = recycled_content_mapping[exc['name']]
-            else:
-                contributors = market_mapping[exc['name']]
-
-            contained = [m for m in contributors
-                         if topology.contains(m['location'], ds['location'])]
-            if not contained:
-                # Use global or rest-of-world market
-                global_suppliers = [x for x in contributors
-                                    if x['location'] in ("GLO", "RoW")]
-                if not global_suppliers:
-                    message = ("No regional or global supplier found for "
-                        "activity `{}` for product `{}` in `{}`\n{}")
-                    raise MissingSupplier(message.format(
-                        ds['name'], exc['name'], ds['location'], ds['filepath']
-                    ))
-                else:
-                    assert len(global_suppliers) == 1
-                    exc['code'] = global_suppliers[0]['code']
-                    logging.info({
-                        'type': 'table element',
-                        'data': (exc['name'], ds['location'],
-                                 global_suppliers[0]['name'],
-                                 global_suppliers[0]['location'])
-                    })
-            elif len(contained) == 1:
-                exc['code'] = contained[0]['code']
-                logging.info({
-                    'type': 'table element',
-                    'data': (exc['name'], ds['location'],
-                             contained[0]['name'],
-                             contained[0]['location'])
-                })
-            else:
-                message = "Multiple markets contain {} in {}:\n{}"
-                raise OverlappingMarkets(message.format(
-                    exc['name'],
-                    ds['location'],
-                    [x['location'] for x in contained])
-                )
+    In order to allocate these datasets to markets. In the absence of data, we assume all confidential datasets contribute equally."""
+    confidential_names = {
+        "anthraquinone production",
+        "burnt shale production",
+        "carboxymethyl cellulose production, powder",
+        "citric acid production",
+        "esters of versatic acid production",
+        "feldspar production",
+        "latex production",
+        "layered sodium silicate production, SKS-6, powder",
+        "particle board production, cement bonded",
+        r"polycarboxylates production, 40% active substance",
+        "sodium perborate production, monohydrate, powder",
+        "sodium perborate production, tetrahydrate, powder",
+        "sodium percarbonate production, powder",
+        "wood wool boards production, cement bonded",
+        "zeolite production, powder",
+        r"zeolite production, slurry, without water, in 50% solution state",
+    }
+    confidential_filter = lambda x: (x['type'] == 'transforming activity'
+                                  and x['name'] in confidential_names)
+    for ds in filter(confidential_filter, data):
+        rp = get_single_reference_product(ds)
+        logging.info({
+            'type': 'table element',
+            'data': (ds['name'], rp['name'], 1)
+        })
+        rp['production volume']['amount'] = 1
     return data
 
-link_consumers_to_markets.__table__ = {
-    'title': 'Link input exchanges to correct supplying market',
-    'columns': ["Product", "Location", "Market name", "Market location"]
+assign_fake_pv_to_confidential_datasets.__table__ = {
+    'title': 'Split inputs from confidential datasets equally because no production volume is available.',
+    'columns': ["Name", "Product", "Production volume"]
 }

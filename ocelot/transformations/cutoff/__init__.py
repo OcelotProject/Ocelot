@@ -14,9 +14,14 @@ from .wastes import handle_waste_outputs
 
 from ...collection import Collection
 from ..activity_links import check_activity_link_validity
-from .cleanup import remove_consequential_exchanges, drop_rp_activity_links
+from .cleanup import (
+    drop_rp_activity_links,
+    drop_zero_amount_activity_links,
+    remove_consequential_exchanges,
+)
 
 cleanup_activity_links = Collection(
     remove_consequential_exchanges,
     drop_rp_activity_links,
+    drop_zero_amount_activity_links,
 )

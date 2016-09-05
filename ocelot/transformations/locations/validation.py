@@ -35,6 +35,8 @@ def no_overlaps(data):
     locations = [x['location'] for x in data]
     if topology.overlaps(locations):
         raise OverlappingActivities
+    if 'GLO' in locations and len(locations) > 1:
+        raise OverlappingActivities
     return True
 
 
