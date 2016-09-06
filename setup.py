@@ -24,6 +24,7 @@ setup(
     package_data={'ocelot': [
         "data/*.*",
         "data/*/*.*",
+        "data/*/*/*.*",
     ]},
     entry_points = {
         'console_scripts': [
