@@ -13,7 +13,7 @@ class TransformationWrapper:
     .. code-block:: python
 
         filter_function = lambda dataset: dataset['name'] == 'foo'
-        new_function = ApplyTransformation(transformation_function_with_single_dataset_input, filter_function)
+        new_function = TransformationWrapper(transformation_function_with_single_dataset_input, filter_function)
         changed_data = new_function(old_data)
 
     """
