@@ -2,6 +2,7 @@
 from .utils import allocatable_production
 from ..collection import Collection
 from ..errors import (
+    IdenticalDatasets,
     InvalidExchange,
     InvalidMarket,
     InvalidMarketExchange,
@@ -10,6 +11,13 @@ from ..errors import (
 )
 from pprint import pformat
 import logging
+
+
+def ensure_ids_are_unique(data):
+    """Make sure that ids are actually unique"""
+    if len({ds['id'] for ds in data}) != len(data):
+        raise IdenticalDatasets
+    return data
 
 
 def check_single_output_activity(dataset):

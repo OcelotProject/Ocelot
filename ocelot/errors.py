@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 class OcelotError(Exception):
     """Base for custom ocelot errors"""
     pass

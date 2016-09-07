@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from .transformations import (
-    pv_cleanup,
+    ensure_ids_are_unique,
     ensure_mandatory_properties,
     fix_ecoinvent_parameters,
     manage_activity_links,
+    pv_cleanup,
     validate_markets,
     variable_names_are_unique,
 )
@@ -33,6 +34,7 @@ class Configuration(object):
 
 # Default config for now is cutoff
 default_configuration = [
+    ensure_ids_are_unique,
     variable_names_are_unique,
     # There are a *lot* of missing mandatory properties
     # No point adding them to this report
@@ -53,6 +55,7 @@ default_configuration = [
 ]
 
 consequential_system_model = [
+    ensure_ids_are_unique,
     variable_names_are_unique,
     validate_markets,
     fix_ecoinvent_parameters,

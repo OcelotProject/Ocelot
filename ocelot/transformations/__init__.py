@@ -15,6 +15,7 @@ from .parameterization import (
 )
 from .production_volumes import add_pv_to_allocatable_byproducts
 from .validation import (
+    ensure_ids_are_unique,
     ensure_mandatory_properties,
     ensure_production_exchanges_have_production_volume,
     validate_markets,
