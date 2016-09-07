@@ -19,7 +19,7 @@ class Topology(object):
 
     def __init__(self):
         self.data = {key: set(value) for key, value in
-                     json.load(open(self.fp))['data']}
+                     json.load(open(self.fp, encoding='utf-8'))['data']}
         for old, fixed in self.compatibility:
             self.data[old] = self.data[fixed]
 
