@@ -9,7 +9,7 @@ def flip_exchange(exc):
     exc['amount'] = -1 * exc['amount']
     if 'formula' in exc:
         exc['formula'] = '-1 * ({})'.format(exc['formula'])
-    return exchange
+    return exc
 
 
 def handle_constrained_markets(data):
@@ -35,7 +35,9 @@ def handle_constrained_markets(data):
     id_mapping = {ds['id']: ds for ds in data}
     for ds in data:
         for exc in (e for e in ds['exchanges'] if e.get('conditional exchange')):
+            # Activity link validity is check by separate validation function
             target = id_mapping[exc['activity link']]
+
 
             # Handle exchange in this dataset
             exc['type'] = 'from technosphere'
