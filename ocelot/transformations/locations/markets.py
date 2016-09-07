@@ -129,7 +129,7 @@ def allocate_suppliers(data):
 
     Works on both market activities and market groups.
 
-    The sum of the suppliers inputs should add up to the production amount of the market (reference product exchange amount), minus any constrained market links. Constrained market exchanges should already be in the list of dataset exchanges, with the attribute ``constrained``."""
+    The sum of the suppliers inputs should add up to the production amount of the market (reference product exchange amount)."""
     MARKETS = ("market activity", "market group")
     for ds in (o for o in data if o['type'] in MARKETS):
         rp = get_single_reference_product(ds)
