@@ -18,7 +18,6 @@ Here is the validation schema for an activity dataset:
 .. code-block:: python
 
     dataset_schema = Schema({
-        "combined production": bool, # More than one reference product
         "exchanges": [Any(elementary_exchange_schema, activity_exchange_schema)],
         "parameters": [valid_parameter],
         # ecospold2 field 3550: accessRestrictedTo.

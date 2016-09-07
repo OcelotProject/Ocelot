@@ -14,7 +14,6 @@ BASIC_REFERENCE = [{
     'economic scenario': 'Business-as-Usual',
     'parameters': [],
     'id': 'basic-process',
-    'combined production': False,
     'exchanges': [{
         'amount': -0.99,
         'conditional exchange': False,
@@ -79,7 +78,6 @@ BASIC_REFERENCE = [{
 
 PROD_VOLUME_REFERENCE = [{
     'economic scenario': 'Business-as-Usual',
-    'combined production': False,
     'exchanges': [{
         'amount': 1.0,
         'id': 'fb31ee9b-d01e-4121-9732-01b9bdd491ef',
@@ -144,7 +142,6 @@ PROD_VOLUME_REFERENCE = [{
 }]
 
 MULTIOUTPUT_REFERENCE = [{
-    'combined production': True,
     'economic scenario': 'Business-as-Usual',
     'exchanges': [{
         'amount': 200.0,

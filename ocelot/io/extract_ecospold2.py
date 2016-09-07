@@ -21,14 +21,6 @@ def _(string):
     return string.replace("{http://www.EcoInvent.org/EcoSpold02}", "")
 
 
-def is_combined_production(dataset):
-    """"Combined production datasets have multiple reference products.
-
-    Returns a boolean."""
-    return len([1 for exc in dataset['exchanges']
-                if exc['type'] == "reference product"]) > 1
-
-
 def extract_parameter(obj):
     param = {'name': obj.name.text,
          'id': obj.get('parameterId'),
@@ -193,7 +185,6 @@ def extract_ecospold2_dataset(elem, filepath):
     data['exchanges'] = [extract_exchange(data, exc)
                          for exc in elem.flowData.iterchildren()
                          if 'Exchange' in _(exc.tag)]
-    data['combined production'] = is_combined_production(data)
     return data
 
 

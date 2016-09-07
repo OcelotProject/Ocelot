@@ -5,7 +5,6 @@ from ocelot.transformations.parameterization.production_volumes import create_pv
 
 def test_create_pv_parameters_format():
     given = {
-        "combined production": False,
         'access restricted': 'public',
         'economic scenario': '',
         'end date': '',

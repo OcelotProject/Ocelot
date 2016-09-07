@@ -63,7 +63,6 @@ def test_flip_non_allocatable_byproducts():
 
 def test_create_new_recycled_content_dataset():
     given = {
-        "combined production": True,
         "exchanges": [{}, {
             'id': 8,
             'name': "Wowzers",
@@ -78,7 +77,6 @@ def test_create_new_recycled_content_dataset():
         'technology level': 7,
     }
     expected = {
-        "combined production": False,
         "exchanges": [{
             'amount': 1,
             'id': 8,

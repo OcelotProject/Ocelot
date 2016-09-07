@@ -83,7 +83,6 @@ def create_new_recycled_content_dataset(ds, exc):
     common = ('access restricted', 'economic scenario', 'end date',
             'filepath', 'id', 'start date', 'technology level')
     obj = {
-        "combined production": False,
         "exchanges": [{
             'amount': 1,
             'id': exc['id'],
