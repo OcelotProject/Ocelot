@@ -19,9 +19,11 @@ from .transformations.cutoff.cleanup import (
 )
 from .transformations.locations import link_markets_by_pv
 from .transformations.consequential import (
+    ensure_byproducts_have_alternative_production,
     link_markets_by_technology_level,
     split_combined_production,
 )
+
 
 class Configuration(object):
     """This is a dummy class, to be filled in with code that can parse various ways for defining a system model in a list of Python functions, including currying, etc."""
@@ -64,6 +66,7 @@ consequential_system_model = [
     manage_activity_links,
     handle_waste_outputs,
     split_combined_production,
+    ensure_byproducts_have_alternative_production,
     drop_rp_activity_links,
     link_markets_by_technology_level,
     # extrapolate to database reference year

@@ -96,3 +96,8 @@ class InvalidTransformationFunction(OcelotError):
 class MissingSupplier(OcelotError):
     """Input from global or RoW market is needed, but this market doesn't exist"""
     pass
+
+
+class MissingAlternativeProducer(OcelotError):
+    """Alternative producer for byproduct not found"""
+    pass

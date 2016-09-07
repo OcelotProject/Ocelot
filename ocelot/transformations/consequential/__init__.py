@@ -15,6 +15,7 @@ from ..locations import (
     update_market_production_volumes,
 )
 from ..utils import label_reference_product
+from .byproducts import ensure_byproducts_have_alternative_production
 from .market_linking import prune_suppliers_by_technology_level
 from .combined import split_combined_production
 from functools import partial
