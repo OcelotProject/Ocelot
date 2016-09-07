@@ -14,9 +14,10 @@ import logging
 
 
 def annotate_exchange(exc, ds):
-    """Copy ``exc``, and add ``code`` and ``location`` from ``ds``."""
+    """Copy ``exc``, and add ``code``, ``technology level``, and ``location`` from ``ds``."""
+    FIELDS = ('location', 'code', 'technology level')
     exc = deepcopy(exc)
-    exc.update({k: ds[k] for k in ('location', 'code')})
+    exc.update({k: ds[k] for k in FIELDS})
     return exc
 
 

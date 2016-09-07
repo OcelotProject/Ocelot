@@ -10,7 +10,8 @@ def generate_dataset(location, name='foo', rp='bar'):
         'name': name,
         'reference product': rp,
         'location': location,
-        'code': location + name + rp
+        'code': location + name + rp,
+        'technology level': 'current',
     }
 
 def test_apportion_suppliers_to_consumers():
@@ -31,35 +32,42 @@ def test_apportion_suppliers_to_consumers():
         'code': 'UCTE without Francefoobar',
         'reference product': 'bar',
         'name': 'foo',
+        'technology level': 'current',
         'location': 'UCTE without France',
         'suppliers': [{
             'type': 'reference product',
             'location': 'DE',
+            'technology level': 'current',
             'code': 'DEfoobar',
         }]
     }, {
         'code': 'RUfoobar',
         'reference product': 'bar',
         'name': 'foo',
+        'technology level': 'current',
         'location': 'RU',
         'suppliers': [{
             'type': 'reference product',
             'location': 'Russia (Asia)',
+            'technology level': 'current',
             'code': 'Russia (Asia)foobar'
         }]
     }, {
         'code': 'RoWfoobar',
         'reference product': 'bar',
         'name': 'foo',
+        'technology level': 'current',
         'location': 'RoW',
         'suppliers': [
             {
                 'type': 'reference product',
                 'location': 'FR',
+                'technology level': 'current',
                 'code': 'FRfoobar',
             }, {
                 'type': 'reference product',
                 'location': 'MY',
+                'technology level': 'current',
                 'code': 'MYfoobar',
             }
         ]
@@ -95,6 +103,7 @@ def test_add_suppliers_to_markets():
         'code': 'cCA',
         'type': 'transforming activity',
         'reference product': 'foo',
+        'technology level': 'current',
         'name': '',
         'location': 'CA',
         'exchanges': [{'type': 'reference product'}],
@@ -102,6 +111,7 @@ def test_add_suppliers_to_markets():
         'code': 'cMX',
         'type': 'transforming activity',
         'reference product': 'foo',
+        'technology level': 'current',
         'name': '',
         'location': 'MX',
         'exchanges': [{'type': 'reference product'}],
@@ -109,6 +119,7 @@ def test_add_suppliers_to_markets():
         'code': 'cFR',
         'type': 'transforming activity',
         'reference product': 'foo',
+        'technology level': 'current',
         'name': '',
         'location': 'FR',
         'exchanges': [{'type': 'reference product'}],
@@ -116,18 +127,21 @@ def test_add_suppliers_to_markets():
         'code': 'cNAFTA',
         'type': 'market activity',
         'reference product': 'foo',
+        'technology level': 'current',
         'name': '',
         'location': 'NAFTA',
     }, {
         'code': 'cRER',
         'type': 'market activity',
         'reference product': 'foo',
+        'technology level': 'current',
         'name': '',
         'location': 'RER',
     }, {
         'code': 'cDE',
         'type': 'transforming activity',
         'reference product': 'bar',
+        'technology level': 'current',
         'name': '',
         'location': 'DE',
         'exchanges': [{'type': 'reference product'}],
@@ -135,6 +149,7 @@ def test_add_suppliers_to_markets():
         'code': 'cZA',
         'type': 'transforming activity',
         'reference product': 'bar',
+        'technology level': 'current',
         'name': '',
         'location': 'ZA',
         'exchanges': [{'type': 'reference product'}],
@@ -142,6 +157,7 @@ def test_add_suppliers_to_markets():
         'code': 'cRoW',
         'type': 'market activity',
         'reference product': 'bar',
+        'technology level': 'current',
         'name': '',
         'location': 'RoW',
     }]
@@ -151,6 +167,7 @@ def test_add_suppliers_to_markets():
         'type': 'transforming activity',
         'reference product': 'foo',
         'name': '',
+        'technology level': 'current',
         'location': 'CA',
         'code': 'cCA',
         'exchanges': [{'type': 'reference product'}],
@@ -158,6 +175,7 @@ def test_add_suppliers_to_markets():
         'type': 'transforming activity',
         'reference product': 'foo',
         'name': '',
+        'technology level': 'current',
         'location': 'MX',
         'code': 'cMX',
         'exchanges': [{'type': 'reference product'}],
@@ -165,33 +183,48 @@ def test_add_suppliers_to_markets():
         'type': 'transforming activity',
         'reference product': 'foo',
         'name': '',
+        'technology level': 'current',
         'location': 'FR',
         'code': 'cFR',
         'exchanges': [{'type': 'reference product'}],
     }, {
         'type': 'market activity',
         'reference product': 'foo',
+        'technology level': 'current',
         'name': '',
         'location': 'NAFTA',
         'code': 'cNAFTA',
         'suppliers': [
-            {'code': 'cCA', 'location': 'CA', 'type': 'reference product'},
-            {'code': 'cMX', 'location': 'MX', 'type': 'reference product'}
+            {
+                'code': 'cCA',
+                'location': 'CA',
+                'type': 'reference product',
+                'technology level': 'current',
+            },
+            {
+                'code': 'cMX',
+                'location': 'MX',
+                'technology level': 'current',
+                'type': 'reference product'
+            }
         ]
     }, {
         'type': 'market activity',
         'reference product': 'foo',
+        'technology level': 'current',
         'name': '',
         'location': 'RER',
         'code': 'cRER',
         'suppliers': [{
             'code': 'cFR',
             'type': 'reference product',
+            'technology level': 'current',
             'location': 'FR'
         }]
     }, {
         'type': 'transforming activity',
         'reference product': 'bar',
+        'technology level': 'current',
         'name': '',
         'location': 'DE',
         'code': 'cDE',
@@ -199,6 +232,7 @@ def test_add_suppliers_to_markets():
     }, {
         'type': 'transforming activity',
         'reference product': 'bar',
+        'technology level': 'current',
         'name': '',
         'location': 'ZA',
         'code': 'cZA',
@@ -206,16 +240,19 @@ def test_add_suppliers_to_markets():
     }, {
         'type': 'market activity',
         'reference product': 'bar',
+        'technology level': 'current',
         'name': '',
         'location': 'RoW',
         'code': 'cRoW',
         'suppliers': [{
             'code': 'cDE',
             'location': 'DE',
+            'technology level': 'current',
             'type': 'reference product'
         }, {
             'code': 'cZA',
             'location': 'ZA',
+            'technology level': 'current',
             'type': 'reference product'
         }
         ]
