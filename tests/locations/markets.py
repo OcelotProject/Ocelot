@@ -85,6 +85,9 @@ def test_apportion_suppliers_to_consumers_nonlinked_suppliers():
         s.update({'exchanges': [{'type': 'reference product'}]})
     assert apportion_suppliers_to_consumers(consumers, suppliers)
 
+def test_apportion_suppliers_to_consumers_global_consumer():
+    pass
+
 def test_add_suppliers_to_markets():
     given = [{
         'type': 'skip me',

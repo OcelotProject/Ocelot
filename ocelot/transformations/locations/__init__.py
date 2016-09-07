@@ -28,7 +28,7 @@ from .rest_of_world import relabel_global_to_row, drop_zero_pv_row_datasets
 from functools import partial
 
 
-link_markets = Collection(
+link_markets_by_pv = Collection(
     label_reference_product,
     delete_allowed_zero_pv_market_datsets,
     assign_fake_pv_to_confidential_datasets,
