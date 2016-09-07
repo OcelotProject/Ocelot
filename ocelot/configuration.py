@@ -35,7 +35,7 @@ class Configuration(object):
 
 
 # Default config for now is cutoff
-default_configuration = [
+cutoff_config = [
     ensure_ids_are_unique,
     variable_names_are_unique,
     # There are a *lot* of missing mandatory properties
@@ -56,7 +56,7 @@ default_configuration = [
     # final output processing
 ]
 
-consequential_system_model = [
+consequential_config = [
     ensure_ids_are_unique,
     variable_names_are_unique,
     validate_markets,

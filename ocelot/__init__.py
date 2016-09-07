@@ -4,6 +4,8 @@ __all__ = (
     "HTMLReport",
     "OutputDir",
     "system_model",
+    'consequential_config',
+    'cutoff_config',
 )
 
 __version__ = (0, 1)
@@ -26,7 +28,11 @@ except ImportError:
 from .data import data_dir
 from .collection import Collection
 from .io import *
-from .configuration import Configuration, default_configuration
+from .configuration import (
+    Configuration,
+    cutoff_config,
+    consequential_config,
+)
 from .filesystem import OutputDir
 from .report import HTMLReport
 from .model import system_model
