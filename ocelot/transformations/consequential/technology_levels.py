@@ -4,15 +4,6 @@ from ...collection import Collection
 import logging
 
 
-TECHNOLOGY_LEVEL_HIERARCHY = (
-    "outdated",
-    "old",
-    "current",
-    "modern",
-    "new",
-)
-
-
 def log_conflicting_technology_levels(data):
     """Log anytime that there are both ``undefined`` and ``current`` inputs to a market.
 

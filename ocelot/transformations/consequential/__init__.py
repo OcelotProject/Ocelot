@@ -4,8 +4,10 @@ from ..identifying import add_unique_codes
 from ..locations import (
     actualize_activity_links,
     add_suppliers_to_markets,
+    allocate_suppliers,
     assign_fake_pv_to_confidential_datasets,
     delete_allowed_zero_pv_market_datsets,
+    delete_suppliers_list,
     link_consumers_to_global_markets,
     link_consumers_to_regional_markets,
     log_unlinked_exchanges,
@@ -13,7 +15,7 @@ from ..locations import (
     update_market_production_volumes,
 )
 from ..utils import label_reference_product
-from .market_linking import allocate_suppliers_by_technology_level
+from .market_linking import prune_suppliers_by_technology_level
 from functools import partial
 
 
@@ -25,12 +27,13 @@ link_markets_by_technology_level = Collection(
     add_unique_codes,
     actualize_activity_links,
     add_suppliers_to_markets,
+    prune_suppliers_by_technology_level,
     update_market_production_volumes,
     partial(add_suppliers_to_markets, from_type="market activity",
                                       to_type="market group"),
     partial(update_market_production_volumes, kind='market group'),
-    allocate_suppliers_by_technology_level,
-    # delete_suppliers_list,
+    allocate_suppliers,
+    delete_suppliers_list,
     # drop_zero_pv_row_datasets,
     link_consumers_to_regional_markets,
     link_consumers_to_global_markets,
