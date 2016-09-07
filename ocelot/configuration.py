@@ -15,11 +15,13 @@ from .transformations.cutoff import (
 )
 from .transformations.cutoff.cleanup import (
     drop_rp_activity_links,
+    drop_zero_amount_activity_links,
     remove_consequential_exchanges,
 )
 from .transformations.locations import link_markets_by_pv
 from .transformations.consequential import (
     ensure_byproducts_have_alternative_production,
+    handle_constrained_markets,
     link_markets_by_technology_level,
     split_combined_production,
 )
@@ -62,12 +64,11 @@ consequential_config = [
     validate_markets,
     fix_ecoinvent_parameters,
     pv_cleanup,
-    cleanup_activity_links,
-    manage_activity_links,
-    handle_waste_outputs,
+    drop_zero_amount_activity_links,
     split_combined_production,
+    handle_constrained_markets,
+    manage_activity_links,
     ensure_byproducts_have_alternative_production,
-    drop_rp_activity_links,
     link_markets_by_technology_level,
     # extrapolate to database reference year
     # normalize_reference_production_amount
