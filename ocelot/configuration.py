@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from .collection import unwrap_functions
 from .transformations import (
     pv_cleanup,
     ensure_mandatory_properties,
@@ -26,7 +27,7 @@ class Configuration(object):
 
 
 # Default config for now is cutoff
-default_configuration = [
+default_configuration = unwrap_functions([
     variable_names_are_unique,
     # There are a *lot* of missing mandatory properties
     # No point adding them to this report
@@ -43,4 +44,4 @@ default_configuration = [
     # extrapolate to database reference year
     # normalize_reference_production_amount
     # final output processing
-]
+])

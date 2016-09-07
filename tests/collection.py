@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ocelot.collection import Collection
+from ocelot.collection import Collection, unwrap_functions
 from ocelot.filesystem import OutputDir
 from ocelot.model import system_model
 from unittest import mock
@@ -92,3 +92,13 @@ def test_collection_contains():
     collection = Collection(1, 2)
     assert 1 in collection
     assert 3 not in collection
+
+def test_unwrap_functions():
+    a = lambda x: False
+    b = lambda x: False
+    c = lambda x: False
+    d = lambda x: False
+    e = lambda x: False
+
+    lst = [a, Collection(b, Collection(c, d)), e]
+    assert unwrap_functions(lst) == [a, b, c, d, e]
