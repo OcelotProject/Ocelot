@@ -168,18 +168,27 @@ dataset_schema = Schema({
     "combined production": bool, # More than one reference product
     "exchanges": [Any(elementary_exchange_schema, activity_exchange_schema)],
     "parameters": [valid_parameter],
-    'access restricted': valid_access_restriction, # ecospold2 field 3550: accessRestrictedTo
+    # ecospold2 field 3550: accessRestrictedTo.
+    # Currently ecoinvent releases do not use this field.
+    'access restricted': valid_access_restriction,
     'economic scenario': str, # ecospold2 field 700: macroEconomicScenarioId
     'end date': str, # Starting and ending dates for dataset validity, in format '2015-12-31'
     'filepath': str,
     'id': str,  # Imported UUID. May not be unique due to allocation.
-    Optional("code"): str,  # Guaranteed unique hash code based on attributes
+    # Guaranteed unique hash code based on dataset attributes like name, location, type, etc.
+    Optional("code"): str,
     'location': str, # ecospold2 field 410: shortname
     'name': str, # ecospold2 field 100: activityName
     'start date': str,
     'technology level': valid_technology_levels, # ecospold2 field 500
+    # The activity types used in ecoinvent are:
+    # "transforming activity", "market activity", and "market group"
     'type': valid_activity_types, # ecospold2 field 115: specialActivityType
-    Optional('allocation method'): valid_allocation_method,  # Allocation method used. Added by a transformation.
-    Optional('reference product'): str, # Name of the reference product. Added by a transformation.
-    Optional('suppliers'): list,  # Exchanges which supply a market
+    # Allocation method used. Added by a transformation function, should be
+    # removed after allocation.
+    Optional('allocation method'): valid_allocation_method,
+    # Name of the reference product. Added by a transformation function.
+    Optional('reference product'): str,
+    # Temporary data - references to technosphere exchanges which supply a market
+    Optional('suppliers'): list,
 }, required=True)
