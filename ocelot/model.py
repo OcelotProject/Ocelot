@@ -63,6 +63,13 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
         * Log the transformation function end
     * Finally, write a report.
 
+    Can be interrupted with CTRL-C. Interrupting will delete the partially completed report.
+
+    Returns:
+
+        * An ``OutputDir`` object which tells you where the report was generated
+        * The final version of the data in a list
+
     """
     print("Starting Ocelot model run")
     try:
