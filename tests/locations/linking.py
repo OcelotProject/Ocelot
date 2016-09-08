@@ -1,12 +1,38 @@
 from ocelot.errors import UnresolvableActivityLink, OverlappingMarkets
-from ocelot.transformations.locations.linking import (actualize_activity_links,
+from ocelot.transformations.locations.linking import (add_reference_product_codes,
+    actualize_activity_links,
     link_consumers_to_global_markets,
     link_consumers_to_recycled_content_activities,
     link_consumers_to_regional_markets,
-    log_unlinked_exchanges,
+    log_and_delete_unlinked_exchanges,
 )
 import pytest
 
+
+def test_add_reference_product_codes():
+    given = [{
+        'code': 'foo',
+        'exchanges': [{
+            'type': 'reference product',
+        }, {
+            'type': 'not reference product'
+        }]
+    }]
+    expected = [{
+        'code': 'foo',
+        'exchanges': [{
+            'type': 'reference product',
+            'code': 'foo'
+        }, {
+            'type': 'not reference product'
+        }]
+    }]
+    assert add_reference_product_codes(given) == expected
+
+def test_add_reference_product_codes_error():
+    given = [{'name': ''}]
+    with pytest.raises(AssertionError):
+        add_reference_product_codes(given)
 
 def test_actualize_activity_links():
     given = [{
@@ -306,7 +332,7 @@ def test_link_consumers_to_global_markets_use_row():
     assert result[2]['reference product'] == 'crackers'
     assert result[2]['exchanges'][0]['code'] == 'yes!'
 
-def test_log_unlinked_exchanges():
+def test_log_and_delete_unlinked_exchanges_logged():
     error = [{
         'type': 'market activity',
         'reference product': 'nope',
@@ -326,7 +352,28 @@ def test_log_unlinked_exchanges():
         }]
     }]
     # TODO: Check if message written to log
-    log_unlinked_exchanges(error)
+    log_and_delete_unlinked_exchanges(error)
+
+def test_log_and_delete_unlinked_exchanges_deletion():
+    error = [{
+        'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': '',
+        'location': 'DE',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese',
+            'amount': 1,
+        }]
+    }]
+    expected = [{
+        'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': '',
+        'location': 'DE',
+        'exchanges': []
+    }]
+    assert log_and_delete_unlinked_exchanges(error) == expected
 
 def test_link_consumers_to_recycled_content_activities():
     given = [{
