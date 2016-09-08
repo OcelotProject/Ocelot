@@ -171,7 +171,7 @@ def import_into_brightway2(data, database_name):
     if not stats[2]:
         print("Writing database")
         importer.write_database()
-        return bw2.database(database_name)
+        return bw2.Database(database_name)
     else:
         print("Unlinked exchanges; not writing database")
         print(importer.statistics())
