@@ -4,6 +4,7 @@ try:
     from bw2io.importers.base_lci import LCIImporter
 except ImportError:
     bw2 = None
+from ..transformations.utils import get_single_reference_product
 
 
 def refinery_gas_is_the_bane_of_my_existence(exc):
@@ -93,7 +94,7 @@ class Brightway2Converter:
     @staticmethod
     def translate_activity(ds, database_name):
         EXCHANGE_MAPPING = {
-            'reference product': Brightway2Converter.translate_technosphere_exchange,
+            'reference product': Brightway2Converter.translate_production_exchange,
             'byproduct': Brightway2Converter.translate_byproduct_exchange,
             'from technosphere': Brightway2Converter.translate_technosphere_exchange,
             'from environment': Brightway2Converter.translate_biosphere_exchange,
@@ -103,6 +104,12 @@ class Brightway2Converter:
                   "location", "name", "start date", "technology level")
         data = {field: ds[field] for field in FIELDS}
         data['database'] = database_name
+
+        rp = get_single_reference_product(ds)
+        data['unit'] = rp['unit']
+        data['reference product'] = rp['name']
+        data['production amount'] = rp['amount']
+
         data['exchanges'] = [
             EXCHANGE_MAPPING[exc['type']](exc, database_name)
             for exc in ds['exchanges']
@@ -164,6 +171,10 @@ def import_into_brightway2(data, database_name):
     # Don't store two copies in memory
     data[:] = list(Brightway2Converter.convert_to_brightway2(data, database_name))
     importer = LCIImporter(database_name)
+
+    # Already have products
+    del importer.strategies[2]
+
     importer.data = data
     importer.apply_strategies()
     importer.match_database("biosphere3")
