@@ -6,6 +6,10 @@ except ImportError:
     bw2 = None
 
 
+def refinery_gas_is_the_bane_of_my_existence(exc):
+    return (exc['name'] != 'refinery gas' or exc.get('code'))
+
+
 class Brightway2Converter:
     """Convert a database to the Brightway2 format.
 
@@ -83,7 +87,8 @@ class Brightway2Converter:
     def convert_to_brightway2(data, database_name):
         # TODO: Ensure database is SOUPy and has codes
         # TODO: Translate uncertainty types
-        return (Brightway2Converter.translate_activity(ds) for ds in data)
+        return (Brightway2Converter.translate_activity(ds, database_name)
+                for ds in data)
 
     @staticmethod
     def translate_activity(ds, database_name):
@@ -96,8 +101,14 @@ class Brightway2Converter:
         }
         FIELDS = ("code", "economic scenario", "end date", "filepath",
                   "location", "name", "start date", "technology level")
-        data = {field: ds[field]}
-        data['exchanges'] = [EXCHANGE_MAPPING[exc['type']](exc) for exc in ds['exchanges']]
+        data = {field: ds[field] for field in FIELDS}
+        data['database'] = database_name
+        data['exchanges'] = [
+            EXCHANGE_MAPPING[exc['type']](exc, database_name)
+            for exc in ds['exchanges']
+            if exc['amount']
+            and refinery_gas_is_the_bane_of_my_existence(exc)
+        ]
         return data
 
     @staticmethod
@@ -112,7 +123,7 @@ class Brightway2Converter:
 
     def translate_technosphere_exchange(exc, database_name):
         return {
-            'type': "production",
+            'type': "technosphere",
             'amount': exc['amount'],
             'input': (database_name, exc['code'])
         }
@@ -145,14 +156,23 @@ def import_into_brightway2(data, database_name):
     """
     if not bw2:
         raise ImportError("Brightway2 not found")
-    print("Creating database {} in project {}".format(
+    assert isinstance(database_name, str), "Database name must be a string"
+    print("Creating database `{}` in project `{}`".format(
         database_name, bw2.projects.current)
     )
     assert database_name not in bw2.databases
-    data = list(Brightway2Converter.convert_to_brightway2(data, database_name))
+    # Don't store two copies in memory
+    data[:] = list(Brightway2Converter.convert_to_brightway2(data, database_name))
     importer = LCIImporter(database_name)
     importer.data = data
+    importer.apply_strategies()
     importer.match_database("biosphere3")
-    print(importer.statistics())
-    return importer
-
+    stats = importer.statistics()
+    if not stats[2]:
+        print("Writing database")
+        importer.write_database()
+        return bw2.database(database_name)
+    else:
+        print("Unlinked exchanges; not writing database")
+        print(importer.statistics())
+        return importer
