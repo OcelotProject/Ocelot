@@ -25,6 +25,8 @@ def handle_constrained_markets(data):
     * They have an activity link
     * They have a property ``consequential`` with a value of 1
 
+    This can be conceptually difficult, because we need to understand the full algorithm to see how changes in exchange types propagate to the linking algorithm, which ends up leading to changes in the technosphere matrix.
+
     We need to do the following:
 
     * Move the activity link constrained exchange from a byproduct to an input (and multiply amount by -1)
