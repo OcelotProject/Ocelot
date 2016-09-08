@@ -5,6 +5,10 @@
       <activity id="7d494fb8-92a7-4ae2-943d-6a2cbc6f5b37" activityNameId="d8fbd861-07be-493d-925d-8a41488a486f" inheritanceDepth="0" type="1" specialActivityType="0">
         <activityName xml:lang="en">corrugated board box production</activityName>
       </activity>
+      <classification>
+        <classificationSystem>ISIC</classificationSystem>
+        <classificationValue>420</classificationValue>
+      </classification>
       <geography geographyId="34dbbff8-88ce-11de-ad60-0019e336be3a">
         <shortname xml:lang="en">GLO</shortname>
       </geography>
@@ -149,7 +153,8 @@
       </parameter>
     </flowData>
     <administrativeInformation>
-      <dataGeneratorAndPublication accessRestrictedTo="1" />
+      <dataEntryBy personName="Wilma" />
+      <dataGeneratorAndPublication accessRestrictedTo="1" personName="Fred" />
     </administrativeInformation>
   </activityDataset>
 </ecoSpold>

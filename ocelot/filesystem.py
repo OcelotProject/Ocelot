@@ -9,7 +9,7 @@ import unicodedata
 import uuid
 
 # Ecospold 2 extractor version. Bump this to invalidate all caches.
-__io_version__ = "6"
+__io_version__ = "7"
 
 re_slugify = re.compile('[^\w\s-]', re.UNICODE)
 
