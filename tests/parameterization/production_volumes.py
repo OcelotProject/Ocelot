@@ -15,6 +15,9 @@ def test_create_pv_parameters_format():
         'type': 'transforming activity',
         'technology level': 'undefined',
         'name': 'test case',
+        'dataset author': "Fred",
+        'data entry': "Wilma",
+        'ISIC classification': "420",
         'exchanges': [{
             'amount': 42.,
             'id': '',

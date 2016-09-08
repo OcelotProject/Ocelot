@@ -52,7 +52,7 @@ If you want, you can also install `Brightway2 <https://brightwaylca.org/>`__ in 
 .. code-block:: bash
 
     conda install wheel && conda update pip wheel setuptools
-    conda install numpy ipython ipython-notebook jupyter matplotlib scipy flask requests docopt whoosh xlsxwriter xlrd unidecode appdirs fasteners future psutil unicodecsv wrapt
+    conda install numpy ipython ipython-notebook jupyter matplotlib scipy flask requests docopt whoosh xlsxwriter xlrd unidecode appdirs future psutil unicodecsv wrapt
     pip install --no-cache-dir eight
     pip install --no-cache-dir brightway2
 

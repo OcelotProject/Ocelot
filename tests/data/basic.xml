@@ -5,6 +5,10 @@
       <activity id="basic-process" specialActivityType="0">
         <activityName>Miss Morgan Wolf</activityName>
       </activity>
+      <classification>
+        <classificationSystem>ISIC</classificationSystem>
+        <classificationValue>420</classificationValue>
+      </classification>
       <geography>
         <shortname>RoW</shortname>
       </geography>
@@ -45,7 +49,8 @@
       </elementaryExchange>
     </flowData>
     <administrativeInformation>
-      <dataGeneratorAndPublication accessRestrictedTo="1" />
+      <dataEntryBy personName="Wilma" />
+      <dataGeneratorAndPublication accessRestrictedTo="1" personName="Fred" />
     </administrativeInformation>
   </childActivityDataset>
 </ecoSpold>
