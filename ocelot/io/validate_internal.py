@@ -185,6 +185,9 @@ dataset_schema = Schema({
     'type': valid_activity_types, # ecospold2 field 115: specialActivityType
     # Allocation method used. Added by a transformation function, should be
     # removed after allocation.
+	'dataset author': str, 
+	'data entry': str, 
+	'ISIC classification': str, 
     Optional('allocation method'): valid_allocation_method,
     # Name of the reference product. Added by a transformation function.
     Optional('reference product'): str,
