@@ -137,9 +137,7 @@ def allocate_suppliers(data):
         total_pv = sum(o['production volume']['amount']
                        for o in ds['suppliers'])
 
-        if len(ds['suppliers']) == 1:
-            total_pv, scale_factor = 1, 1
-        elif not total_pv:
+        if not total_pv:
             # TODO: Raise error here
             print("Skipping zero total PV with multiple inputs:\n\t{}/{} ({}, {} suppliers)".format(ds['name'], rp['name'], ds['location'], len(ds['suppliers'])))
             continue
