@@ -16,7 +16,10 @@ from ..locations import (
 )
 from ..utils import label_reference_product
 from .byproducts import ensure_byproducts_have_alternative_production
-from .constrained_markets import handle_constrained_markets
+from .constrained_markets import (
+    delete_activity_links_to_constrained_markets,
+    handle_constrained_markets,
+)
 from .market_linking import prune_suppliers_by_technology_level
 from .combined import split_combined_production
 from functools import partial

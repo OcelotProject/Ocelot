@@ -20,6 +20,7 @@ from .transformations.cutoff.cleanup import (
 )
 from .transformations.locations import link_markets_by_pv
 from .transformations.consequential import (
+    delete_activity_links_to_constrained_markets,
     ensure_byproducts_have_alternative_production,
     handle_constrained_markets,
     link_markets_by_technology_level,
@@ -66,8 +67,9 @@ consequential_config = [
     pv_cleanup,
     drop_zero_amount_activity_links,
     split_combined_production,
+    delete_activity_links_to_constrained_markets,
     handle_constrained_markets,
-    manage_activity_links,
+    # manage_activity_links,
     ensure_byproducts_have_alternative_production,
     link_markets_by_technology_level,
     # extrapolate to database reference year
