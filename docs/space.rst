@@ -66,4 +66,4 @@ In this section, we link undefined technosphere inputs to the activities that pr
 
 .. autofunction:: ocelot.transformations.locations.linking.link_consumers_to_global_markets
 
-.. autofunction:: ocelot.transformations.locations.linking.log_unlinked_exchanges
+.. autofunction:: ocelot.transformations.locations.linking.log_and_delete_unlinked_exchanges
