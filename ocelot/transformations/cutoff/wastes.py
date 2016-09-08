@@ -81,7 +81,8 @@ def rename_recyclable_content_exchanges(data):
 def create_new_recycled_content_dataset(ds, exc):
     """Create a new dataset that consume recycled content production."""
     common = ('access restricted', 'economic scenario', 'end date',
-            'filepath', 'id', 'start date', 'technology level')
+              'filepath', 'id', 'start date', 'technology level',
+              'dataset author', 'data entry')
     obj = {
         "exchanges": [{
             'amount': 1,
