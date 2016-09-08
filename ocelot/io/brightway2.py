@@ -73,6 +73,7 @@ class Brightway2Converter:
     Finally, we only include some elements of the activity datasets themselves. The following keys from activity datasets are included:
 
         * name
+        * code
         * location
         * economic scenario
         * start date
@@ -101,7 +102,7 @@ class Brightway2Converter:
             'to environment': Brightway2Converter.translate_biosphere_exchange
         }
         FIELDS = ("code", "economic scenario", "end date", "filepath",
-                  "location", "name", "start date", "technology level", 
+                  "location", "name", "start date", "technology level",
                   'dataset author', 'data entry')
         data = {field: ds[field] for field in FIELDS}
         data['database'] = database_name

@@ -278,6 +278,45 @@ def test_allocate_suppliers():
     }]
     assert allocate_suppliers(deepcopy(given))[0]['exchanges'] == expected
 
+def test_allocate_suppliers_single_supplier():
+    given = [{
+        'location': 'dining room',
+        'name': 'dinner',
+        'type': 'market activity',
+        'exchanges': [{
+            'amount': 24,
+            'name': 'salad',
+            'type': 'reference product',
+        }],
+        'suppliers': [{
+            'code': 'up',
+            'location': 'upstairs',
+            'name': '',
+            'production volume': {'amount': 20},
+            'unit': '',
+        }]
+    }]
+    expected = [{
+        'amount': 24,
+        'name': 'salad',
+        'type': 'reference product',
+    }, {
+        'amount': 24,
+        'code': 'up',
+        'name': '',
+        'tag': 'intermediateExchange',
+        'type': 'from technosphere',
+        'unit': '',
+        'uncertainty': {
+            'maximum': 24,
+            'minimum': 24,
+            'pedigree matrix': {},
+            'standard deviation 95%': 0.0,
+            'type': 'undefined'
+        }
+    }]
+    assert allocate_suppliers(deepcopy(given))[0]['exchanges'] == expected
+
 def test_update_market_production_volumes():
     given = [{
         'name': '',
