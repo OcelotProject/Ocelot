@@ -101,7 +101,8 @@ class Brightway2Converter:
             'to environment': Brightway2Converter.translate_biosphere_exchange
         }
         FIELDS = ("code", "economic scenario", "end date", "filepath",
-                  "location", "name", "start date", "technology level")
+                  "location", "name", "start date", "technology level", 
+                  'dataset author', 'data entry')
         data = {field: ds[field] for field in FIELDS}
         data['database'] = database_name
 
