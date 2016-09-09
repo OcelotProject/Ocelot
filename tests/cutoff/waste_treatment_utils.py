@@ -75,6 +75,8 @@ def test_create_new_recycled_content_dataset():
         'id': 5,
         'start date': 6,
         'technology level': 7,
+        'dataset author': 'blue',
+        'data entry': 'green',
     }
     expected = {
         "exchanges": [{
@@ -97,6 +99,8 @@ def test_create_new_recycled_content_dataset():
         'filepath': 4,
         'id': 5,
         'start date': 6,
+        'dataset author': 'blue',
+        'data entry': 'green',
         'technology level': 7,
     }
     assert create_new_recycled_content_dataset(given, given['exchanges'][1]) == expected
