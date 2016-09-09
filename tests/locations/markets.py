@@ -344,12 +344,15 @@ def test_update_market_production_volumes_activity_link():
             'production volume': {'subtracted activity link volume': 15}
         }],
         'suppliers': [
-            {'production volume': {'amount': 10}},
+            {'production volume': {
+                'amount': 10,
+                'subtracted activity link volume': 8
+            }},
             {'production volume': {'amount': 20}},
         ]
     }]
     ds = update_market_production_volumes(given, 'foo')[0]
-    assert ds['exchanges'][0]['production volume']['amount'] == 15
+    assert ds['exchanges'][0]['production volume']['amount'] == 7
 
 def test_update_market_production_volumes_negative_sum():
     given = [{

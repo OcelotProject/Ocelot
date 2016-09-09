@@ -169,21 +169,25 @@ def allocate_suppliers(data):
 
 
 def update_market_production_volumes(data, kind="market activity"):
-    """Update market production volumes to sum to the production volumes of all applicable inputs, minus any hard (activity) links.
+    """Update market production volumes to sum to the production volumes of all applicable inputs, minus any hard (activity) links to the market and to the market suppliers.
 
     By default works only on markets with type ``market activity``, but can be curried to work on ``market group`` types as well.
 
-    Activity link amounts are added by ``add_hard_linked_production_volumes`` and are given in the field ``rp_exchange['production volume']['subtracted activity link volume']``.
+    Activity link amounts are added by ``add_hard_linked_production_volumes`` and are currently given in the following:
+
+        * The producto
+     ``rp_exchange['production volume']['subtracted activity link volume']``.
 
     Production volume is set to zero is the net production volume is negative."""
     for ds in (o for o in data if o['type'] == kind):
         rp = get_single_reference_product(ds)
         total_pv = sum(o['production volume']['amount']
                        for o in ds['suppliers'])
-        try:
-            missing_pv = rp['production volume'].pop('subtracted activity link volume')
-        except KeyError:
-            missing_pv = 0
+        missing_pv = (
+            sum([s['production volume'].get("subtracted activity link volume", 0)
+                 for s in ds['suppliers']]) +
+            rp['production volume'].get('subtracted activity link volume', 0)
+        )
         rp['production volume']['amount'] = max(total_pv - missing_pv, 0)
         logging.info({
             'type': 'table element',
