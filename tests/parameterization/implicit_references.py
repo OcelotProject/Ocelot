@@ -4,22 +4,42 @@ import pytest
 
 
 def test_get_exchange_reference():
-    uuid = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
-    ref = "Ref('{}')".format(uuid)
-    formula = "blah blah + woo woo * {}".format(ref)
-    bigger = formula + "|" + formula
-    assert list(get_exchange_reference(formula)) == [(ref, uuid)]
-    assert list(get_exchange_reference(bigger)) == [(ref, uuid), (ref, uuid)]
+    uuid  = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+    uuid2 = 'ffffffff-1111-2222-3333-444444444444'
+    ref = lambda x: "Ref('{}')".format(x)
+    formula = "blah blah + woo woo * {}".format(ref(uuid))
+    bigger = ref(uuid) + "|" + ref(uuid2)
+
+    assert get_exchange_reference(formula) == [(ref(uuid), uuid)]
+    print(bigger)
+    assert get_exchange_reference(bigger) == [(ref(uuid), uuid), (ref(uuid2), uuid2)]
     assert not get_production_volume_reference(bigger)
+
+    ref = lambda x: "ref('{}')".format(x)
+    formula = "blah blah + woo woo * {}".format(ref(uuid))
+    assert get_exchange_reference(formula) == [(ref(uuid), uuid)]
+
+def test_get_exchange_reference_missing():
+    string = "John Hancock"
+    assert get_exchange_reference(string) == []
 
 def test_get_pv_reference():
     uuid = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
-    ref = "Ref('{}', 'ProductionVolume')".format(uuid)
-    formula = "blah blah + woo woo * {}".format(ref)
-    bigger = formula + "|" + formula
-    assert list(get_production_volume_reference(formula)) == [(ref, uuid)]
-    assert list(get_production_volume_reference(bigger)) == [(ref, uuid), (ref, uuid)]
+    uuid2 = 'ffffffff-1111-2222-3333-444444444444'
+    ref = lambda x: "Ref('{}', 'ProductionVolume')".format(x)
+    formula = "blah blah + woo woo * {}".format(ref(uuid))
+    bigger = formula + "|" + ref(uuid2)
+    assert list(get_production_volume_reference(formula)) == [(ref(uuid), uuid)]
+    assert list(get_production_volume_reference(bigger)) == [(ref(uuid), uuid), (ref(uuid2), uuid2)]
     assert not get_exchange_reference(bigger)
+
+    ref = lambda x: "ref('{}', 'ProductionVolume')".format(x)
+    formula = "blah blah + woo woo * {}".format(ref(uuid))
+    assert get_production_volume_reference(formula) == [(ref(uuid), uuid)]
+
+def test_get_pv_reference_missing():
+    string = "John Hancock"
+    assert get_production_volume_reference(string) == []
 
 def test_find_exchange_by_id():
     fake = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
@@ -204,6 +224,59 @@ def test_replace_implicit_references():
             # Reference to generated PV variable substituted
             'formula': 'ref_pv_replacement_5e4434c6bff345758c925eac120d7378',
             'id': '8c44da48-2d7a-4b39-b203-03544bfbd518'
+        }]
+    }]
+    assert replace_implicit_references(input_ds) == expected
+
+def test_replace_implicit_references_multiple_occurences():
+    input_ds = [{
+        'name': 'always the same',
+        'exchanges': [{
+            'id': '10eb760b-d963-4438-a21b-4dd631926549',
+            'variable': 'existing_exchange_variable',
+            'formula': "Ref('e9252801-7069-4ef4-af23-4857674984d4')+ Ref('bc86b665-a132-48d0-9dd4-93b0db990a5d')+ Ref('4b92fc91-e782-42f7-9a7d-b8d7daa3830f')+ Ref('a40d163f-587b-418e-b155-e896129607f3')+ Ref('0b24d946-65b2-45de-a182-949bc7cafcd4')+ Ref('9fc750cf-c31d-45f1-88bd-eaa94349468d')",
+        }],
+        'parameters': [{
+            'variable': 'existing_1',
+            'id': 'e9252801-7069-4ef4-af23-4857674984d4'
+        }, {
+            'variable': 'existing_2',
+            'id': 'bc86b665-a132-48d0-9dd4-93b0db990a5d'
+        }, {
+            'id': '4b92fc91-e782-42f7-9a7d-b8d7daa3830f'
+        }, {
+            'id': 'a40d163f-587b-418e-b155-e896129607f3'
+        }, {
+            'id': '0b24d946-65b2-45de-a182-949bc7cafcd4'
+        }, {
+            'id': '9fc750cf-c31d-45f1-88bd-eaa94349468d'
+        }]
+    }]
+    expected = [{
+        'name': 'always the same',
+        'exchanges': [{
+            'id': '10eb760b-d963-4438-a21b-4dd631926549',
+            'variable': 'existing_exchange_variable',
+            'formula': "existing_1+ existing_2+ ref_replacement_4b92fc91e78242f79a7db8d7daa3830f+ ref_replacement_a40d163f587b418eb155e896129607f3+ ref_replacement_0b24d94665b245dea182949bc7cafcd4+ ref_replacement_9fc750cfc31d45f188bdeaa94349468d",
+        }],
+        'parameters': [{
+            'variable': 'existing_1',
+            'id': 'e9252801-7069-4ef4-af23-4857674984d4'
+        }, {
+            'variable': 'existing_2',
+            'id': 'bc86b665-a132-48d0-9dd4-93b0db990a5d',
+        }, {
+            'id': '4b92fc91-e782-42f7-9a7d-b8d7daa3830f',
+            'variable': 'ref_replacement_4b92fc91e78242f79a7db8d7daa3830f'
+        }, {
+            'id': 'a40d163f-587b-418e-b155-e896129607f3',
+            'variable': 'ref_replacement_a40d163f587b418eb155e896129607f3'
+        }, {
+            'id': '0b24d946-65b2-45de-a182-949bc7cafcd4',
+            'variable': 'ref_replacement_0b24d94665b245dea182949bc7cafcd4'
+        }, {
+            'id': '9fc750cf-c31d-45f1-88bd-eaa94349468d',
+            'variable': 'ref_replacement_9fc750cfc31d45f188bdeaa94349468d'
         }]
     }]
     assert replace_implicit_references(input_ds) == expected
