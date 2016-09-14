@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-RC_STRING = ", Recycled Content cut-off"
-
 from ._topology import Topology
 topology = Topology()
 
+from ..cutoff import RC_STRING
 from ...collection import Collection
 from ..utils import label_reference_product
 from ..identifying import add_unique_codes
