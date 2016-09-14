@@ -8,6 +8,7 @@ from ..utils import (
 )
 from .economic import economic_allocation
 from .validation import valid_recycling_activity, valid_waste_treatment_activity
+from . import RC_STRING
 from copy import deepcopy
 import logging
 
@@ -74,7 +75,7 @@ def rename_recyclable_content_exchanges(data):
                            and exc['byproduct classification'] == 'recyclable')
     for exc in recyclable_iterator:
         found.add(exc['name'])
-        exc['name'] += ', Recycled Content cut-off'
+        exc['name'] += RC_STRING
     return data
 
 
