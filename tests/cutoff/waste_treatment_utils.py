@@ -143,3 +143,45 @@ def test_create_recycled_content_datasets(monkeypatch):
     assert len(result) == 3
     assert {'name': 'henry'} in result
     assert {'name': 'henrietta'} in result
+
+def test_rename_recycled_content_products_after_linking():
+    given = [{'exchanges': [{
+        'name': 'foo',
+    }, {
+        'name': 'bar, Recycled Content cut-off'
+    }]}]
+    expected = [{'exchanges': [{
+        'name': 'foo',
+    }, {
+        'name': 'bar'
+    }]}]
+    assert rename_recycled_content_products_after_linking(given) == expected
+
+def test_rename_recyclable_content_exchanges():
+    given = [{'exchanges': [{
+        'type': 'product',
+        'byproduct classification': 'recyclable',
+        'name': '1',
+    }, {
+        'type': 'byproduct',
+        'byproduct classification': 'recyclable',
+        'name': '2',
+    }, {
+        'type': 'byproduct',
+        'byproduct classification': 'waste',
+        'name': '3',
+    }]}]
+    expected = [{'exchanges': [{
+        'type': 'product',
+        'byproduct classification': 'recyclable',
+        'name': '1',
+    }, {
+        'type': 'byproduct',
+        'byproduct classification': 'recyclable',
+        'name': '2, Recycled Content cut-off',
+    }, {
+        'type': 'byproduct',
+        'byproduct classification': 'waste',
+        'name': '3',
+    }]}]
+    assert rename_recyclable_content_exchanges(given) == expected
