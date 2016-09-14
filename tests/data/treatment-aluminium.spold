@@ -6,8 +6,8 @@
         <activityName xml:lang="en">treatment of aluminium scrap, post-consumer, prepared for recycling, at refiner</activityName>
       </activity>
       <classification classificationId="6fe7bc2b-4be4-48f7-92b0-f27dea9053ce">
-        <classificationSystem xml:lang="en">ISIC rev.4 ecoinvent</classificationSystem>
-        <classificationValue xml:lang="en">2420:Manufacture of basic precious and other non-ferrous metals</classificationValue>
+        <classificationSystem xml:lang="en">ISIC</classificationSystem>
+        <classificationValue xml:lang="en">420</classificationValue>
       </classification>
       <geography geographyId="0723d252-7e2a-11de-9820-0019e336be3a">
         <shortname xml:lang="en">RER</shortname>
@@ -158,7 +158,8 @@
       </elementaryExchange>
     </flowData>
     <administrativeInformation>
-      <dataGeneratorAndPublication accessRestrictedTo="1" />
+      <dataEntryBy personName="Wilma" />
+      <dataGeneratorAndPublication accessRestrictedTo="1" personName="Fred" />
     </administrativeInformation>
   </childActivityDataset>
 </ecoSpold>

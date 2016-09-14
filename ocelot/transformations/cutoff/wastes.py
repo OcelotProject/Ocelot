@@ -8,6 +8,7 @@ from ..utils import (
 )
 from .economic import economic_allocation
 from .validation import valid_recycling_activity, valid_waste_treatment_activity
+from . import RC_STRING
 from copy import deepcopy
 import logging
 
@@ -74,14 +75,27 @@ def rename_recyclable_content_exchanges(data):
                            and exc['byproduct classification'] == 'recyclable')
     for exc in recyclable_iterator:
         found.add(exc['name'])
-        exc['name'] += ', Recycled Content cut-off'
+        exc['name'] += RC_STRING
+    return data
+
+
+def rename_recycled_content_products_after_linking(data):
+    """Change the name of recycled content products (but not activities).
+
+    In the release version of ecoinvent, the activities have ``Recycled Content cut-off``, but the flow names don't. We can remove this suffix safely after linking."""
+    exchange_iterator = (exc
+                         for ds in data
+                         for exc in ds['exchanges'])
+    for exc in exchange_iterator:
+        exc['name'] = exc['name'].replace(RC_STRING, "")
     return data
 
 
 def create_new_recycled_content_dataset(ds, exc):
     """Create a new dataset that consume recycled content production."""
     common = ('access restricted', 'economic scenario', 'end date',
-            'filepath', 'id', 'start date', 'technology level')
+              'filepath', 'id', 'start date', 'technology level',
+              'dataset author', 'data entry')
     obj = {
         "exchanges": [{
             'amount': 1,

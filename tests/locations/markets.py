@@ -318,6 +318,45 @@ def test_allocate_suppliers():
     }]
     assert allocate_suppliers(deepcopy(given))[0]['exchanges'] == expected
 
+def test_allocate_suppliers_single_supplier():
+    given = [{
+        'location': 'dining room',
+        'name': 'dinner',
+        'type': 'market activity',
+        'exchanges': [{
+            'amount': 24,
+            'name': 'salad',
+            'type': 'reference product',
+        }],
+        'suppliers': [{
+            'code': 'up',
+            'location': 'upstairs',
+            'name': '',
+            'production volume': {'amount': 20},
+            'unit': '',
+        }]
+    }]
+    expected = [{
+        'amount': 24,
+        'name': 'salad',
+        'type': 'reference product',
+    }, {
+        'amount': 24,
+        'code': 'up',
+        'name': '',
+        'tag': 'intermediateExchange',
+        'type': 'from technosphere',
+        'unit': '',
+        'uncertainty': {
+            'maximum': 24,
+            'minimum': 24,
+            'pedigree matrix': {},
+            'standard deviation 95%': 0.0,
+            'type': 'undefined'
+        }
+    }]
+    assert allocate_suppliers(deepcopy(given))[0]['exchanges'] == expected
+
 def test_update_market_production_volumes():
     given = [{
         'name': '',
@@ -345,12 +384,15 @@ def test_update_market_production_volumes_activity_link():
             'production volume': {'subtracted activity link volume': 15}
         }],
         'suppliers': [
-            {'production volume': {'amount': 10}},
+            {'production volume': {
+                'amount': 10,
+                'subtracted activity link volume': 8
+            }},
             {'production volume': {'amount': 20}},
         ]
     }]
     ds = update_market_production_volumes(given, 'foo')[0]
-    assert ds['exchanges'][0]['production volume']['amount'] == 15
+    assert ds['exchanges'][0]['production volume']['amount'] == 7
 
 def test_update_market_production_volumes_negative_sum():
     given = [{

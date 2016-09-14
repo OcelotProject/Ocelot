@@ -44,6 +44,23 @@ If Ocelot is correctly installed, you should be able to run the command line app
 
 To run Ocelot, you will need an unlinked database in `ecospold2 <http://www.ecoinvent.org/data-provider/data-provider-toolkit/ecospold2/ecospold2.html>`__ format.
 
+Installing Brightway2 in the Ocelot environment
+-----------------------------------------------
+
+If you want, you can also install `Brightway2 <https://brightwaylca.org/>`__ in your Ocelot environment. While the ``ocelot`` environment is activated, enter the following:
+
+.. code-block:: bash
+
+    conda install wheel && conda update pip wheel setuptools
+    conda install numpy ipython ipython-notebook jupyter matplotlib scipy flask requests docopt whoosh xlsxwriter xlrd unidecode appdirs future psutil unicodecsv wrapt
+    pip install --no-cache-dir eight
+    pip install --no-cache-dir brightway2
+
+Faster calculations on Linux and OS X
+`````````````````````````````````````
+
+You can do faster matrix calculations on OS X and Linux if you install `scikit-umfpack <https://github.com/scikit-umfpack/scikit-umfpack>`__.
+
 Running on PyPy3
 ----------------
 

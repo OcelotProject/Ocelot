@@ -36,6 +36,13 @@ def extract_parameter(obj):
     return param
 
 
+def extract_isic_classification(elem):
+    for child in elem.activityDescription.iterchildren():
+        if ('classification' in _(child.tag)
+            and 'ISIC' in child.classificationSystem.text):
+            return child.classificationValue.text
+
+
 def extract_pedigree_matrix(elem):
     if not hasattr(elem, "pedigreeMatrix"):
         return {}
@@ -181,10 +188,14 @@ def extract_ecospold2_dataset(elem, filepath):
         'parameters': [extract_parameter(exc)
                        for exc in elem.flowData.iterchildren()
                        if 'parameter' in _(exc.tag)],
+        'dataset author': elem.administrativeInformation.dataGeneratorAndPublication.get('personName'),
+        'data entry': elem.administrativeInformation.dataEntryBy.get('personName'),
+        'ISIC classification': extract_isic_classification(elem),
     }
     data['exchanges'] = [extract_exchange(data, exc)
                          for exc in elem.flowData.iterchildren()
                          if 'Exchange' in _(exc.tag)]
+
     return data
 
 

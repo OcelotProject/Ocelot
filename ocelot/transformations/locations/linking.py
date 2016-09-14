@@ -156,18 +156,29 @@ def link_consumers_to_global_markets(data):
 # }
 
 
-def log_unlinked_exchanges(data):
-    """Log exchanges which haven't been linked."""
+def log_and_delete_unlinked_exchanges(data):
+    """Log and delete exchanges which haven't been linked."""
     for ds in data:
         for exc in filter(unlinked, ds['exchanges']):
             logging.info({
                 'type': 'table element',
                 'data': (ds['name'], exc['name'], exc['amount'])
             })
+        ds['exchanges'] = [exc for exc in ds['exchanges'] if ds.get('code')]
     return data
 
-log_unlinked_exchanges.__table__ = {
+log_and_delete_unlinked_exchanges.__table__ = {
     'title': "Exchanges which can't be linked",
     'columns': ["Name", "Flow", "Amount"]
 }
 
+
+def add_reference_product_codes(data):
+    """Add ``code`` to single reference product exchange.
+
+    Dataset must already have unique ``code``."""
+    for ds in data:
+        assert 'code' in ds
+        rp = get_single_reference_product(ds)
+        rp['code'] = ds['code']
+    return data

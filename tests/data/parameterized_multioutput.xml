@@ -5,6 +5,10 @@
       <activity id="multioutput-process" specialActivityType="0">
         <activityName>Aliana Price</activityName>
       </activity>
+      <classification>
+        <classificationSystem>ISIC</classificationSystem>
+        <classificationValue>420</classificationValue>
+      </classification>
       <geography>
         <shortname>GLO</shortname>
       </geography>
@@ -53,7 +57,8 @@
       </parameter>
     </flowData>
     <administrativeInformation>
-      <dataGeneratorAndPublication accessRestrictedTo="1" />
+      <dataEntryBy personName="Wilma" />
+      <dataGeneratorAndPublication accessRestrictedTo="1" personName="Fred" />
     </administrativeInformation>
   </activityDataset>
 </ecoSpold>

@@ -12,6 +12,7 @@ from .transformations.cutoff import (
     cleanup_activity_links,
     cutoff_allocation,
     handle_waste_outputs,
+    rename_recycled_content_products_after_linking,
 )
 from .transformations.cutoff.cleanup import (
     drop_rp_activity_links,
@@ -54,6 +55,7 @@ cutoff_config = [
     cutoff_allocation,
     drop_rp_activity_links,
     link_markets_by_pv,
+    rename_recycled_content_products_after_linking,
     # extrapolate to database reference year
     # normalize_reference_production_amount
     # final output processing

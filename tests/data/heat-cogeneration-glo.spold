@@ -5,6 +5,10 @@
       <activity id="9f9dc412-531d-4143-806a-627e2a904e5f" activityNameId="9a869368-413c-4df0-8c6b-77236104a1a7" activityNameContextId="de659012-50c4-4e96-b54a-fc781bf987ab" inheritanceDepth="0" type="1" specialActivityType="0">
         <activityName xml:lang="en">heat and power co-generation, natural gas, conventional power plant, 100MW electrical</activityName>
       </activity>
+      <classification>
+        <classificationSystem>ISIC</classificationSystem>
+        <classificationValue>420</classificationValue>
+      </classification>
       <geography geographyId="34dbbff8-88ce-11de-ad60-0019e336be3a">
         <shortname xml:lang="en">GLO</shortname>
         <comment />
@@ -206,7 +210,8 @@ nan</comment>
       </parameter>
     </flowData>
     <administrativeInformation>
-      <dataGeneratorAndPublication accessRestrictedTo="1" />
+      <dataEntryBy personName="Wilma" />
+      <dataGeneratorAndPublication accessRestrictedTo="1" personName="Fred" />
     </administrativeInformation>
   </activityDataset>
 </ecoSpold>

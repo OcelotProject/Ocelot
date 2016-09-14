@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-RC_STRING = ", Recycled Content cut-off"
-
 from ._topology import Topology
 topology = Topology()
 
+from ..cutoff import RC_STRING
 from ...collection import Collection
 from ..utils import label_reference_product
 from ..identifying import add_unique_codes
 from .linking import (
     actualize_activity_links,
+    add_reference_product_codes,
     link_consumers_to_global_markets,
     link_consumers_to_recycled_content_activities,
     link_consumers_to_regional_markets,
-    log_unlinked_exchanges,
+    log_and_delete_unlinked_exchanges,
 )
 from .markets import (
     add_recycled_content_suppliers_to_markets,
@@ -47,6 +47,7 @@ link_markets_by_pv = Collection(
     link_consumers_to_regional_markets,
     link_consumers_to_recycled_content_activities,
     link_consumers_to_global_markets,
-    log_unlinked_exchanges,
+    add_reference_product_codes,
+    log_and_delete_unlinked_exchanges,
     # substitute_market_group_links,  # TODO: Need clever approach
 )

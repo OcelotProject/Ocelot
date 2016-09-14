@@ -183,6 +183,9 @@ dataset_schema = Schema({
     # The activity types used in ecoinvent are:
     # "transforming activity", "market activity", and "market group"
     'type': valid_activity_types, # ecospold2 field 115: specialActivityType
+	'dataset author': str,
+	'data entry': str,
+	'ISIC classification': str,
     # Allocation method used. Added by a transformation function, should be
     # removed after allocation.
     Optional('allocation method'): valid_allocation_method,

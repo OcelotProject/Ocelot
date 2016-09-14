@@ -71,6 +71,9 @@ BASIC_REFERENCE = [{
     'name': 'Miss Morgan Wolf',
     'technology level': 'current',
     'access restricted': 'licensees',
+    'dataset author': "Fred",
+    'data entry': "Wilma",
+    'ISIC classification': "420",
     'start date': '1996-01-01',
     'end date': '2015-12-31',
     'type': 'transforming activity'
@@ -136,6 +139,9 @@ PROD_VOLUME_REFERENCE = [{
     'parameters': [],
     'id': 'production-volume',
     'access restricted': 'licensees',
+    'dataset author': "Fred",
+    'data entry': "Wilma",
+    'ISIC classification': "420",
     'start date': '1990-01-01',
     'end date': '2015-12-31',
     'type': 'transforming activity'
@@ -245,6 +251,9 @@ MULTIOUTPUT_REFERENCE = [{
     'access restricted': 'licensees',
     'start date': '2010-01-01',
     'end date': '2015-12-31',
+    'dataset author': "Fred",
+    'data entry': "Wilma",
+    'ISIC classification': "420",
     'type': 'transforming activity'
 }]
 
