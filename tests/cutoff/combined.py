@@ -130,6 +130,103 @@ def test_combined_production(no_recalculate):
     assert combined_production(given) == expected
     assert original == given
 
+def test_combined_production_zero_exchanges(no_recalculate):
+    given = {'exchanges': [
+        {
+            'type': 'reference product',
+            'amount': 2,
+            'variable': "first",
+        }, {
+            'type': 'reference product',
+            'amount': 3,
+            'variable': 'second'
+        }, {
+            'type': 'reference product',
+            'amount': 0,
+            'variable': 'third',
+        },
+        {'type': 'from technosphere'},
+        {'type': 'to environment'}
+    ]}
+    expected = [{'exchanges': [
+        {
+            'type': 'reference product',
+            'amount': 2,
+            'variable': 'first',
+            'uncertainty': {
+                'minimum': 2,
+                'maximum': 2,
+                'pedigree matrix': {},
+                'standard deviation 95%': 0,
+                'type': 'undefined'
+            }
+        }, {
+            'type': 'dropped product',
+            'amount': 0,
+            'variable': 'second',
+            'uncertainty': {
+                'minimum': 0,
+                'maximum': 0,
+                'pedigree matrix': {},
+                'standard deviation 95%': 0,
+                'type': 'undefined'
+            }
+        }, {
+            'type': 'dropped product',
+            'amount': 0,
+            'variable': 'third',
+            'uncertainty': {
+                'minimum': 0,
+                'maximum': 0,
+                'pedigree matrix': {},
+                'standard deviation 95%': 0,
+                'type': 'undefined'
+            }
+        },
+        {'type': 'from technosphere'},
+        {'type': 'to environment'}
+    ]}, {
+        'exchanges': [{
+            'type': 'reference product',
+            'amount': 3,
+            'variable': 'second',
+            'uncertainty': {
+                'minimum': 3,
+                'maximum': 3,
+                'pedigree matrix': {},
+                'standard deviation 95%': 0,
+                'type': 'undefined'
+            }
+        }, {
+            'type': 'dropped product',
+            'amount': 0,
+            'variable': 'first',
+            'uncertainty': {
+                'minimum': 0,
+                'maximum': 0,
+                'pedigree matrix': {},
+                'standard deviation 95%': 0,
+                'type': 'undefined'
+            }
+        }, {
+            'type': 'dropped product',
+            'amount': 0,
+            'variable': 'third',
+            'uncertainty': {
+                'minimum': 0,
+                'maximum': 0,
+                'pedigree matrix': {},
+                'standard deviation 95%': 0,
+                'type': 'undefined'
+            }
+        },
+        {'type': 'from technosphere'},
+        {'type': 'to environment'}
+    ]}]
+    original = deepcopy(given)
+    assert combined_production(given) == expected
+    assert original == given
+
 def test_add_exchanges():
     first = {'exchanges': [
         {'id': 1, 'amount': 1, 'type': 'reference product'},
