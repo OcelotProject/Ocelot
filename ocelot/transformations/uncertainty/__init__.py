@@ -29,6 +29,7 @@ TYPE_MAPPING = {
     'triangular': Triangular,
     'undefined': Undefined,
     'uniform': Uniform,
+    None: Undefined,
 }
 
 
@@ -44,6 +45,9 @@ def scale_exchange(exchange, factor):
 
     Modifies the exchange in place. Returns the modified exchange."""
     if factor == 1:
+        return exchange
+    elif 'uncertainty' not in exchange:
+        exchange['amount'] *= factor
         return exchange
     return get_uncertainty_class(exchange).rescale(exchange, factor)
 
