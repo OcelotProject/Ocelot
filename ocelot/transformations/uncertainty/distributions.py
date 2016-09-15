@@ -23,6 +23,14 @@ class NoUncertainty:
         """Adjusting pedigree matrix values for no uncertainty has no effect"""
         return obj
 
+    @staticmethod
+    def to_stats_arrays(obj):
+        return {
+            'uncertainty type': 1,
+            'amount': obj['amount'],
+            'loc': obj['amount'],
+        }
+
 
 class Undefined(NoUncertainty):
     @staticmethod
@@ -33,6 +41,14 @@ class Undefined(NoUncertainty):
         obj['uncertainty']['maximum'] *= factor
         # TODO: Adjust 95% factor?
         return obj
+
+    @staticmethod
+    def to_stats_arrays(obj):
+        return {
+            'uncertainty type': 0,
+            'amount': obj['amount'],
+            'loc': obj['amount'],
+        }
 
 
 class Lognormal:
@@ -65,8 +81,8 @@ class Lognormal:
                 obj['uncertainty']['variance'] +
                 get_pedigree_variance(obj['pedigree matrix'])
             )
-            # TODO: Log values
         elif obj['uncertainty']['variance'] > math.e:
+            # TODO: Log large values
             obj['uncertainty']['variance'] = 0.25
             obj['uncertainty']['variance with pedigree uncertainty'] = (
                 obj['uncertainty']['variance'] +
@@ -98,6 +114,16 @@ class Lognormal:
             get_pedigree_variance(obj['pedigree matrix'])
         )
         return obj
+
+    @staticmethod
+    def to_stats_arrays(obj):
+        return {
+            'uncertainty type': 2,
+            'amount': obj['amount'],
+            'loc': obj['uncertainty']['mu'],
+            'scale': math.sqrt(obj['uncertainty']['variance with pedigree uncertainty']),
+            'negative': obj['amount'] < 1,
+        }
 
 
 class Normal:
@@ -187,6 +213,15 @@ class Normal:
         # )
         return obj
 
+    @staticmethod
+    def to_stats_arrays(obj):
+        return {
+            'uncertainty type': 3,
+            'amount': obj['amount'],
+            'loc': obj['uncertainty']['mean'],
+            'scale': math.sqrt(obj['uncertainty']['variance with pedigree uncertainty'])
+        }
+
 
 class Triangular:
     """Dummy function"""
@@ -202,6 +237,16 @@ class Triangular:
     def recalculate(obj):
         return obj
 
+    @staticmethod
+    def to_stats_arrays(obj):
+        return {
+            'uncertainty type': 5,
+            'amount': obj['amount'],
+            'loc': obj['uncertainty']['mode'],
+            'minimum': obj['uncertainty']['minimum'],
+            'maximum': obj['uncertainty']['maximum'],
+        }
+
 
 class Uniform:
     """Dummy function"""
@@ -216,3 +261,12 @@ class Uniform:
     @staticmethod
     def recalculate(obj):
         return obj
+
+    @staticmethod
+    def to_stats_arrays(obj):
+        return {
+            'uncertainty type': 4,
+            'amount': obj['amount'],
+            'minimum': obj['uncertainty']['minimum'],
+            'maximum': obj['uncertainty']['maximum'],
+        }

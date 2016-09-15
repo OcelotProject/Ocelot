@@ -5,10 +5,17 @@ try:
 except ImportError:
     bw2 = None
 from ..transformations.utils import get_single_reference_product
+from ..uncertainty import get_uncertainty_class
 
 
 def refinery_gas_is_the_bane_of_my_existence(exc):
     return (exc['name'] != 'refinery gas' or exc.get('code'))
+
+
+def translate_uncertainty(dct, exc):
+    """Add Brightway2/stats_arrays uncertainty fields"""
+    dct.update(get_uncertainty_class(exc).to_stats_array(exc))
+    return dct
 
 
 class Brightway2Converter:
@@ -88,7 +95,6 @@ class Brightway2Converter:
     @staticmethod
     def convert_to_brightway2(data, database_name):
         # TODO: Ensure database is SOUPy and has codes
-        # TODO: Translate uncertainty types
         return (Brightway2Converter.translate_activity(ds, database_name)
                 for ds in data)
 
@@ -113,7 +119,10 @@ class Brightway2Converter:
         data['production amount'] = rp['amount']
 
         data['exchanges'] = [
-            EXCHANGE_MAPPING[exc['type']](exc, database_name)
+            translate_uncertainty(
+                EXCHANGE_MAPPING[exc['type']](exc, database_name),
+                exc
+            )
             for exc in ds['exchanges']
             if exc['amount']
             and refinery_gas_is_the_bane_of_my_existence(exc)
@@ -130,6 +139,7 @@ class Brightway2Converter:
             'categories': (exc['compartment'], exc['subcompartment'])
         }
 
+    @staticmethod
     def translate_technosphere_exchange(exc, database_name):
         return {
             'type': "technosphere",
@@ -137,6 +147,7 @@ class Brightway2Converter:
             'input': (database_name, exc['code'])
         }
 
+    @staticmethod
     def translate_production_exchange(exc, database_name):
         return {
             'type': "production",
@@ -144,6 +155,7 @@ class Brightway2Converter:
             'input': (database_name, exc['code'])
         }
 
+    @staticmethod
     def translate_byproduct_exchange(exc, database_name):
         return {
             'type': "technosphere",
