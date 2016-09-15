@@ -51,8 +51,11 @@ def test_find_if_clause_same_value():
     expected = "(euro_iiia* ep* lf*((0.488))+euro_iiib* ep* lf*((0.185)))/1000"
     assert find_if_clause(ds, string) == expected
 
+def test_find_if_boundaries():
+    string = "if(foo;bar;nest(me()wow)cool)"
+    assert find_if_boundaries(string) == (3, 28)
 
-@pytest.mark.skip(reason="Current approach won't work on nested expressions")
+@pytest.mark.skip(reason="Current approach still doesn't work on nested expressions")
 def test_nested_if_clause():
     ds = {'name': ''}
     string = "if(condition1;if(condition2;yes;no);if(condition3;up;down))"

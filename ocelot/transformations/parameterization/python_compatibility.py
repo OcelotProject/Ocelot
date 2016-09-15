@@ -46,7 +46,7 @@ def find_if_boundaries(string):
         character = string[pos]
 
         # Skip escape sequence
-        if line[pos-1] == '\\':
+        if string[pos-1] == '\\':
             continue
         elif character == "(":
             stack.append(pos + 1)
@@ -77,11 +77,17 @@ def replace_if_statement(substring):
 
 
 def find_replace_nested_if_statements(ds, line):
+    """Note: This doesn't actually work...
+
+    It will split a nested ``if`` by the first semicolon it has."""
     original = deepcopy(line)
     while IF_BEGINNING.search(line):
+        print("Iteration:", line)
         start = IF_BEGINNING.search(line).start()
         _, end = find_if_boundaries(line[start:])
+        print("Start, end:", start, start+end, line[start:start+end+1])
         line = line[:start] + replace_if_statement(line[start:start + end + 1]) + line[start + end + 1:]
+        print("After replacement:\n", line)
     logging.info({
         'type': 'table element',
         'data': (ds['name'], '', original, line)
