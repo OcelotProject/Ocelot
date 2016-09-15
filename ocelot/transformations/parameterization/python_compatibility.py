@@ -28,11 +28,68 @@ RESERVED_WORDS_STARTING = [(word, re.compile("{}[^a-zA-Z_]".format(word)))
                            for word in RESERVED_WORDS]
 
 IF_RE = re.compile("if\((?P<condition>[^;]+);(?P<if_yes>[^;]+);(?P<if_no>[^;)]+)\)")
+IF_BEGINNING = re.compile("if\(")
+COMPLETE_IF = re.compile("^if\((?P<condition>[^;]+);(?P<if_yes>[^;]+);(?P<if_no>.+)\)$")
 
 POWER_RE = re.compile("power\((?P<base>[^;]+);(?P<exponent>[^;]+)\)")
 
 
-def find_if_clause(ds, string):
+def find_if_boundaries(string):
+    """Find beginning and end indices of an ``if(a;b;c)`` statement.
+
+    Uses a manual count (``stack``) of opening and closing parentheses.
+
+    Adapted from http://stackoverflow.com/questions/5454322/python-how-to-match-nested-parentheses-with-regex"""
+    stack = []
+    for m in re.finditer(r'[()]', string):
+        pos = m.start()
+        character = string[pos]
+
+        # Skip escape sequence
+        if line[pos-1] == '\\':
+            continue
+        elif character == "(":
+            stack.append(pos + 1)
+        elif character == ")":
+            if stack:
+                prevpos = stack.pop()
+                if not stack:
+                    return (prevpos, pos)
+            else:
+                message = "Unmatched closing parentheses at position {}:\n\t{}"
+                raise ValueError(message.format(pos, string))
+
+    message = "Unmatched opening parentheses at position {}:\n\t{}"
+    raise ValueError(message.format(stack[0], line))
+
+
+def replace_if_statement(substring):
+    match = COMPLETE_IF.search(substring)
+    match_string = match.group(0)
+    condition, if_true, if_false = match.groups()
+    if if_true == if_false:
+        replacement = "({})".format(if_true.strip())
+    else:
+        replacement = "(({}) if ({}) else ({}))".format(
+            if_true, condition, if_false
+        )
+    return substring.replace(match_string, replacement)
+
+
+def find_replace_nested_if_statements(ds, line):
+    original = deepcopy(line)
+    while IF_BEGINNING.search(line):
+        start = IF_BEGINNING.search(line).start()
+        _, end = find_if_boundaries(line[start:])
+        line = line[:start] + replace_if_statement(line[start:start + end + 1]) + line[start + end + 1:]
+    logging.info({
+        'type': 'table element',
+        'data': (ds['name'], '', original, line)
+    })
+    return line
+
+
+def find_single_if_clause(ds, string):
     """Reformat clauses that use ``if(condition;if_true;if_false) syntax.
 
     This won't work on nested if clauses, or anything that uses parentheses inside ``if_true`` or ``if_false``."""
@@ -52,6 +109,17 @@ def find_if_clause(ds, string):
         })
         string = string.replace(match_string, replacement)
     return string
+
+
+def find_if_clause(ds, string):
+    """Reformat clauses that use ``if(condition;if_true;if_false) syntax."""
+    count = string.count("if(")
+    if count > 1:
+        return find_replace_nested_if_statements(ds, string)
+    elif count == 1:
+        return find_single_if_clause(ds, string)
+    else:
+        return string
 
 
 def find_power_clause(ds, string):
