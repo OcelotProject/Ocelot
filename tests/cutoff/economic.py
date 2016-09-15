@@ -100,13 +100,6 @@ def test_normal_economic_allocation():
             'amount': 1.0,
             'name': 'first',
             'type': 'reference product',
-            'uncertainty': {
-                'maximum': 1.0,
-                'minimum': 1.0,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined',
-            },
             'properties': [{
                 'name': 'price',
                 'amount': 2.5}]
@@ -114,13 +107,6 @@ def test_normal_economic_allocation():
             'amount': 0.0,
             'name': 'second',
             'type': 'dropped product',
-            'uncertainty': {
-                'minimum': 0,
-                'maximum': 0,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            },
             'properties': [{
                 'name': 'price',
                 'amount': 2
@@ -135,13 +121,6 @@ def test_normal_economic_allocation():
             'amount': 1.0,
             'name': 'second',
             'type': 'reference product',
-            'uncertainty': {
-                'type': 'undefined',
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'maximum': 1.0,
-                'minimum': 1.0,
-            },
             'properties': [{
                 'name': 'price',
                 'amount': 2
@@ -150,13 +129,6 @@ def test_normal_economic_allocation():
             'type': 'dropped product',
             'amount': 0.0,
             'name': 'first',
-            'uncertainty': {
-                'minimum': 0,
-                'maximum': 0,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            },
             'properties': [{
                 'name': 'price',
                 'amount': 2.5

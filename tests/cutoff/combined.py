@@ -40,16 +40,7 @@ def test_nonzero_reference_product_exchanges():
 
 def test_selected_product():
     given = {'formula': 'delete me', 'amount': 42}
-    expected = {
-        'amount': 42,
-        'uncertainty': {
-            'minimum': 42,
-            'maximum': 42,
-            'pedigree matrix': {},
-            'standard deviation 95%': 0,
-            'type': 'undefined'
-        }
-    }
+    expected = {'amount': 42}
     assert selected_product(given) == expected
 
 @pytest.fixture(scope='function')
@@ -78,24 +69,10 @@ def test_combined_production(no_recalculate):
             'type': 'reference product',
             'amount': 2,
             'variable': 'first',
-            'uncertainty': {
-                'minimum': 2,
-                'maximum': 2,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            }
         }, {
             'type': 'dropped product',
             'amount': 0,
             'variable': 'second',
-            'uncertainty': {
-                'minimum': 0,
-                'maximum': 0,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            }
         },
         {'type': 'from technosphere'},
         {'type': 'to environment'}
@@ -104,24 +81,10 @@ def test_combined_production(no_recalculate):
             'type': 'reference product',
             'amount': 3,
             'variable': 'second',
-            'uncertainty': {
-                'minimum': 3,
-                'maximum': 3,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            }
         }, {
             'type': 'dropped product',
             'amount': 0,
             'variable': 'first',
-            'uncertainty': {
-                'minimum': 0,
-                'maximum': 0,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            }
         },
         {'type': 'from technosphere'},
         {'type': 'to environment'}
@@ -153,35 +116,14 @@ def test_combined_production_zero_exchanges(no_recalculate):
             'type': 'reference product',
             'amount': 2,
             'variable': 'first',
-            'uncertainty': {
-                'minimum': 2,
-                'maximum': 2,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            }
         }, {
             'type': 'dropped product',
             'amount': 0,
             'variable': 'second',
-            'uncertainty': {
-                'minimum': 0,
-                'maximum': 0,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            }
         }, {
             'type': 'dropped product',
             'amount': 0,
             'variable': 'third',
-            'uncertainty': {
-                'minimum': 0,
-                'maximum': 0,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            }
         },
         {'type': 'from technosphere'},
         {'type': 'to environment'}
@@ -190,35 +132,14 @@ def test_combined_production_zero_exchanges(no_recalculate):
             'type': 'reference product',
             'amount': 3,
             'variable': 'second',
-            'uncertainty': {
-                'minimum': 3,
-                'maximum': 3,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            }
         }, {
             'type': 'dropped product',
             'amount': 0,
             'variable': 'first',
-            'uncertainty': {
-                'minimum': 0,
-                'maximum': 0,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            }
         }, {
             'type': 'dropped product',
             'amount': 0,
             'variable': 'third',
-            'uncertainty': {
-                'minimum': 0,
-                'maximum': 0,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            }
         },
         {'type': 'from technosphere'},
         {'type': 'to environment'}
@@ -251,13 +172,6 @@ def test_add_exchanges():
             'id': 1,
             'amount': 11,
             'type': 'reference product',
-            'uncertainty': {
-                'minimum': 11,
-                'maximum': 11,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            }
         },
         {'id': 2, 'amount': 22, 'type': 'byproduct'},
         {'id': 4, 'amount': 4, 'type': 'to environment'},
@@ -322,13 +236,6 @@ def test_merge_byproducts():
             'type': 'reference product',
             'name': 'first rp',
             'amount': 2,
-            'uncertainty': {
-                'minimum': 2,
-                'maximum': 2,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            }
         }, {
             'id': 2,
             'type': 'to environment',
@@ -398,13 +305,6 @@ def test_combined_production_with_byproducts(no_combined_production):
             'type': 'reference product',
             'name': 'first rp',
             'amount': 2,
-            'uncertainty': {
-                'minimum': 2,
-                'maximum': 2,
-                'pedigree matrix': {},
-                'standard deviation 95%': 0,
-                'type': 'undefined'
-            }
         }, {
             'id': 2,
             'type': 'to environment',

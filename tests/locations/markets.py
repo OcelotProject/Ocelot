@@ -254,13 +254,6 @@ def test_allocate_suppliers():
         'tag': 'intermediateExchange',
         'type': 'from technosphere',
         'unit': '',
-        'uncertainty': {
-            'maximum': 2 / 12 * 24,
-            'minimum': 2 / 12 * 24,
-            'pedigree matrix': {},
-            'standard deviation 95%': 0.0,
-            'type': 'undefined'
-        }
     }, {
         'amount': 10 / 12 * 24,
         'code': 'do',
@@ -268,13 +261,6 @@ def test_allocate_suppliers():
         'tag': 'intermediateExchange',
         'type': 'from technosphere',
         'unit': '',
-        'uncertainty': {
-            'maximum': 10 / 12 * 24,
-            'minimum': 10 / 12 * 24,
-            'pedigree matrix': {},
-            'standard deviation 95%': 0.0,
-            'type': 'undefined'
-        }
     }]
     assert allocate_suppliers(deepcopy(given))[0]['exchanges'] == expected
 
@@ -307,13 +293,6 @@ def test_allocate_suppliers_single_supplier():
         'tag': 'intermediateExchange',
         'type': 'from technosphere',
         'unit': '',
-        'uncertainty': {
-            'maximum': 24,
-            'minimum': 24,
-            'pedigree matrix': {},
-            'standard deviation 95%': 0.0,
-            'type': 'undefined'
-        }
     }]
     assert allocate_suppliers(deepcopy(given))[0]['exchanges'] == expected
 

@@ -6,6 +6,7 @@ from ..utils import (
     choose_reference_product_exchange,
     get_single_reference_product,
 )
+from ..uncertainty import scale_exchange
 from .economic import economic_allocation
 from .validation import valid_recycling_activity, valid_waste_treatment_activity
 from . import RC_STRING
@@ -30,8 +31,7 @@ def recycling_allocation(dataset):
     """
     rp = get_single_reference_product(dataset)
     rp['type'] = 'from technosphere'
-    # TODO: Use rescale_exchange when new uncertainties code is merged
-    rp['amount'] = -1 * rp['amount']
+    rp = scale_exchange(rp, -1)
     return economic_allocation(dataset)
 
 
