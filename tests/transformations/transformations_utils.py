@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from ocelot.transformations.utils import *
-from ocelot.uncertainty import remove_exchange_uncertainty
+from ocelot.transformations.uncertainty import remove_exchange_uncertainty
 from ocelot.errors import InvalidMultioutputDataset, ZeroProduction
 import pytest
 
