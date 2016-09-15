@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
-from .. import test_data_dir
 from ocelot.io.extract_ecospold2 import generic_extractor
 from ocelot.io.validate_internal import dataset_schema
 import os
+
+
+test_data_dir = os.path.join(os.path.dirname(__file__), "..", "data")
+
 
 # Tests for ecospold2 extraction
 
@@ -11,7 +14,6 @@ BASIC_REFERENCE = [{
     'economic scenario': 'Business-as-Usual',
     'parameters': [],
     'id': 'basic-process',
-    'combined production': False,
     'exchanges': [{
         'amount': -0.99,
         'conditional exchange': False,
@@ -69,6 +71,9 @@ BASIC_REFERENCE = [{
     'name': 'Miss Morgan Wolf',
     'technology level': 'current',
     'access restricted': 'licensees',
+    'dataset author': "Fred",
+    'data entry': "Wilma",
+    'ISIC classification': "420",
     'start date': '1996-01-01',
     'end date': '2015-12-31',
     'type': 'transforming activity'
@@ -76,7 +81,6 @@ BASIC_REFERENCE = [{
 
 PROD_VOLUME_REFERENCE = [{
     'economic scenario': 'Business-as-Usual',
-    'combined production': False,
     'exchanges': [{
         'amount': 1.0,
         'id': 'fb31ee9b-d01e-4121-9732-01b9bdd491ef',
@@ -135,13 +139,15 @@ PROD_VOLUME_REFERENCE = [{
     'parameters': [],
     'id': 'production-volume',
     'access restricted': 'licensees',
+    'dataset author': "Fred",
+    'data entry': "Wilma",
+    'ISIC classification': "420",
     'start date': '1990-01-01',
     'end date': '2015-12-31',
     'type': 'transforming activity'
 }]
 
 MULTIOUTPUT_REFERENCE = [{
-    'combined production': True,
     'economic scenario': 'Business-as-Usual',
     'exchanges': [{
         'amount': 200.0,
@@ -245,6 +251,9 @@ MULTIOUTPUT_REFERENCE = [{
     'access restricted': 'licensees',
     'start date': '2010-01-01',
     'end date': '2015-12-31',
+    'dataset author': "Fred",
+    'data entry': "Wilma",
+    'ISIC classification': "420",
     'type': 'transforming activity'
 }]
 

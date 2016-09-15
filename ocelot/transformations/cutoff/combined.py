@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ... import toolz
+from ...errors import InvalidExchange
 from ..utils import (
     activity_grouper,
     allocatable_production,
@@ -9,7 +10,8 @@ from ..utils import (
 from ..parameterization import recalculate
 from ..uncertainty import remove_exchange_uncertainty
 from .economic import economic_allocation
-from .validation import valid_combined_production_activity
+from .validation import valid_merge_datasets
+from .wastes import waste_treatment_allocation, recycling_allocation
 from copy import deepcopy
 
 
@@ -40,7 +42,6 @@ def selected_product(exc):
     return remove_exchange_uncertainty(exc)
 
 
-@valid_combined_production_activity
 def combined_production(dataset):
     """Perform subdivision of combined production activities.
 
@@ -66,18 +67,70 @@ def combined_production(dataset):
         new_ds, rp = deepcopy(dataset), deepcopy(exc)
         new_ds['exchanges'] = [selected_product(rp)] + \
             [nonreference_product(obj)
-             for obj in nonzero_reference_product_exchanges(new_ds)
-             if obj != exc] + \
+             for obj in new_ds['exchanges']
+             if obj['type'] == 'reference product'
+             and obj != exc] + \
             [deepcopy(obj) for obj in dataset['exchanges']
              if obj['type'] != 'reference product']
         new_datasets.append(recalculate(new_ds))
     return new_datasets
 
 
+def handle_split_dataset(ds):
+    """Allocate datasets based on their ``waste`` or ``recyclable`` classification."""
+    rp = get_single_reference_product(ds)
+    if rp['byproduct classification'] == 'waste':
+        return waste_treatment_allocation(ds)
+    elif rp['byproduct classification'] == 'recyclable':
+        ds['name'] = "{}, from {}".format(ds['name'], rp['name'])
+        return recycling_allocation(ds)
+    else:
+        raise InvalidExchange("Invalid byproduct classification")
+
+
+def combined_production_without_products(dataset):
+    """A special case of combined production allocation where there are multiple recyclable reference products and no allocatable reference products.
+
+    This special case occurs only once in ecoinvent 3.2, in the dataset ``treatment of manure and biowaste by anaerobic digestion``. This activity has the following reference products:
+
+    * ``used vegetable cooking oil``: recyclable
+    * ``manure, liquid, cattle``: recyclable
+    * ``manure, solid, cattle``: recyclable
+    * ``manure, liquid, swine``: recyclable
+    * ``biowaste``: waste
+
+    And the following byproducts:
+
+    * ``biogas``: allocatable product
+    * ``digester sludge``: recyclable
+
+    After the combined production without byproducts algorithm is applied, the following datasets are returned:
+
+    * treatment of manure and biowaste by anaerobic digestion (Reference product: ``biowaste``)
+    * treatment of manure and biowaste by anaerobic digestion (Reference product: ``biogas``)
+    * treatment of manure and biowaste by anaerobic digestion, from used vegetable cooking oil (Reference product: ``biogas``)
+    * treatment of manure and biowaste by anaerobic digestion, from manure, liquid, cattle (Reference product: ``biogas``)
+    * treatment of manure and biowaste by anaerobic digestion, from manure, solid, cattle (Reference product: ``biogas``)
+    * treatment of manure and biowaste by anaerobic digestion, from manure, liquid, swine (Reference product: ``biogas``)
+
+    This might seem funny at first, but it is consistent with the other allocation procedures for combined production and recycling. First, the byproduct of ``digester sludge`` is switched to a negative input, and is treated the same as any other input. Next, combined production allocation creates five datasets, one for each reference product.
+
+    For the dataset treating ``biowaste``, our waste treatment allocation procedure tells us that "the useful products of waste treatment come with no environmental burdens". This means that the biogas produced by the treatment of ``biowaste`` comes for free. The same is not true for the recyclable products. No treatment is needed - this is what it means to be a ``recyclable`` - so the recyclable output is switched to a negative input, and the biogas is switched to the reference product.
+
+    The final step is to handle the fact that we have multiple processes with the same activity name and reference product. We handle this by appending the name of the recyclable to each treatment process that consumes a recyclable, so ``treatment of manure and biowaste by anaerobic digestion`` becaomes ``treatment of manure and biowaste by anaerobic digestion, from manure, liquid, cattle``.
+
+    """
+    return [ds
+            for obj in combined_production(dataset)
+            for ds in handle_split_dataset(obj)]
+
+
 def add_exchanges(to_dataset, from_dataset):
     """Add exchange amounts in ``from_dataset`` to ``to_dataset``.
 
     Uses ``id`` to uniquely identify each exchange.
+
+    Removes uncertainty from reference product exchanges.
 
     Returns a modified ``to_dataset``."""
     lookup = {exc['id']: exc['amount'] for exc in from_dataset['exchanges']}
@@ -89,10 +142,13 @@ def add_exchanges(to_dataset, from_dataset):
     return to_dataset
 
 
-def merge_byproducts(datasets):
+@valid_merge_datasets
+def merge_byproducts(data):
     """Generator which merges datasets which have the same reference product.
 
     Add exchange values together.
+
+    Used after economic allocation, so there should be no allocatable byproducts remaining.
 
     Don't need to change reference production volumes because they are unchanged from the original multioutput dataset.
 
@@ -101,7 +157,8 @@ def merge_byproducts(datasets):
     TODO: Parameter values can be different in merged datasets, but can't just be added. Maybe also create new parameters (but not clear how)? Or easier just to delete all parameterization...
 
     Yields a new dataset."""
-    for group in toolz.groupby(activity_grouper, datasets).values():
+
+    for group in toolz.groupby(activity_grouper, data).values():
         parent = group[0]
         for child in group[1:]:
             parent = add_exchanges(parent, child)

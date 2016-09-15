@@ -5,6 +5,10 @@
       <activity specialActivityType="0" id="production-volume">
         <activityName>Jagger Lakin</activityName>
       </activity>
+      <classification>
+        <classificationSystem>ISIC</classificationSystem>
+        <classificationValue>420</classificationValue>
+      </classification>
       <geography>
         <shortname>TW</shortname>
       </geography>
@@ -37,7 +41,8 @@
       </intermediateExchange>
     </flowData>
     <administrativeInformation>
-      <dataGeneratorAndPublication accessRestrictedTo="1" />
+      <dataEntryBy personName="Wilma" />
+      <dataGeneratorAndPublication accessRestrictedTo="1" personName="Fred" />
     </administrativeInformation>
   </childActivityDataset>
 </ecoSpold>

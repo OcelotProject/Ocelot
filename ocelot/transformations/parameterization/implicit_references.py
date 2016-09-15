@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from ...io.ecospold2_meta import REFERENCE_REGULAR_EXPRESSIONS
 from ..utils import iterate_all_parameters
-import itertools
 import logging
 
 
@@ -10,13 +9,7 @@ def get_exchange_reference(formula):
 
     Finds ``Ref(`` implicit variables."""
     re = REFERENCE_REGULAR_EXPRESSIONS['exchange']
-    match = re.search(formula)
-    if not match:
-        return []
-    return zip(
-        itertools.repeat(match.group(0)),
-        [match.group('uuid') for match in re.finditer(formula)]
-    )
+    return [(x.group(0), x.group('uuid')) for x in re.finditer(formula)]
 
 
 def get_production_volume_reference(formula):
@@ -24,13 +17,7 @@ def get_production_volume_reference(formula):
 
     Finds ``Ref(`` implicit variables."""
     re = REFERENCE_REGULAR_EXPRESSIONS['pv']
-    match = re.search(formula)
-    if not match:
-        return []
-    return zip(
-        itertools.repeat(match.group(0)),
-        [match.group('uuid') for match in re.finditer(formula)]
-    )
+    return [(x.group(0), x.group('uuid')) for x in re.finditer(formula)]
 
 
 def find_exchange_or_parameter_by_id(dataset, uuid):
@@ -59,7 +46,9 @@ def find_production_volume_by_id(dataset, uuid):
 
 
 def replace_implicit_references(data):
-    """Replace ``Ref(`` with actual variables."""
+    """Replace ``Ref(`` with actual variables.
+
+    Uses existing variables if possible, or else creates new variables in the elements that are referred to."""
     for ds in data:
         for obj in iterate_all_parameters(ds):
             if 'formula' not in obj:

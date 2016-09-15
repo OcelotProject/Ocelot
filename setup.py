@@ -14,6 +14,15 @@ for dirpath, dirnames, filenames in os.walk('ocelot'):
             pkg = pkg.replace(os.path.altsep, '.')
         packages.append(pkg)
 
+
+def package_files(directory):
+    paths = []
+    for (path, directories, filenames) in os.walk(directory):
+        for filename in filenames:
+            paths.append(os.path.join('..', path, filename))
+    return paths
+
+
 setup(
     name='ocelot-lca',
     version="0.1",
@@ -21,10 +30,7 @@ setup(
     author="Chris Mutel",
     author_email="cmutel@gmail.com",
     license=open('LICENSE.txt').read(),
-    package_data={'ocelot': [
-        "data/*.*",
-        "data/*/*.*",
-    ]},
+    package_data={'ocelot': package_files(os.path.join('ocelot', 'data'))},
     entry_points = {
         'console_scripts': [
             'ocelot-cli = ocelot.bin.ocelot_cli:main',

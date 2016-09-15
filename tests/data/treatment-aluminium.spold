@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold02">
+  <childActivityDataset>
+    <activityDescription>
+      <activity id="79789301-6c97-4501-9d8d-b1f14571bb2a" activityNameId="b7cf03a4-aced-43ee-98f4-1cd7c53c82c0" parentActivityId="9f55873d-124d-45cf-95e6-052d8326a58c" inheritanceDepth="1" type="1" specialActivityType="0" energyValues="0">
+        <activityName xml:lang="en">treatment of aluminium scrap, post-consumer, prepared for recycling, at refiner</activityName>
+      </activity>
+      <classification classificationId="6fe7bc2b-4be4-48f7-92b0-f27dea9053ce">
+        <classificationSystem xml:lang="en">ISIC</classificationSystem>
+        <classificationValue xml:lang="en">420</classificationValue>
+      </classification>
+      <geography geographyId="0723d252-7e2a-11de-9820-0019e336be3a">
+        <shortname xml:lang="en">RER</shortname>
+      </geography>
+      <technology technologyLevel="3">
+      </technology>
+      <timePeriod startDate="2005-01-01" endDate="2005-12-31" isDataValidForEntirePeriod="true" />
+      <macroEconomicScenario macroEconomicScenarioId="d9f57f0a-a01f-42eb-a57b-8f18d6635801">
+        <name xml:lang="en">Business-as-Usual</name>
+      </macroEconomicScenario>
+    </activityDescription>
+    <flowData>
+      <intermediateExchange id="a441bcdd-632c-4c18-b5ef-0f10549a38b5" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" variableName="scrapInputAmount" amount="-1" sourceId="97a5dfe8-7bf3-47c9-b404-6dcd17732603" sourceYear="2008" sourceFirstAuthor="European Aluminium Association" intermediateExchangeId="858164b0-44f1-4118-b6cb-47054faa21ef" productionVolumeAmount="1089075630.2521" productionVolumeVariableName="scrapInputVolume" productionVolumeMathematicalRelation="3.6e9*(7.2/23.8)" productionVolumeSourceId="97a5dfe8-7bf3-47c9-b404-6dcd17732603">
+        <name xml:lang="en">aluminium scrap, post-consumer, prepared for melting</name>
+        <unitName xml:lang="en">kg</unitName>
+        <productionVolumeUncertainty>
+          <lognormal meanValue="1089075630.2521" mu="20.81" variance="0.0006" varianceWithPedigreeUncertainty="0.0052" />
+          <pedigreeMatrix reliability="3" completeness="3" temporalCorrelation="1" geographicalCorrelation="5" furtherTechnologyCorrelation="1" />
+        </productionVolumeUncertainty>
+        <classification classificationId="a20a9e2f-b3f0-40fd-8358-f8adf7f419c4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">Recyclable</classificationValue>
+        </classification>
+        <outputGroup>0</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="dfb96241-8ff7-4ef3-ab45-1d78cbd20fe3" unitId="77ae64fa-7e74-4252-9c3b-889c1cd20bfc" amount="0.05769" sourceId="97a5dfe8-7bf3-47c9-b404-6dcd17732603" sourceYear="2008" sourceFirstAuthor="European Aluminium Association" intermediateExchangeId="759b89bd-3aa6-42ad-b767-5bb9ef5d331d">
+        <name xml:lang="en">electricity, medium voltage</name>
+        <unitName xml:lang="en">kWh</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.05769" mu="-2.85" variance="0.0006" varianceWithPedigreeUncertainty="0.0012" />
+          <pedigreeMatrix reliability="1" completeness="3" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </uncertainty>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <inputGroup>5</inputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="17f01367-6b32-441d-b1ed-804e7040f692" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" variableName="ironScrapAmount" amount="0.001613" sourceId="97a5dfe8-7bf3-47c9-b404-6dcd17732603" sourceYear="2008" sourceFirstAuthor="European Aluminium Association" intermediateExchangeId="d7432632-40dc-4af8-8125-cb70dd9742c5" productionVolumeAmount="1756678.99159664" productionVolumeMathematicalRelation="ironScrapAmount/abs(scrapInputAmount)*scrapInputVolume">
+        <name xml:lang="en">iron scrap, unsorted</name>
+        <unitName xml:lang="en">kg</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.001613" mu="-6.43" variance="0.0006" varianceWithPedigreeUncertainty="0.0012" />
+          <pedigreeMatrix reliability="1" completeness="3" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </uncertainty>
+        <productionVolumeUncertainty>
+          <lognormal meanValue="1756678.99159664" mu="16.27" variance="0" varianceWithPedigreeUncertainty="0" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </productionVolumeUncertainty>
+        <classification classificationId="a20a9e2f-b3f0-40fd-8358-f8adf7f419c4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">Recyclable</classificationValue>
+        </classification>
+        <outputGroup>2</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="c998a638-b5e6-44ce-b122-be3c0fbf5393" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" variableName="Al2O3Amount" casNumber="1344-28-1" amount="0.1015" sourceId="97a5dfe8-7bf3-47c9-b404-6dcd17732603" sourceYear="2008" sourceFirstAuthor="European Aluminium Association" intermediateExchangeId="96f36f31-8f6a-48f8-921f-1d781b7a545f" productionVolumeAmount="110541176.470588" productionVolumeMathematicalRelation="Al2O3Amount/abs(scrapInputAmount)*scrapInputVolume">
+        <name xml:lang="en">aluminium oxide</name>
+        <unitName xml:lang="en">kg</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.1015" mu="-2.29" variance="0.0006" varianceWithPedigreeUncertainty="0.0012" />
+          <pedigreeMatrix reliability="1" completeness="3" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </uncertainty>
+        <property propertyId="38f94dd1-d5aa-41b8-b182-c0c42985d9dc" variableName="Al2O3Amount_price_EUR2005" amount="0.275317529539232" unitId="7b75baf0-cbee-45e6-bf66-af119da06553">
+          <name xml:lang="en">price</name>
+          <unitName xml:lang="en">EUR2005</unitName>
+        </property>
+        <productionVolumeUncertainty>
+          <lognormal meanValue="110541176.470588" mu="20.41" variance="0" varianceWithPedigreeUncertainty="0" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </productionVolumeUncertainty>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <outputGroup>2</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="b16e34c0-3262-449e-94b1-24931b7aa618" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" variableName="hazWasteAmount" amount="0.0008065" sourceId="97a5dfe8-7bf3-47c9-b404-6dcd17732603" sourceYear="2008" sourceFirstAuthor="European Aluminium Association" intermediateExchangeId="6047c525-49b7-4a7d-baf6-a61283e5eda9" productionVolumeAmount="878339.495798319" productionVolumeMathematicalRelation="hazWasteAmount/abs(scrapInputAmount)*scrapInputVolume">
+        <name xml:lang="en">hazardous waste, for underground deposit</name>
+        <unitName xml:lang="en">kg</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.0008065" mu="-7.12" variance="0.0006" varianceWithPedigreeUncertainty="0.0012" />
+          <pedigreeMatrix reliability="1" completeness="3" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </uncertainty>
+        <productionVolumeUncertainty>
+          <lognormal meanValue="878339.495798319" mu="15.57" variance="0" varianceWithPedigreeUncertainty="0" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </productionVolumeUncertainty>
+        <classification classificationId="ee3238ec-ca7a-4ddc-af1b-e7c35957b9b6">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">Waste</classificationValue>
+        </classification>
+        <outputGroup>2</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="0a745171-b8cf-4d28-a4a2-f1eba674a141" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" variableName="castAlloyAmount" amount="0.9488" sourceId="97a5dfe8-7bf3-47c9-b404-6dcd17732603" sourceYear="2008" sourceFirstAuthor="European Aluminium Association" intermediateExchangeId="a430f433-cdc8-45be-ace2-32a634634d3b" productionVolumeAmount="9012500000" productionVolumeMathematicalRelation="9.0125e9">
+        <name xml:lang="en">aluminium, cast alloy</name>
+        <unitName xml:lang="en">kg</unitName>
+        <uncertainty>
+          <lognormal meanValue="0.9488" mu="-0.05" variance="0.0006" varianceWithPedigreeUncertainty="0.0012" />
+          <pedigreeMatrix reliability="1" completeness="3" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </uncertainty>
+        <property propertyId="38f94dd1-d5aa-41b8-b182-c0c42985d9dc" variableName="castAlloyAmount_price_EUR2005" amount="1.3" unitId="7b75baf0-cbee-45e6-bf66-af119da06553">
+          <name xml:lang="en">price</name>
+          <unitName xml:lang="en">EUR2005</unitName>
+        </property>
+        <productionVolumeUncertainty>
+          <lognormal meanValue="1033314957.98319" mu="22.64" variance="0" varianceWithPedigreeUncertainty="0" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </productionVolumeUncertainty>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <outputGroup>2</outputGroup>
+      </intermediateExchange>
+      <intermediateExchange id="35dcc63d-1df1-49fa-a054-9f81ceb2b009" unitId="980b811e-3905-4797-82a5-173f5568bc7e" amount="3.46655192307692" isCalculatedAmount="true" mathematicalRelation="fuel_input_in_kg_ng*Net_Heat_Value_NG_per_kg /fuel_use_ng" sourceId="97a5dfe8-7bf3-47c9-b404-6dcd17732603" sourceYear="2008" sourceFirstAuthor="European Aluminium Association" intermediateExchangeId="1125e767-7b5d-442e-81d6-9b0d3e1919ac">
+        <name xml:lang="en">heat, district or industrial, natural gas</name>
+        <unitName xml:lang="en">MJ</unitName>
+        <uncertainty>
+          <lognormal meanValue="3.46655192307692" mu="1.24" variance="0" varianceWithPedigreeUncertainty="0" />
+          <pedigreeMatrix reliability="1" completeness="1" temporalCorrelation="1" geographicalCorrelation="1" furtherTechnologyCorrelation="1" />
+        </uncertainty>
+        <property propertyId="48c987bb-3144-4872-b5c7-b1389c40be25" variableName="Net_Heat_Value_NG_per_kg" amount="45.4" isDefiningValue="false" unitId="980b811e-3905-4797-82a5-173f5568bc7e" sourceId="946d367a-926a-43cc-b493-7443c428cb71" sourceYear="2011" sourceFirstAuthor="Weidema B. P.">
+          <name xml:lang="en">heating value, net</name>
+          <unitName xml:lang="en">MJ</unitName>
+          <uncertainty>
+            <lognormal meanValue="45.4" mu="3.82" variance="0.0006" varianceWithPedigreeUncertainty="0.0606" />
+            <pedigreeMatrix reliability="3" completeness="5" temporalCorrelation="5" geographicalCorrelation="5" furtherTechnologyCorrelation="3" />
+          </uncertainty>
+        </property>
+        <classification classificationId="39b0f0ab-1a2f-401b-9f4d-6e39400760a4">
+          <classificationSystem xml:lang="en">By-product classification</classificationSystem>
+          <classificationValue xml:lang="en">allocatable product</classificationValue>
+        </classification>
+        <inputGroup>5</inputGroup>
+      </intermediateExchange>
+      <elementaryExchange id="d89f8783-4dd1-4cf3-9aa4-c7b729744e15" unitId="487df68b-4994-4027-8fdc-a4dc298257b7" amount="6.3744E-06" isCalculatedAmount="true" mathematicalRelation="1.992e-5*32%" sourceId="97a5dfe8-7bf3-47c9-b404-6dcd17732603" sourceYear="2008" sourceFirstAuthor="European Aluminium Association" elementaryExchangeId="21e46cb8-6233-4c99-bac3-c41d2ab99498">
+        <name xml:lang="en">Particulates, &lt; 2.5 um</name>
+        <unitName xml:lang="en">kg</unitName>
+        <uncertainty>
+          <lognormal meanValue="6.3744E-06" mu="-11.96" variance="0.3" varianceWithPedigreeUncertainty="0.3432" />
+          <pedigreeMatrix reliability="2" completeness="3" temporalCorrelation="3" geographicalCorrelation="1" furtherTechnologyCorrelation="4" />
+        </uncertainty>
+        <compartment subcompartmentId="7011f0aa-f5f9-4901-8c10-884ad8296812">
+          <compartment xml:lang="en">air</compartment>
+          <subcompartment xml:lang="en">unspecified</subcompartment>
+        </compartment>
+        <outputGroup>4</outputGroup>
+      </elementaryExchange>
+    </flowData>
+    <administrativeInformation>
+      <dataEntryBy personName="Wilma" />
+      <dataGeneratorAndPublication accessRestrictedTo="1" personName="Fred" />
+    </administrativeInformation>
+  </childActivityDataset>
+</ecoSpold>

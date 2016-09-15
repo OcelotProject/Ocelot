@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-from ..utils import choose_reference_product_exchange
+from ..utils import (
+    choose_reference_product_exchange,
+    get_single_reference_product,
+)
 
 
 def apply_allocation_factors(dataset, factors):
@@ -31,3 +34,10 @@ def flip_non_allocatable_byproducts(dataset):
             if 'formula' in exc:
                 exc['formula'] = '-1 * ({})'.format(exc['formula'])
     return dataset
+
+
+def delete_allocation_method(dataset):
+    """Delete key ``allocation method`` if present"""
+    if "allocation method" in dataset:
+        del dataset["allocation method"]
+    return [dataset]

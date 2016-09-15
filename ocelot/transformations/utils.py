@@ -43,7 +43,9 @@ def allocatable_production(dataset):
     Production exchanges either:
 
     * Have type ``reference product``, or
-    * Have type ``byproduct`` and ``byproduct classification`` is ``allocatable product``
+    * Have type ``byproduct`` and ``classification`` is ``allocatable product``
+
+    Note that all types of reference products are returned: ``allocatable product``, ``waste``, and ``recyclable``!
 
     """
     for exc in dataset['exchanges']:
@@ -60,7 +62,7 @@ def nonproduction_exchanges(dataset):
     Non-production exchanges must meet both criteria:
 
     * Not have type ``reference product``, or
-    * Not have type ``byproduct`` and ``byproduct classification`` ``allocatable product``
+    * Not have type ``byproduct`` and ``classification`` ``allocatable product``
 
     """
     for exc in dataset['exchanges']:
@@ -80,10 +82,10 @@ def get_single_reference_product(dataset):
                 if exc['type'] == 'reference product']
     if len(products) > 1:
         message = "Found multiple reference products in dataset:\n{}"
-        raise InvalidMultioutputDataset(message.format(pformat(dataset)))
+        raise InvalidMultioutputDataset(message.format(dataset['filepath']))
     elif not products:
         message = "Found no reference products in dataset:\n{}"
-        raise ValueError(message.format(pformat(dataset)))
+        raise ValueError(message.format(dataset['filepath']))
     return products[0]
 
 
@@ -101,6 +103,29 @@ def iterate_all_parameters(dataset):
     for parameter in dataset.get('parameters', []):
         if "variable" in parameter or "formula" in parameter:
             yield parameter
+
+
+def get_biggest_pv_to_exchange_ratio(dataset):
+    """Return the largest ration of production volume to exchange amount.
+
+    Considers only reference product exchanges with the ``allocatable product`` classification.
+
+    In theory, this ratio should always be the same in a multioutput dataset. However, this is quite often not the case, and when calculating production volume for other exchanges (byproducts, activity links) we need one number for the dataset.
+
+    So, we look for the biggest absolute value. This may not be perfect, but it is consistent.
+
+    Returns a float."""
+    production_volumes = sorted([
+        exc['production volume']['amount'] / exc['amount']
+        for exc in dataset['exchanges']
+        if exc['type'] == 'reference product'
+        and exc['amount']
+    ], reverse=True, key=lambda x: abs(x))
+    if not production_volumes:
+        message = "No suitable reference product exchanges in {}"
+        raise ZeroProduction(message.format(dataset['name']))
+    return production_volumes[0]
+
 
 ### Exchange groupers
 
@@ -176,7 +201,7 @@ def normalize_reference_production_amount(dataset):
     product = get_single_reference_product(dataset)
     if not product['amount']:
         message = "Zero production amount for dataset:\n{}"
-        raise ZeroProduction(message.format(pformat(dataset)))
+        raise ZeroProduction(message.format(dataset['filepath']))
     factor = 1 / abs(product['amount'])
     # TODO: Skip if very close to one?
     if factor != 1:
@@ -185,12 +210,15 @@ def normalize_reference_production_amount(dataset):
     return dataset
 
 
-def label_reference_product(dataset):
-    """Set ``reference product`` key for ``dataset``.
+def label_reference_product(data):
+    """Add field ``reference product`` to all datasets.
 
-    Uses ``get_single_reference_product``."""
-    dataset['reference product'] = get_single_reference_product(dataset)['name']
-    return dataset
+    The field ``reference product`` has the name of the reference product exchange.
+
+    Raises ``InvalidMultioutputDataset`` if multiple reference products are present, or ``ValueError`` if no reference products are present."""
+    for dataset in data:
+        dataset['reference product'] = get_single_reference_product(dataset)['name']
+    return data
 
 
 def nonreference_product(exchange):
@@ -221,7 +249,7 @@ def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
     The chosen product exchange is modified:
 
     * Uncertainty is set to ``undefined`` and made perfectly certain. Production exchanges by definition cannot have uncertainty.
-    * ``byproduct classification`` is deleted if present
+    * ``classification`` is deleted if present
     * ``type`` is set to ``reference product``
 
     Non-chosen product exchanges are also modified:
@@ -235,7 +263,7 @@ def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
     obj = deepcopy(dataset)
     if not exchange['amount']:
         message = "Zero production amount for new reference product exchange:\n{}\nIn dataset:\n{}"
-        raise ZeroProduction(message.format(pformat(exchange), pformat(dataset)))
+        raise ZeroProduction(message.format(pformat(exchange), dataset['filepath']))
     rp = remove_exchange_uncertainty(deepcopy(exchange))
     rp['type'] = 'reference product'
     if 'byproduct classification' in rp:

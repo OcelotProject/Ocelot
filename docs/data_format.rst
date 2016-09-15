@@ -1,5 +1,7 @@
-Internal data formats
-*********************
+.. _dataformat:
+
+Internal data format
+********************
 
 Datasets
 ========
@@ -7,7 +9,6 @@ Datasets
 Internally, datasets have the bare minimum of information needed for successful linking. Most information from `ecospold2 files <http://www.ecoinvent.org/data-provider/data-provider-toolkit/ecospold2/ecospold2.html>`__ is not read, as it is not needed during Ocelot runs and would needlessly consume resources to manage.
 
 Ocelot uses the `voluptuous validation library <https://pypi.python.org/pypi/voluptuous>`__ to make sure extracted datasets are formatted the way that Ocelot expects. The voluptuous schema is restrictive - only the listed values are allowed.
-
 
 Activity
 --------
@@ -17,21 +18,34 @@ Here is the validation schema for an activity dataset:
 .. code-block:: python
 
     dataset_schema = Schema({
-        "combined production": bool, # More than one reference product
         "exchanges": [Any(elementary_exchange_schema, activity_exchange_schema)],
         "parameters": [valid_parameter],
-        'access restricted': valid_access_restriction, # ecospold2 field 3550: accessRestrictedTo
+        # ecospold2 field 3550: accessRestrictedTo.
+        # Currently ecoinvent releases do not use this field.
+        'access restricted': valid_access_restriction,
         'economic scenario': str, # ecospold2 field 700: macroEconomicScenarioId
         'end date': str, # Starting and ending dates for dataset validity, in format '2015-12-31'
         'filepath': str,
-        'id': str,
+        'id': str,  # Imported UUID. May not be unique due to allocation.
+        # Guaranteed unique hash code based on dataset attributes like name, location, type, etc.
+        Optional("code"): str,
         'location': str, # ecospold2 field 410: shortname
         'name': str, # ecospold2 field 100: activityName
         'start date': str,
         'technology level': valid_technology_levels, # ecospold2 field 500
+        # The activity types used in ecoinvent are:
+        # "transforming activity", "market activity", and "market group"
         'type': valid_activity_types, # ecospold2 field 115: specialActivityType
-        Optional('allocation method'): valid_allocation_method,  # Allocation method used. Added by a transformation.
-        Optional('reference product'): str, # Name of the reference product. Added by a transformation.
+        'dataset author': str,
+        'data entry': str,
+        'ISIC classification': str,
+        # Allocation method used. Added by a transformation function, should be
+        # removed after allocation.
+        Optional('allocation method'): valid_allocation_method,
+        # Name of the reference product. Added by a transformation function.
+        Optional('reference product'): str,
+        # Temporary data - references to technosphere exchanges which supply a market
+        Optional('suppliers'): list,
     }, required=True)
 
 Technosphere exchanges (``activity_exchange_schema``)

@@ -1,10 +1,52 @@
 # -*- coding: utf-8 -*-
-from ocelot.collection import Collection
+from ocelot.collection import Collection, unwrap_functions
+from ocelot.filesystem import OutputDir
 from ocelot.model import system_model
-from .mocks import fake_report
+from unittest import mock
+import os
+import pytest
+import tempfile
+import uuid
 
-# Tests for `Collection` of functions
 
+def do_nothing(*args, **kwargs):
+    """Mock for `HTMLReport` that doesn't do anything"""
+    pass
+
+def passthrough(obj, use_cache=True):
+    """Mock for ``extract_directory`` that returns the initial input"""
+    return obj
+
+@pytest.fixture(scope="function")
+def fake_report(monkeypatch):
+    tempdir = tempfile.mkdtemp()
+    get_fake_directory = lambda : tempdir
+    monkeypatch.setattr(
+        'ocelot.filesystem.get_base_directory',
+        get_fake_directory
+    )
+    monkeypatch.setattr(
+        'ocelot.model.check_cache_directory',
+        lambda x: False
+    )
+    monkeypatch.setattr(
+        'ocelot.model.cache_data',
+        lambda x, y: None
+    )
+    monkeypatch.setattr(
+        'ocelot.model.extract_directory',
+        passthrough
+    )
+    monkeypatch.setattr(
+        'ocelot.model.HTMLReport',
+        do_nothing
+    )
+
+def test_report_and_extract_directory_mock(fake_report):
+    output_dir, data = system_model([])
+    assert data == []
+    # Directory not in usual place
+    assert "Ocelot" not in output_dir.directory
 
 def test_empty_collection(fake_report):
     empty_collection = Collection()
@@ -50,3 +92,13 @@ def test_collection_contains():
     collection = Collection(1, 2)
     assert 1 in collection
     assert 3 not in collection
+
+def test_unwrap_functions():
+    a = lambda x: False
+    b = lambda x: False
+    c = lambda x: False
+    d = lambda x: False
+    e = lambda x: False
+
+    lst = [a, Collection(b, Collection(c, d)), e]
+    assert unwrap_functions(lst) == [a, b, c, d, e]

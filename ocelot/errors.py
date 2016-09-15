@@ -4,6 +4,7 @@ class OcelotError(Exception):
     """Base for custom ocelot errors"""
     pass
 
+
 class ZeroProduction(OcelotError):
     """Reference production exchange has amount of zero"""
     pass
@@ -12,6 +13,7 @@ class ZeroProduction(OcelotError):
 class IdenticalVariables(OcelotError):
     """The same variable name is used twice"""
     pass
+
 
 class InvalidMultioutputDataset(OcelotError):
     pass
@@ -62,4 +64,34 @@ class UnresolvableActivityLink(OcelotError):
 
 class MissingMandatoryProperty(Exception):
     """Exchange is missing a mandatory property"""
+    pass
+
+
+class OverlappingActivities(OcelotError):
+    """Markets overlap, preventing correct linking"""
+    pass
+
+
+class IdenticalDatasets(OcelotError):
+    """Multiple datasets with the same identifying attributes were found"""
+    pass
+
+
+class OverlappingMarkets(OcelotError):
+    """Markets overlap, preventing correct linking"""
+    pass
+
+
+class IdenticalDatasets(OcelotError):
+    """Multiple datasets with the same identifying attributes were found"""
+    pass
+
+
+class InvalidTransformationFunction(OcelotError):
+    """Metadata could not be retrieved for this function"""
+    pass
+
+
+class MissingSupplier(OcelotError):
+    """Input from global or RoW market is needed, but this market doesn't exist"""
     pass

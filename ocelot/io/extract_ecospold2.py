@@ -21,14 +21,6 @@ def _(string):
     return string.replace("{http://www.EcoInvent.org/EcoSpold02}", "")
 
 
-def is_combined_production(dataset):
-    """"Combined production datasets have multiple reference products.
-
-    Returns a boolean."""
-    return len([1 for exc in dataset['exchanges']
-                if exc['type'] == "reference product"]) > 1
-
-
 def extract_parameter(obj):
     param = {'name': obj.name.text,
          'id': obj.get('parameterId'),
@@ -42,6 +34,13 @@ def extract_parameter(obj):
     if obj.get('mathematicalRelation'):
         param['formula'] = obj.get('mathematicalRelation').strip()
     return param
+
+
+def extract_isic_classification(elem):
+    for child in elem.activityDescription.iterchildren():
+        if ('classification' in _(child.tag)
+            and 'ISIC' in child.classificationSystem.text):
+            return child.classificationValue.text
 
 
 def extract_pedigree_matrix(elem):
@@ -111,7 +110,7 @@ def extract_property(prop):
     return data
 
 
-def extract_exchange(exc):
+def extract_exchange(dataset, exc):
     # Basic data
     data = {
         'id': exc.get('id'),
@@ -128,7 +127,7 @@ def extract_exchange(exc):
     if exc.get('activityLinkId'):
         data['activity link'] = exc.get("activityLinkId")
 
-    # Byproduct classification, optional field
+    # Classification, optional field
     byproduct = [obj.classificationValue.text
                  for obj in exc.iterchildren()
                  if (_(obj.tag) == 'classification'
@@ -162,11 +161,11 @@ def extract_exchange(exc):
         data['uncertainty'] = extract_uncertainty(exc.uncertainty)
 
     # Conditional exchange
-    # TODO: Describe what this means
     if 'environment' not in data['type']:
         data['conditional exchange'] = (
             'activity link' in data
-            and data['type'] == 'market activity'
+            and dataset['type'] == 'market activity'
+            and data['type'] == 'byproduct'
             and data['amount'] < 0
         )
 
@@ -186,14 +185,17 @@ def extract_ecospold2_dataset(elem, filepath):
         'economic scenario': elem.activityDescription.macroEconomicScenario.name.text,
         'access restricted': ACCESS_RESTRICTED[elem.administrativeInformation.\
             dataGeneratorAndPublication.get('accessRestrictedTo')],
-        'exchanges': [extract_exchange(exc)
-                      for exc in elem.flowData.iterchildren()
-                      if 'Exchange' in _(exc.tag)],
         'parameters': [extract_parameter(exc)
                        for exc in elem.flowData.iterchildren()
                        if 'parameter' in _(exc.tag)],
+        'dataset author': elem.administrativeInformation.dataGeneratorAndPublication.get('personName'),
+        'data entry': elem.administrativeInformation.dataEntryBy.get('personName'),
+        'ISIC classification': extract_isic_classification(elem),
     }
-    data['combined production'] = is_combined_production(data)
+    data['exchanges'] = [extract_exchange(data, exc)
+                         for exc in elem.flowData.iterchildren()
+                         if 'Exchange' in _(exc.tag)]
+
     return data
 
 
@@ -213,6 +215,9 @@ def extract_ecospold2_directory(dirpath, use_mp=True):
     """Extract all the ``.spold`` files in the directory ``dirpath``.
 
     Use a multiprocessing pool if ``use_mp``, which is the default."""
+    if os.name == 'nt':
+        use_mp = False
+
     assert os.path.isdir(dirpath), "Can't find directory {}".format(dirpath)
     filelist = [os.path.join(dirpath, filename)
                 for filename in os.listdir(dirpath)

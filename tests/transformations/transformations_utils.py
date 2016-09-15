@@ -18,6 +18,15 @@ def test_allocatable_production():
         assert x == y
     assert len(list(allocatable_production(dataset))) == 3
 
+def test_allocatable_production_include_all_reference_products():
+    given = {"exchanges": [
+        {'type': 'reference product', 'byproduct classification': 'recyclable'},
+        {'type': 'reference product', 'byproduct classification': 'allocatable product'},
+        {'type': 'reference product', 'byproduct classification': 'waste'},
+        {'type': 'reference product', 'byproduct classification': 'foo'},
+    ]}
+    assert len(list(allocatable_production(given))) == 4
+
 def test_nonproduction_exchanges():
     exchanges = [
         {'type': 'reference product'},
@@ -70,22 +79,28 @@ def test_single_reference_product():
     assert get_single_reference_product(given) == expected
 
 def test_single_reference_product_multiple():
-    given = {'exchanges': [
-        {
-            'type': 'reference product',
-            'name': 'sandwich'
-        },
-        {
-            'type': 'reference product',
-            'name': 'hamburger'
-        },
-    ]}
+    given = {
+        'filepath': 'foo',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'name': 'sandwich'
+            },
+            {
+                'type': 'reference product',
+                'name': 'hamburger'
+            },
+        ]
+    }
     with pytest.raises(InvalidMultioutputDataset):
         get_single_reference_product(given)
 
 def test_single_reference_product_none():
     with pytest.raises(ValueError):
-        get_single_reference_product({'exchanges': []})
+        get_single_reference_product({
+            'filepath': 'foo',
+            'exchanges': [{'type': 'something'}]
+        })
 
 def test_normalize_reference_production_amount():
     given = {'exchanges': [
@@ -111,12 +126,13 @@ def test_normalize_reference_production_amount():
     assert normalize_reference_production_amount(given) == expected
 
 def test_normalize_reference_production_amount_zero_amount():
-    given = {'exchanges': [
-        {
+    given = {
+        'filepath': 'foo',
+        'exchanges': [{
             'type': 'reference product',
             'amount': 0
-        },
-    ]}
+        }]
+    }
     with pytest.raises(ZeroProduction):
         normalize_reference_production_amount(given)
 
@@ -139,11 +155,43 @@ def test_activity_grouper():
     assert activity_grouper(given) == ('bar', ('a', 'b'))
 
 def test_label_reference_product():
-    given = {'exchanges': [{
-        'type': 'reference product',
-        'name': 'foo'
-    }]}
-    assert label_reference_product(given)['reference product'] == 'foo'
+    valid = [{
+        'type': 'transforming activity',
+        'exchanges': [{
+            'type': 'reference product',
+            'name': 'foo'
+        }]
+    }]
+    expected = [{
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'exchanges': [{
+            'type': 'reference product',
+            'name': 'foo'
+        }]
+    }]
+    assert label_reference_product(valid) == expected
+
+def test_label_reference_product_no_exchanges():
+    invalid = [{
+        'filepath': '',
+        'type': 'transforming activity',
+        'exchanges': [{'type': 'nope'}]
+    }]
+    with pytest.raises(ValueError):
+        label_reference_product(invalid)
+
+def test_label_reference_product_multiple_rp():
+    invalid = [{
+        'filepath': '',
+        'type': 'transforming activity',
+        'exchanges': [
+            {'type': 'reference product'},
+            {'type': 'reference product'},
+        ]
+    }]
+    with pytest.raises(InvalidMultioutputDataset):
+        label_reference_product(invalid)
 
 def test_remove_uncertainty():
     expected = {
@@ -272,10 +320,13 @@ def test_choose_reference_product_exchange_byproducts(no_normalization):
         assert one is not two
 
 def test_choose_reference_product_exchange_zero_production(no_normalization):
-    given = {'exchanges': [{
-        'type': 'reference product',
-        'amount': 0
-    }]}
+    given = {
+        'filepath': 'foo',
+        'exchanges': [{
+            'type': 'reference product',
+            'amount': 0
+        }]
+    }
     with pytest.raises(ZeroProduction):
         choose_reference_product_exchange(given, given['exchanges'][0])
 
@@ -319,3 +370,52 @@ def test_iterate_all_parameters(parameterized_ds):
     assert next(generator) == parameterized_ds['exchanges'][1]['properties'][0]
     assert next(generator) == parameterized_ds['parameters'][0]
     assert next(generator) == parameterized_ds['parameters'][1]
+
+def test_activity_hash():
+    given = {
+        'name': 'a',
+        'reference product': 'b',
+        'unit': 'c',
+        'location': 'd',
+        'start date': 'e',
+        'end date': 'f',
+        'foo': 'bar',
+    }
+    assert activity_hash({})
+    assert activity_hash(given)
+
+def test_get_biggest_pv_to_exchange_ratio():
+    given = {'exchanges': [{
+        'amount': 2,
+        'production volume': {'amount': 10},
+        'type': 'reference product',
+    }, {
+        'amount': 5,
+        'production volume': {'amount': 20},
+        'type': 'reference product',
+    }, {
+        'amount': 1,
+        'production volume': {'amount': 20},
+        'type': 'not reference product',
+    }]}
+    assert get_biggest_pv_to_exchange_ratio(given) == 5
+
+def test_get_biggest_pv_to_exchange_ratio_neg_numbers():
+    given = {'exchanges': [{
+        'amount': -2,
+        'production volume': {'amount': 10},
+        'type': 'reference product',
+    }, {
+        'amount': -5,
+        'production volume': {'amount': 20},
+        'type': 'reference product',
+    }]}
+    assert get_biggest_pv_to_exchange_ratio(given) == -5
+
+def test_get_biggest_pv_to_exchange_ratio_no_rps():
+    error = {
+        'exchanges': [],
+        'name': ''
+    }
+    with pytest.raises(ZeroProduction):
+        get_biggest_pv_to_exchange_ratio(error)

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from ..utils import same_metadata
 from ocelot.io.extract_ecospold2 import generic_extractor
 from ocelot.io.validate_internal import dataset_schema
 from ocelot.transformations.cutoff.allocation import choose_allocation_method
@@ -8,12 +7,21 @@ import os
 import pytest
 
 
+def same_metadata(first, second):
+    """All the metadata except for ``exchanges`` should be the same"""
+    for key, value in first.items():
+        if key == 'exchanges':
+            continue
+        else:
+            assert key in second and second[key] == value
+
+
 ### Test artificial cases
 
 
 ### Test real test data
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def paper():
     fp = os.path.join(os.path.dirname(__file__), "..", "data",
                       "treatment-waste-graphical-paper.spold")
@@ -23,7 +31,7 @@ def test_load_validate_paper_dataset(paper):
     assert dataset_schema(paper)
 
 def test_choice_allocation_method(paper):
-    assert choose_allocation_method(paper) == waste_treatment_allocation
+    assert choose_allocation_method(paper) == "waste treatment"
 
 def test_allocation_function_output_valid(paper):
     for new_ds in waste_treatment_allocation(paper):

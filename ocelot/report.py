@@ -106,7 +106,7 @@ class HTMLReport(object):
                 'count': line['count'],
                 'name': line['name'],
                 'id': 'function{}'.format(self.index),
-                'description': to_html(line['description']),
+                'description': to_html(line['description'] or ''),
                 'table': line['table'],
             })
         elif line['type'] == 'table element':

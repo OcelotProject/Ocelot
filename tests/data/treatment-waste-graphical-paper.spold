@@ -6,8 +6,8 @@
         <activityName xml:lang="en">treatment of waste graphical paper, municipal incineration</activityName>
       </activity>
       <classification classificationId="9a63625a-358b-4c1d-bf95-50ba038a759b">
-        <classificationSystem xml:lang="en">ISIC rev.4 ecoinvent</classificationSystem>
-        <classificationValue xml:lang="en">3821:Treatment and disposal of non-hazardous waste</classificationValue>
+        <classificationSystem xml:lang="en">ISIC</classificationSystem>
+        <classificationValue xml:lang="en">420</classificationValue>
       </classification>
       <geography geographyId="34dbbff8-88ce-11de-ad60-0019e336be3a">
         <shortname xml:lang="en">GLO</shortname>
@@ -124,7 +124,8 @@
       </elementaryExchange>
     </flowData>
     <administrativeInformation>
-      <dataGeneratorAndPublication accessRestrictedTo="1" />
+      <dataEntryBy personName="Wilma" />
+      <dataGeneratorAndPublication accessRestrictedTo="1" personName="Fred" />
     </administrativeInformation>
   </activityDataset>
 </ecoSpold>

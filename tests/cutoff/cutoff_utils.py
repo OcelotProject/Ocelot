@@ -1,6 +1,18 @@
 # -*- coding: utf-8 -*-
-from ocelot.transformations.cutoff.utils import flip_non_allocatable_byproducts
+from ocelot.errors import InvalidMultioutputDataset
+from ocelot.transformations.cutoff.utils import (
+    delete_allocation_method,
+    flip_non_allocatable_byproducts,
+)
+import pytest
 
+
+def test_delete_allocation_method():
+    given = {'allocation method': 'something'}
+    assert delete_allocation_method(given) == [{}]
+
+    given = {'foo': 'bar'}
+    assert delete_allocation_method(given) == [{'foo': 'bar'}]
 
 def test_flip_non_allocatable_byproducts():
     given = {

@@ -7,17 +7,23 @@ __all__ = (
     "economic_allocation",
 )
 
+RC_STRING = ", Recycled Content cut-off"
+
 from .allocation import choose_allocation_method, cutoff_allocation
 from .economic import economic_allocation
 from .utils import apply_allocation_factors
-
+from .wastes import handle_waste_outputs, rename_recycled_content_products_after_linking
 
 from ...collection import Collection
 from ..activity_links import check_activity_link_validity
-from .cleanup import remove_consequential_exchanges, drop_rp_activity_links
+from .cleanup import (
+    drop_rp_activity_links,
+    drop_zero_amount_activity_links,
+    remove_consequential_exchanges,
+)
 
 cleanup_activity_links = Collection(
     remove_consequential_exchanges,
     drop_rp_activity_links,
-    check_activity_link_validity,
+    drop_zero_amount_activity_links,
 )
