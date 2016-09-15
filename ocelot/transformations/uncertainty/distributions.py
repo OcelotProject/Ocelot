@@ -6,23 +6,32 @@ import math
 import numpy as np
 
 
-class Undefined:
+class NoUncertainty:
     @staticmethod
     def repair(obj):
-        """Nothing to do for undefined uncertainty"""
+        """Nothing to do for no uncertainty"""
         return obj
 
     @staticmethod
     def rescale(obj, factor):
         """Rescale uncertainty distribution by a numeric ``factor``"""
         obj['amount'] *= factor
-        obj['uncertainty']['minimum'] *= factor
-        obj['uncertainty']['maximum'] *= factor
         return obj
 
     @staticmethod
     def recalculate(obj):
-        """Adjusting pedigree matrix values for undefined uncertainty has no effect"""
+        """Adjusting pedigree matrix values for no uncertainty has no effect"""
+        return obj
+
+
+class Undefined(NoUncertainty):
+    @staticmethod
+    def rescale(obj, factor):
+        """Rescale uncertainty distribution by a numeric ``factor``"""
+        obj['amount'] *= factor
+        obj['uncertainty']['minimum'] *= factor
+        obj['uncertainty']['maximum'] *= factor
+        # TODO: Adjust 95% factor?
         return obj
 
 

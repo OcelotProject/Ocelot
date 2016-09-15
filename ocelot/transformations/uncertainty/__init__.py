@@ -3,13 +3,8 @@
 
 def remove_exchange_uncertainty(exchange):
     """Remove uncertainty from the given ``exchange``"""
-    exchange['uncertainty'] = {
-        'maximum': exchange['amount'],
-        'minimum': exchange['amount'],
-        'pedigree matrix': {},
-        'standard deviation 95%': 0.,
-        'type': 'undefined',
-    }
+    if 'uncertainty' in exchange:
+        del exchange['uncertainty']
     return exchange
 
 
@@ -17,6 +12,7 @@ from ...errors import UnsupportedDistribution
 from .distributions import (
     Lognormal,
     Normal,
+    NoUncertainty,
     Triangular,
     Undefined,
     Uniform,
@@ -29,7 +25,7 @@ TYPE_MAPPING = {
     'triangular': Triangular,
     'undefined': Undefined,
     'uniform': Uniform,
-    None: Undefined,
+    None: NoUncertainty,
 }
 
 
@@ -45,9 +41,6 @@ def scale_exchange(exchange, factor):
 
     Modifies the exchange in place. Returns the modified exchange."""
     if factor == 1:
-        return exchange
-    elif 'uncertainty' not in exchange:
-        exchange['amount'] *= factor
         return exchange
     return get_uncertainty_class(exchange).rescale(exchange, factor)
 
