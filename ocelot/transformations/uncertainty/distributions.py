@@ -107,7 +107,7 @@ class Lognormal:
             return obj
 
     @staticmethod
-    def recalculate(obj, factor):
+    def recalculate(obj):
         """Recalculate uncertainty values based on new pedigree matrix"""
         obj['uncertainty']['variance with pedigree uncertainty'] = (
             obj['uncertainty']['variance'] +
