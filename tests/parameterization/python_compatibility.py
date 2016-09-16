@@ -55,7 +55,11 @@ def test_find_if_boundaries():
     string = "if(foo;bar;nest(me()wow)cool)"
     assert find_if_boundaries(string) == (3, 28)
 
-@pytest.mark.skip(reason="Current approach still doesn't work on nested expressions")
+def test_find_if_boundaries_errors():
+    string = "if(foo;bar;nest(me()wow)cool"
+    with pytest.raises(ValueError):
+        find_if_boundaries(string)
+
 def test_nested_if_clause():
     ds = {'name': ''}
     string = "if(condition1;if(condition2;yes;no);if(condition3;up;down))"
