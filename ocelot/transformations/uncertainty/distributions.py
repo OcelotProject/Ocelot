@@ -7,6 +7,20 @@ import numpy as np
 import stats_arrays as sa
 
 
+"""Uncertainty distributions used in ecospold2.
+
+Provides a common API to useful functions for all distributions.
+
+Still TODO:
+
+* Recalculate doesn't work for normal, uniform, triangular
+* Need consistent story on whether we want to deal with pedigree matrix for uniform and triangular
+* Doesn't support all distributions in ecoinvent
+* Need decision on what 95% thing means in undefined uncertainty
+* Need common log format for changes
+
+"""
+
 class NoUncertainty:
     distribution = sa.NoUncertainty
 
@@ -43,7 +57,11 @@ class NoUncertainty:
             size=size
         ).ravel()
 
+
 class Undefined(NoUncertainty):
+    """Undefined uncertainty distribution.
+
+    This distribution has an uncertainty dictionary, include ``minimum`` and ``maximum`` values. However, as there is no given way to understand these values, they are not checked or used in Ocelot."""
     distribution = sa.UndefinedUncertainty
 
     @staticmethod
@@ -87,8 +105,10 @@ class Lognormal(NoUncertainty):
         """
         if obj['amount'] == 0:
             return remove_exchange_uncertainty(obj)
+        elif obj['uncertainty']['variance with pedigree uncertainty'] == 0:
+            return remove_exchange_uncertainty(obj)
         obj['uncertainty']['mean'] = abs(obj['amount'])
-        obj['negative'] = obj['amount'] < 0
+        obj['uncertainty']['negative'] = obj['amount'] < 0
         obj['uncertainty']['mu'] = math.log(obj['uncertainty']['mean'])
         obj['uncertainty']['variance'] = (
             obj['uncertainty']['variance with pedigree uncertainty'] -
@@ -166,12 +186,16 @@ class Normal(NoUncertainty):
         * Resolve any conflicts between ``variance`` and ``variance with pedigree matrix`` by preferring values in ``variance with pedigree uncertainty`` and ``pedigree matrix``
 
         """
+        if obj['uncertainty']['variance with pedigree uncertainty'] == 0:
+            return remove_exchange_uncertainty(obj)
         obj['uncertainty']['mean'] = obj['amount']
-        # TODO: Is this correct?
-        obj['uncertainty']['variance'] = (
-            obj['uncertainty']['variance with pedigree uncertainty'] -
-            get_pedigree_variance(obj['pedigree matrix'])
-        )
+        # TODO: Need pedigree matrix math to fix variance
+        # The following applies to sum of normal distributions
+        # but we have product of normal and lognormal...
+        # obj['uncertainty']['variance'] = (
+        #     obj['uncertainty']['variance with pedigree uncertainty'] -
+        #     get_pedigree_variance(obj['pedigree matrix'])
+        # )
         return obj
 
     @staticmethod
@@ -189,11 +213,15 @@ class Normal(NoUncertainty):
             \sigma_{new}^{2} = \\frac{\mu_{new}^{2}}{\mu_{old}^{2}} \sigma_{old}^{2}
 
         """
+        if factor == 0:
+            obj['amount'] = 0
+            # TODO: Log this
+            return remove_exchange_uncertainty(obj)
         obj['uncertainty']['variance'] = (
-            (obj['amount'] * factor) ** 2 / obj['amount'] ** 2
-        ) * obj['uncertainty']['variance']
+            (obj['amount'] * factor) / obj['amount']
+        ) ** 2 * obj['uncertainty']['variance']
         obj['amount'] *= factor
-        # Adjust variance with pedigree uncertainty
+        # TODO: Adjust variance with pedigree uncertainty
         return Normal.recalculate(obj)
 
     @staticmethod
@@ -286,7 +314,9 @@ class Triangular(NoUncertainty):
         """Rescale the exchange by a constant numeric ``factor``."""
         obj['uncertainty']['minimum'] *= factor
         obj['uncertainty']['mode'] *= factor
+        obj['amount'] *= factor
         obj['uncertainty']['maximum'] *= factor
+        # Repair will switch min/max if negative factor, and catch factor == 0
         return Triangular.repair(obj)
 
     @staticmethod
@@ -330,6 +360,7 @@ class Uniform(NoUncertainty):
         expected = (ud['minimum'] + ud['maximum']) / 2
         if not np.allclose(obj['amount'], expected):
             # TODO: Log this
+            ud['type'] = 'triangular'
             return Triangular.repair(obj)
         return obj
 
@@ -337,8 +368,9 @@ class Uniform(NoUncertainty):
     def rescale(obj, factor):
         """Rescale the exchange by a constant numeric ``factor``."""
         obj['uncertainty']['minimum'] *= factor
-        obj['uncertainty']['mode'] *= factor
+        obj['amount'] *= factor
         obj['uncertainty']['maximum'] *= factor
+        # Repair will switch min/max if negative factor, and catch factor == 0
         return Uniform.repair(obj)
 
     @staticmethod

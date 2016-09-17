@@ -30,6 +30,9 @@ def test_get_pedigree_variance():
         0.0001 + 0.002 + 0.0006 + 0.12
     )
 
+def test_get_pedigree_variance_no_keys():
+    assert get_pedigree_variance({}) == 0
+
 def test_adjust_pedigree_matrix_time_no_pm():
     assert apmt(None, {}, None) == {}
 
