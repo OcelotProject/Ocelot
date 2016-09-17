@@ -44,13 +44,20 @@ class TolerantParameterSet(ParameterSet):
 
 
 def recalculate(dataset):
-    # Set up an Interpreter with each variable name and its value
+    """Recalculate parameterized relationships within a dataset.
+
+    Modifies values in place.
+
+    Creates a ``TolerantParameterSet``, populates it with named parameters with a dataset, and then gets the evaluation order the graph of parameter relationships. After reevaluating all named parameters, creates an ``Interpreter`` with named parameters and all of numpy in its namespace. This interpreter is used to evaluate all other formulas in the dataset.
+
+    Formulas that divide by zero are evaluated to zero.
+
+    Returns the modified dataset."""
     interpreter = Interpreter()
     parameter_set = TolerantParameterSet(extract_named_parameters(dataset))
     for key, value in parameter_set.evaluate().items():
         interpreter.symtable[key] = value
 
-    # Update each parameterized exchange
     for exc in iterate_all_parameters(dataset):
         if 'formula' in exc:
             try:

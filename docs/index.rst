@@ -23,6 +23,7 @@ Contents:
    data_format
    foundation
    filesystem
+   uncertainty
    tests
    contributing
 
