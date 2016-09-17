@@ -273,11 +273,7 @@ class Triangular:
 
     @staticmethod
     def recalculate(obj):
-        """TODO: This is currently not functioning correctly.
-
-        Use new pedigree matrix values to adjust the variance based on `The application of the pedigree
-        approach to the distributions foreseen in ecoinvent v3 by Müller,
-        et al <http://link.springer.com/article/10.1007/s11367-014-0759-5>`__."""
+        """This is currently a no-op, as pedigree matrices are not used for this distribution. However, it would be nice to have it in the future for completeness."""
         return obj
 
     @staticmethod
@@ -327,11 +323,7 @@ class Uniform:
 
     @staticmethod
     def recalculate(obj):
-        """TODO: This is currently not functioning correctly.
-
-        Use new pedigree matrix values to adjust the variance based on `The application of the pedigree
-        approach to the distributions foreseen in ecoinvent v3 by Müller,
-        et al <http://link.springer.com/article/10.1007/s11367-014-0759-5>`__."""
+        """This is currently a no-op, as pedigree matrices are not used for this distribution. However, it would be nice to have it in the future for completeness."""
         return obj
 
     @staticmethod
