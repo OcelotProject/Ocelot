@@ -5,12 +5,25 @@ try:
 except ImportError:
     bw2 = None
 from ..transformations.utils import get_single_reference_product
+<<<<<<< HEAD
+from ..uncertainty import get_uncertainty_class
+=======
+>>>>>>> master
 
 
 def refinery_gas_is_the_bane_of_my_existence(exc):
     return (exc['name'] != 'refinery gas' or exc.get('code'))
 
 
+<<<<<<< HEAD
+def translate_uncertainty(dct, exc):
+    """Add Brightway2/stats_arrays uncertainty fields"""
+    dct.update(get_uncertainty_class(exc).to_stats_array(exc))
+    return dct
+
+
+=======
+>>>>>>> master
 class Brightway2Converter:
     """Convert a database to the Brightway2 format.
 
@@ -88,7 +101,10 @@ class Brightway2Converter:
     @staticmethod
     def convert_to_brightway2(data, database_name):
         # TODO: Ensure database is SOUPy and has codes
+<<<<<<< HEAD
+=======
         # TODO: Translate uncertainty types
+>>>>>>> master
         return (Brightway2Converter.translate_activity(ds, database_name)
                 for ds in data)
 
@@ -113,7 +129,14 @@ class Brightway2Converter:
         data['production amount'] = rp['amount']
 
         data['exchanges'] = [
+<<<<<<< HEAD
+            translate_uncertainty(
+                EXCHANGE_MAPPING[exc['type']](exc, database_name),
+                exc
+            )
+=======
             EXCHANGE_MAPPING[exc['type']](exc, database_name)
+>>>>>>> master
             for exc in ds['exchanges']
             if exc['amount']
             and refinery_gas_is_the_bane_of_my_existence(exc)
@@ -130,6 +153,10 @@ class Brightway2Converter:
             'categories': (exc['compartment'], exc['subcompartment'])
         }
 
+<<<<<<< HEAD
+    @staticmethod
+=======
+>>>>>>> master
     def translate_technosphere_exchange(exc, database_name):
         return {
             'type': "technosphere",
@@ -137,6 +164,10 @@ class Brightway2Converter:
             'input': (database_name, exc['code'])
         }
 
+<<<<<<< HEAD
+    @staticmethod
+=======
+>>>>>>> master
     def translate_production_exchange(exc, database_name):
         return {
             'type': "production",
@@ -144,6 +175,10 @@ class Brightway2Converter:
             'input': (database_name, exc['code'])
         }
 
+<<<<<<< HEAD
+    @staticmethod
+=======
+>>>>>>> master
     def translate_byproduct_exchange(exc, database_name):
         return {
             'type': "technosphere",
