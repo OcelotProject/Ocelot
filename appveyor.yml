@@ -6,11 +6,8 @@ environment:
     - PYTHON: "C:/Python35"
 
 install:
-  # Note: Getting lxml installed was a bit of a pain
-  # Final working solution is to download wheel from
-  # Gohlke's unofficial binaries, then relabel ABI from `cp35m` to `none`
-  # This seems to work, at least well enough for our tests to pass
-  - "%PYTHON%/Scripts/pip.exe install -r requirements-appveyor.txt"
+  - powershell appveyor-install.ps1
+  - "%PYTHON%/Scripts/pip.exe install -r requirements.txt"
 
 test_script:
   - "%PYTHON%/Scripts/py.test.exe"

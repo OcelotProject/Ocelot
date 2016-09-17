@@ -17,7 +17,7 @@ Then, run the following commands to create an Ocelot environment:
 
 .. code-block:: bash
 
-    conda create -y -n ocelot python=3.5 lxml cytoolz
+    conda create -y -n ocelot python=3.5 lxml cytoolz numpy scipy pandas
 
 On Windows, then run:
 
@@ -52,7 +52,7 @@ If you want, you can also install `Brightway2 <https://brightwaylca.org/>`__ in 
 .. code-block:: bash
 
     conda install wheel && conda update pip wheel setuptools
-    conda install numpy ipython ipython-notebook jupyter matplotlib scipy flask requests docopt whoosh xlsxwriter xlrd unidecode appdirs future psutil unicodecsv wrapt
+    conda install ipython ipython-notebook jupyter matplotlib flask requests docopt whoosh xlsxwriter xlrd unidecode appdirs future psutil unicodecsv wrapt
     pip install --no-cache-dir eight
     pip install --no-cache-dir brightway2
 
