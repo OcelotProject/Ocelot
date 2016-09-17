@@ -48,7 +48,3 @@ def scale_exchange(exchange, factor):
 def adjust_pedigree_matrix_time(ds, exchange, year):
     exchange = apmt(ds, exchange, year)
     return get_uncertainty_class(exchange).recalculate(exchange)
-
-
-# def repair_exchange(exchange):
-#     return get_uncertainty_class(exchange).repair(exchange)

@@ -51,17 +51,16 @@ def find_if_boundaries(string):
 
         # Skip escape sequence
         if string[pos-1] == '\\':
+            # TODO: Think about what \( would actually mean in a formula.
             continue
         elif character == "(":
             stack.append(pos + 1)
         elif character == ")":
-            if stack:
-                prevpos = stack.pop()
-                if not stack:
-                    return (prevpos, pos)
-            else:
-                message = "Unmatched closing parentheses at position {}:\n\t{}"
-                raise ValueError(message.format(pos, string))
+            # Unmatched closing parentheses can't happen because we return
+            # as soon as we are balanced.
+            prevpos = stack.pop()
+            if not stack:
+                return (prevpos, pos)
 
     message = "Unmatched opening parentheses at position {}:\n\t{}"
     raise ValueError(message.format(stack[0], string))

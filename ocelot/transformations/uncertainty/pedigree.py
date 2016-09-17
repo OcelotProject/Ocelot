@@ -26,7 +26,6 @@ PEDIGREE_MATRIX_VALUES = {
 }
 
 
-
 def get_pedigree_variance(pm, version="original"):
     """Get additional variance added by ``pm``"""
     assert all(isinstance(obj, int) for obj in pm.values())
@@ -38,7 +37,7 @@ def adjust_pedigree_matrix_time(ds, exc, year):
         return exc
 
     new_year = year if isinstance(year, int) else arrow.get(year).year
-    difference = new_year - arrow.get(ds['end date'])
+    difference = new_year - arrow.get(ds['end date']).year
     current_value = exc['pedigree matrix']['temporal correlation']
 
     if difference > 0:

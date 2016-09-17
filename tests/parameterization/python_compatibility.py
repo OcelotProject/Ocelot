@@ -31,7 +31,7 @@ def test_fix_math_formulas_no_formula():
     given = [{
         'name': 'a name',
         'exchanges': [{'amount': 1,}],
-        'parameters': [{'amount': 2}]
+        'parameters': [{'amount': 2, 'variable': 'foo'}]
     }]
     assert fix_math_formulas(given)
 
@@ -54,6 +54,10 @@ def test_find_if_clause_same_value():
 def test_find_if_boundaries():
     string = "if(foo;bar;nest(me()wow)cool)"
     assert find_if_boundaries(string) == (3, 28)
+
+def test_find_if_boundaries_skip_escaped():
+    string = "if(foo;\(bar;nest(me()wow)cool)"
+    assert find_if_boundaries(string) == (3, 30)
 
 def test_find_if_boundaries_errors():
     string = "if(foo;bar;nest(me()wow)cool"
