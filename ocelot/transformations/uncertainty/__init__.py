@@ -37,7 +37,7 @@ def get_uncertainty_class(exchange):
 
 
 def scale_exchange(exchange, factor):
-    """Scale an ``exchange`` and its uncertainty by a constant ``factor``.
+    """Scale an ``exchange`` and its uncertainty by a constant numeric ``factor``.
 
     Modifies the exchange in place. Returns the modified exchange."""
     if factor == 1:

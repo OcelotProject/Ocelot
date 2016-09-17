@@ -121,12 +121,14 @@ Pedigree Matrix
 
 Pedigree matrices are stored as dictionaries (see :ref:`the data format <uncertainty_format>`). Currently, Ocelot only adjust the temporal correlation to adjust datasets to the reference year, but other adjustments are possible.
 
-To adjust uncertainty values for a new pedigree matrix, call the method ``recalculate`` for the correct uncertainty distribution, i.e. something like one of the following:
+To adjust uncertainty values for a new pedigree matrix, call the method ``recalculate`` for the correct uncertainty distribution, i.e. one of the following:
 
 .. code-block:: python
 
-    Lognormal.recalculate(exc)
+    # Works always
     get_uncertainty_class(exc).recalculate(exc)
+    # If you know the specific distribution
+    Lognormal.recalculate(exc)
 
 To adjust the pedigree matrix value for temporal correlation to a given reference year, use the following utility function (which will already recalculate the uncertainty values):
 
