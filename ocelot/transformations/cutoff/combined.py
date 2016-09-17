@@ -6,9 +6,9 @@ from ..utils import (
     allocatable_production,
     get_single_reference_product,
     nonreference_product,
-    remove_exchange_uncertainty,
 )
 from ..parameterization import recalculate
+from ..uncertainty import remove_exchange_uncertainty
 from .economic import economic_allocation
 from .validation import valid_merge_datasets
 from .wastes import waste_treatment_allocation, recycling_allocation
@@ -67,8 +67,9 @@ def combined_production(dataset):
         new_ds, rp = deepcopy(dataset), deepcopy(exc)
         new_ds['exchanges'] = [selected_product(rp)] + \
             [nonreference_product(obj)
-             for obj in nonzero_reference_product_exchanges(new_ds)
-             if obj != exc] + \
+             for obj in new_ds['exchanges']
+             if obj['type'] == 'reference product'
+             and obj != exc] + \
             [deepcopy(obj) for obj in dataset['exchanges']
              if obj['type'] != 'reference product']
         new_datasets.append(recalculate(new_ds))

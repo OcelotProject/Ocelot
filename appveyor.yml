@@ -3,16 +3,24 @@ build: false
 
 environment:
   matrix:
-    - PYTHON: "C:/Python35"
+    - PYTHON: "C:\\Python35_64"
+      PYTHON_VERSION: "3.5"
+      PYTHON_ARCH: "64"
+      CONDA_PY: "35"
+      CONDA_NPY: "110"
+
+    - PYTHON: "C:\\Python35_32"
+      PYTHON_VERSION: "3.5"
+      PYTHON_ARCH: "32"
+      CONDA_PY: "35"
+      CONDA_NPY: "110"
 
 install:
-  # Note: Getting lxml installed was a bit of a pain
-  # Final working solution is to download wheel from
-  # Gohlke's unofficial binaries, then relabel ABI from `cp35m` to `none`
-  # This seems to work, at least well enough for our tests to pass
-  - "%PYTHON%/Scripts/pip.exe install -r requirements-appveyor.txt"
+  - powershell .\\ci\\appveyor-install.ps1
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "pip install --no-cache-dir -r requirements.txt"
 
 test_script:
-  - "%PYTHON%/Scripts/py.test.exe"
-  - "%PYTHON%/python.exe setup.py -q install"
-  - "%PYTHON%/python.exe tests/manual/run_all_ci.py"
+  - "py.test"
+  - "python setup.py -q install"
+  - "python.exe tests/manual/run_all_ci.py"

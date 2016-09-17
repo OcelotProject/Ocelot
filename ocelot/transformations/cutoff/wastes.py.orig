@@ -31,7 +31,12 @@ def recycling_allocation(dataset):
     """
     rp = get_single_reference_product(dataset)
     rp['type'] = 'from technosphere'
+<<<<<<< HEAD
     rp = scale_exchange(rp, -1)
+=======
+    # TODO: Use rescale_exchange when new uncertainties code is merged
+    rp['amount'] = -1 * rp['amount']
+>>>>>>> master
     return economic_allocation(dataset)
 
 

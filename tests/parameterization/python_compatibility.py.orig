@@ -31,7 +31,11 @@ def test_fix_math_formulas_no_formula():
     given = [{
         'name': 'a name',
         'exchanges': [{'amount': 1,}],
+<<<<<<< HEAD
         'parameters': [{'amount': 2, 'variable': 'foo'}]
+=======
+        'parameters': [{'amount': 2}]
+>>>>>>> master
     }]
     assert fix_math_formulas(given)
 

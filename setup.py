@@ -50,6 +50,7 @@ setup(
         'pyprind',
         'pyrsistent',
         'pytest',
+        'stats_arrays',
         'toolz',
         'voluptuous',
         'wrapt',

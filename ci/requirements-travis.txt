@@ -13,6 +13,7 @@ pyrsistent
 pytest
 pytest-cov
 python-coveralls
+stats_arrays
 toolz
 voluptuous
 wrapt

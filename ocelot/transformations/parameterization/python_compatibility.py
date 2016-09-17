@@ -6,6 +6,10 @@ import ast
 import logging
 import re
 
+# TODO: A more elegant solution would probably use pyparsing
+# for all this cleanup, etc., but this is a whole new and
+# difficult domain of knowledge.
+
 
 KNOWN_MATH_SUBSTITUTIONS = (
     # bad string, replacement
@@ -28,30 +32,86 @@ RESERVED_WORDS_STARTING = [(word, re.compile("{}[^a-zA-Z_]".format(word)))
                            for word in RESERVED_WORDS]
 
 IF_RE = re.compile("if\((?P<condition>[^;]+);(?P<if_yes>[^;]+);(?P<if_no>[^;)]+)\)")
+IF_BEGINNING = re.compile("if\(")
+COMPLETE_IF = re.compile("^if\((?P<condition>[^;]+);(?P<if_yes>[^;]+);(?P<if_no>.+)\)$")
 
 POWER_RE = re.compile("power\((?P<base>[^;]+);(?P<exponent>[^;]+)\)")
 
 
-def find_if_clause(ds, string):
-    """Reformat clauses that use ``if(condition;if_true;if_false) syntax.
+def find_if_boundaries(string):
+    """Find beginning and end indices of an ``if(a;b;c)`` statement.
 
-    This won't work on nested if clauses, or anything that uses parentheses inside ``if_true`` or ``if_false``."""
-    while IF_RE.search(string):
-        match = IF_RE.search(string)
-        match_string = match.group(0)
-        condition, if_true, if_false = match.groups()
-        if if_true == if_false:
-            replacement = "({})".format(if_true.strip())
-        else:
-            replacement = "(({}) if ({}) else ({}))".format(
-                if_true, condition, if_false
-            )
-        logging.info({
-            'type': 'table element',
-            'data': (ds['name'], '', match_string, replacement)
-        })
-        string = string.replace(match_string, replacement)
-    return string
+    Uses a manual count (``stack``) of opening and closing parentheses.
+
+    Adapted from http://stackoverflow.com/questions/5454322/python-how-to-match-nested-parentheses-with-regex"""
+    stack = []
+    for m in re.finditer(r'[()]', string):
+        pos = m.start()
+        character = string[pos]
+
+        # Skip escape sequence
+        if string[pos-1] == '\\':
+            # TODO: Think about what \( would actually mean in a formula.
+            continue
+        elif character == "(":
+            stack.append(pos + 1)
+        elif character == ")":
+            # Unmatched closing parentheses can't happen because we return
+            # as soon as we are balanced.
+            prevpos = stack.pop()
+            if not stack:
+                return (prevpos, pos)
+
+    message = "Unmatched opening parentheses at position {}:\n\t{}"
+    raise ValueError(message.format(stack[0], string))
+
+
+def replace_if_statement(substring):
+    """Replace an ``if(a;b;c)`` clause. ``substring`` must contain the if clause exactly."""
+    match = COMPLETE_IF.search(substring)
+    match_string = match.group(0)
+    condition, if_true, if_false = match.groups()
+    if if_true == if_false:
+        replacement = "({})".format(if_true.strip())
+    else:
+        replacement = "(({}) if ({}) else ({}))".format(
+            if_true, condition, if_false
+        )
+    return substring.replace(match_string, replacement)
+
+
+def find_replace_nested_if_statements(ds, line):
+    """Iteratively find and replace nested if statements.
+
+    In order to handle nesting correctly, replaces the smallest (by length) if statement each time."""
+    original = deepcopy(line)
+    while IF_BEGINNING.search(line):
+        # Get start indices and length of all if statements
+        match_positions = []
+        for match in IF_BEGINNING.finditer(line):
+            start = match.start()
+            _, end = find_if_boundaries(line[start:])
+            match_positions.append((start, end))
+
+        # Sort by smallest length and replace this one
+        match_positions.sort(key=lambda x: (x[1]))
+        start, end = match_positions[0]
+        line = line[:start] + replace_if_statement(line[start:start + end + 1]) + line[start + end + 1:]
+    logging.info({
+        'type': 'table element',
+        'data': (ds['name'], '', original, line)
+    })
+    return line
+
+
+def find_if_clause(ds, string):
+    """Reformat clauses that use ``if(condition;if_true;if_false)`` syntax.
+
+    Can handle nested if clauses. Will replace if statements if ``if_true`` is equal to ``if_false``."""
+    if string.count("if("):
+        return find_replace_nested_if_statements(ds, string)
+    else:
+        return string
 
 
 def find_power_clause(ds, string):

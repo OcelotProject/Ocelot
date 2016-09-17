@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ocelot.transformations.utils import *
+from ocelot.transformations.uncertainty import remove_exchange_uncertainty
 from ocelot.errors import InvalidMultioutputDataset, ZeroProduction
 import pytest
 
@@ -193,16 +194,7 @@ def test_label_reference_product_multiple_rp():
         label_reference_product(invalid)
 
 def test_remove_uncertainty():
-    expected = {
-        'amount': 42,
-        'uncertainty': {
-        'minimum': 42,
-            'maximum': 42,
-            'pedigree matrix': {},
-            'standard deviation 95%': 0,
-            'type': 'undefined'
-        }
-    }
+    expected = {'amount': 42}
     assert remove_exchange_uncertainty({'amount': 42}) == expected
 
 def test_nonreference_product():
@@ -213,13 +205,6 @@ def test_nonreference_product():
     expected = {
         'type': 'dropped product',
         'amount': 0,
-        'uncertainty': {
-            'minimum': 0,
-            'maximum': 0,
-            'pedigree matrix': {},
-            'standard deviation 95%': 0,
-            'type': 'undefined'
-        }
     }
     assert nonreference_product(given) == expected
 
@@ -247,23 +232,9 @@ def test_choose_reference_product_exchange(no_normalization):
     expected = {'exchanges': [{
         'amount': 42,
         'type': 'reference product',
-        'uncertainty': {
-            'minimum': 42,
-            'maximum': 42,
-            'pedigree matrix': {},
-            'standard deviation 95%': 0,
-            'type': 'undefined'
-        }
     }, {
         'type': 'dropped product',
         'amount': 0,
-        'uncertainty': {
-            'minimum': 0,
-            'maximum': 0,
-            'pedigree matrix': {},
-            'standard deviation 95%': 0,
-            'type': 'undefined'
-        }
     }, {
         'type': 'other thing',
         'amount': 10
@@ -291,23 +262,9 @@ def test_choose_reference_product_exchange_byproducts(no_normalization):
     expected = {'exchanges': [{
         'amount': 42,
         'type': 'reference product',
-        'uncertainty': {
-            'minimum': 42,
-            'maximum': 42,
-            'pedigree matrix': {},
-            'standard deviation 95%': 0,
-            'type': 'undefined'
-        }
     }, {
         'type': 'dropped product',
         'amount': 0,
-        'uncertainty': {
-            'minimum': 0,
-            'maximum': 0,
-            'pedigree matrix': {},
-            'standard deviation 95%': 0,
-            'type': 'undefined'
-        }
     }, {
         'type': 'other thing',
         'amount': 10

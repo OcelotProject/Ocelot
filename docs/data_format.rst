@@ -164,6 +164,8 @@ Some fields can only take certain values. The activity dataset, for example, ref
     valid_technology_levels = Any("undefined", "new", "modern",
                                   "current", "old", "outdated")
 
+.. _uncertainty_format:
+
 Uncertainty
 -----------
 
