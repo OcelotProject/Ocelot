@@ -4,9 +4,12 @@ from .pedigree import get_pedigree_variance
 import logging
 import math
 import numpy as np
+import stats_arrays as sa
 
 
 class NoUncertainty:
+    distribution = sa.NoUncertainty
+
     @staticmethod
     def repair(obj):
         """No-op for no uncertainty"""
@@ -23,17 +26,26 @@ class NoUncertainty:
         """Adjusting pedigree matrix values for no uncertainty has no effect"""
         return obj
 
-    @staticmethod
-    def to_stats_arrays(obj):
+    @classmethod
+    def to_stats_arrays(cls, obj):
         """Returns a ``stats_arrays`` compatible dictionary."""
         return {
-            'uncertainty type': 1,
+            'uncertainty type': cls.distribution.id,
             'amount': obj['amount'],
             'loc': obj['amount'],
         }
 
+    @classmethod
+    def sample(cls, obj, size=1):
+        """Draw ``size`` samples from this uncertainty distribution"""
+        return cls.distribution.bounded_random_variables(
+            cls.distribution.from_dicts(cls.to_stats_arrays(obj)),
+            size=size
+        ).ravel()
 
 class Undefined(NoUncertainty):
+    distribution = sa.UndefinedUncertainty
+
     @staticmethod
     def rescale(obj, factor):
         """Rescale uncertainty distribution by a numeric ``factor``"""
@@ -43,18 +55,20 @@ class Undefined(NoUncertainty):
         # TODO: Adjust 95% factor?
         return obj
 
-    @staticmethod
-    def to_stats_arrays(obj):
+    @classmethod
+    def to_stats_arrays(cls, obj):
         """Returns a ``stats_arrays`` compatible dictionary."""
         return {
-            'uncertainty type': 0,
+            'uncertainty type': cls.distribution.id,
             'amount': obj['amount'],
             'loc': obj['amount'],
         }
 
 
-class Lognormal:
+class Lognormal(NoUncertainty):
     """`Lognormal distribution <https://en.wikipedia.org/wiki/Log-normal_distribution>`__, defined by the mean (:math:`\mu`, called ``mu``) and variance (:math:`\sigma^{2}`, called ``variance``) of the distribution's natural logarithm."""
+    distribution = sa.LognormalUncertainty
+
     @staticmethod
     def repair(obj, fix_extremes=True):
         """Fix some common failures in lognormal distributions.
@@ -122,15 +136,15 @@ class Lognormal:
         )
         return obj
 
-    @staticmethod
-    def to_stats_arrays(obj):
+    @classmethod
+    def to_stats_arrays(cls, obj):
         """Returns a ``stats_arrays`` compatible dictionary.
 
         As negative lognormal distributions are not defined using the normal distribution functions, this method sets a ``negative`` flag. ``stats_arrays`` will adjust any results to have the correct sign.
 
         Uses the standard deviation instead of the variance for compatibility with `scipy <http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.lognorm.html#scipy.stats.lognorm>`__ and `numpy <http://docs.scipy.org/doc/numpy/reference/generated/numpy.random.lognormal.html#numpy.random.lognormal>`__."""
         return {
-            'uncertainty type': 2,
+            'uncertainty type': cls.distribution.id,
             'amount': obj['amount'],
             'loc': obj['uncertainty']['mu'],
             'scale': math.sqrt(obj['uncertainty']['variance with pedigree uncertainty']),
@@ -138,8 +152,10 @@ class Lognormal:
         }
 
 
-class Normal:
+class Normal(NoUncertainty):
     """`Normal distribution <https://en.wikipedia.org/wiki/Normal_distribution>`__, defined by mean and variance."""
+    distribution = sa.NormalUncertainty
+
     @staticmethod
     def repair(obj):
         """Fix some common failures in normal distributions.
@@ -228,21 +244,23 @@ class Normal:
         # )
         return obj
 
-    @staticmethod
-    def to_stats_arrays(obj):
+    @classmethod
+    def to_stats_arrays(cls, obj):
         """Returns a ``stats_arrays`` compatible dictionary.
 
         Uses standard deviation instead of variance for compatibility with `scipy <http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.norm.html>`__ and `numpy <http://docs.scipy.org/doc/numpy/reference/generated/numpy.random.normal.html>`__."""
         return {
-            'uncertainty type': 3,
+            'uncertainty type': cls.distribution.id,
             'amount': obj['amount'],
             'loc': obj['uncertainty']['mean'],
             'scale': math.sqrt(obj['uncertainty']['variance with pedigree uncertainty'])
         }
 
 
-class Triangular:
+class Triangular(NoUncertainty):
     """`Triangular distribution <https://en.wikipedia.org/wiki/Triangular_distribution>`__, defined by minimum, mode, and maximum."""
+    distribution = sa.TriangularUncertainty
+
     @staticmethod
     def repair(obj):
         """Make sure the provided values are a valid triangular distribution.
@@ -276,11 +294,11 @@ class Triangular:
         """This is currently a no-op, as pedigree matrices are not used for this distribution. However, it would be nice to have it in the future for completeness."""
         return obj
 
-    @staticmethod
-    def to_stats_arrays(obj):
+    @classmethod
+    def to_stats_arrays(cls, obj):
         """Returns a ``stats_arrays`` compatible dictionary."""
         return {
-            'uncertainty type': 5,
+            'uncertainty type': cls.distribution.id,
             'amount': obj['amount'],
             'loc': obj['uncertainty']['mode'],
             'minimum': obj['uncertainty']['minimum'],
@@ -288,8 +306,10 @@ class Triangular:
         }
 
 
-class Uniform:
+class Uniform(NoUncertainty):
     """`Uniform distribution <https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)>`__, defined by minimum and maximum."""
+    distribution = sa.UniformUncertainty
+
     @staticmethod
     def repair(obj):
         """Make sure the provided values are a valid uniform distribution.
@@ -326,11 +346,11 @@ class Uniform:
         """This is currently a no-op, as pedigree matrices are not used for this distribution. However, it would be nice to have it in the future for completeness."""
         return obj
 
-    @staticmethod
-    def to_stats_arrays(obj):
+    @classmethod
+    def to_stats_arrays(cls, obj):
         """Returns a ``stats_arrays`` compatible dictionary."""
         return {
-            'uncertainty type': 4,
+            'uncertainty type': cls.distribution.id,
             'amount': obj['amount'],
             'minimum': obj['uncertainty']['minimum'],
             'maximum': obj['uncertainty']['maximum'],
