@@ -13,6 +13,8 @@ from . import RC_STRING
 from copy import deepcopy
 import logging
 
+logger = logging.getLogger('ocelot')
+
 
 @valid_recycling_activity
 def recycling_allocation(dataset):
@@ -130,7 +132,7 @@ def create_recycled_content_datasets(data):
             rc = create_new_recycled_content_dataset(ds, exc)
             new_datasets[rc['name']] = rc
     for name in new_datasets:
-        logging.info({
+        logger.info({
             'type': 'table element',
             'data': (name,),
         })
@@ -155,7 +157,7 @@ def flip_non_allocatable_byproducts(dataset):
     for exc in dataset['exchanges']:
         if (exc['type'] == 'byproduct' and
             exc['byproduct classification'] != 'allocatable product'):
-            logging.info({
+            logger.info({
                 'type': 'table element',
                 'data': (dataset['name'], exc['name'], exc['byproduct classification']),
             })

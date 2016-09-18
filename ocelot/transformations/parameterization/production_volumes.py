@@ -2,6 +2,8 @@
 import logging
 import uuid
 
+logger = logging.getLogger('ocelot')
+
 
 def create_pv_parameters(dataset):
     """Remove all production volume parameterization.
@@ -25,7 +27,7 @@ def create_pv_parameters(dataset):
                 'variable': pv['variable'],
                 'amount': pv['amount']
             }
-            logging.info({
+            logger.info({
                 'type': 'table element',
                 'data': (dataset['name'], new_parameter['name'], pv['amount'])
             })

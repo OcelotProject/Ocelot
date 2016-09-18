@@ -7,7 +7,7 @@ from .filesystem import (
     save_intermediate_result,
 )
 from .io import extract_directory
-from .logger import create_log
+from .logger import create_log, create_detailed_log
 from .report import HTMLReport
 from .results import SaveStrategy
 from .utils import get_function_meta, validate_configuration
@@ -17,6 +17,8 @@ import logging
 import os
 import shutil
 import sys
+
+logger = logging.getLogger('ocelot')
 
 
 def apply_transformation(function, counter, data, output_dir, save_strategy):
@@ -78,9 +80,10 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
         output_manager = OutputDir()
         counter = itertools.count()
         logfile_path = create_log(output_manager.directory)
+        create_detailed_log(output_manager.directory)
         print("Opening log file at: {}".format(logfile_path))
 
-        logging.info({
+        logger.info({
             'type': 'report start',
             'uuid': output_manager.report_id,
             'count': len(data),
@@ -96,7 +99,7 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
         print("Saving final results")
         save_intermediate_result(output_manager.directory, "final-results", data)
 
-        logging.info({'type': 'report end'})
+        logger.info({'type': 'report end'})
 
         html = HTMLReport(logfile_path, show)
 

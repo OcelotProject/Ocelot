@@ -15,9 +15,22 @@ class JsonFormatter(logging.Formatter):
 
 
 def create_log(output_dir):
-    logger = logging.getLogger()
+    logger = logging.getLogger('ocelot')
+    logger.propagate = False
     formatter = JsonFormatter()
     filepath = os.path.join(output_dir, "report.log.json")
+    handler = logging.FileHandler(filepath, encoding='utf-8')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+    return filepath
+
+
+def create_detailed_log(output_dir):
+    logger = logging.getLogger('ocelot-detailed')
+    logger.propagate = False
+    formatter = JsonFormatter()
+    filepath = os.path.join(output_dir, "detailed.log.json")
     handler = logging.FileHandler(filepath, encoding='utf-8')
     handler.setFormatter(formatter)
     logger.addHandler(handler)

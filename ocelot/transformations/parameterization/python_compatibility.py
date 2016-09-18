@@ -6,6 +6,8 @@ import ast
 import logging
 import re
 
+logger = logging.getLogger('ocelot')
+
 # TODO: A more elegant solution would probably use pyparsing
 # for all this cleanup, etc., but this is a whole new and
 # difficult domain of knowledge.
@@ -97,7 +99,7 @@ def find_replace_nested_if_statements(ds, line):
         match_positions.sort(key=lambda x: (x[1]))
         start, end = match_positions[0]
         line = line[:start] + replace_if_statement(line[start:start + end + 1]) + line[start + end + 1:]
-    logging.info({
+    logger.info({
         'type': 'table element',
         'data': (ds['name'], '', original, line)
     })
@@ -120,7 +122,7 @@ def find_power_clause(ds, string):
         match_string = match.group(0)
         as_numbers = [float(x) for x in match.groups()]
         replacement = "(({})**({}))".format(*as_numbers)
-        logging.info({
+        logger.info({
             'type': 'table element',
             'data': (ds['name'], '', match_string, replacement)
         })
@@ -136,7 +138,7 @@ def fix_math_formulas(data):
                 continue
             for bad, good in KNOWN_MATH_SUBSTITUTIONS:
                 if bad in exc['formula']:
-                    logging.info({
+                    logger.info({
                         'type': 'table element',
                         'data': (ds['name'], exc['formula'], bad, good)
                     })
@@ -203,7 +205,7 @@ def check_and_fix_formula(ds, string):
     for word, reg_exp in RESERVED_WORDS_STARTING:
         if reg_exp.match(updated):
             updated = updated.replace(word, word.upper())
-            logging.info({
+            logger.info({
                 'type': 'table element',
                 'data': (ds['name'], word, string)
             })
@@ -219,7 +221,7 @@ def check_and_fix_formula(ds, string):
                 found.append(word)
         try:
             get_ast_names(updated)
-            logging.info({
+            logger.info({
                 'type': 'table element',
                 'data': (ds['name'], ";".join(found), string)
             })
@@ -237,7 +239,7 @@ def replace_reserved_words(data):
     for ds in data:
         for exc in iterate_all_parameters(ds):
             if 'variable' in exc and exc['variable'] in RESERVED_WORDS:
-                logging.info({
+                logger.info({
                     'type': 'table element',
                     'data': (ds['name'], exc['variable'], exc['variable'])
                 })
@@ -263,7 +265,7 @@ def delete_unparsable_formulas(data):
                 try:
                     elements = get_ast_names(exc['formula'])
                 except UnparsableFormula:
-                    logging.info({
+                    logger.info({
                         'type': 'table element',
                         'data': (ds['name'], _(exc['formula']))
                     })

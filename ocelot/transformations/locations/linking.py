@@ -5,6 +5,7 @@ from ...errors import UnresolvableActivityLink, OverlappingMarkets
 from ..utils import get_single_reference_product
 import logging
 
+logger = logging.getLogger('ocelot')
 
 unlinked = lambda x: x['type'] == 'from technosphere' and not x.get('code')
 
@@ -23,7 +24,7 @@ def actualize_activity_links(data):
         if len(references) != 1:
             # TODO: Resolve all sorts of special cases...
             # Just logging for now
-            logging.info({
+            logger.info({
                 'type': 'table element',
                 'data': (link['activity link'], link['name'], link['amount'])
             })
@@ -63,7 +64,7 @@ def link_consumers_to_recycled_content_activities(data):
 
             sup = contributors[0]
             exc['code'] = sup['code']
-            logging.info({
+            logger.info({
                 'type': 'table element',
                 'data': (ds['name'], exc['name'], ds['location'], sup['name'])
             })
@@ -100,7 +101,7 @@ def link_consumers_to_regional_markets(data):
                 sup = contained[0]
                 exc['code'] = sup['code']
                 # TODO: Too many links, create separate log
-                # logging.info({
+                # logger.info({
                 #     'type': 'table element',
                 #     'data': (exc['name'], ds['location'],
                 #              sup['name'], sup['location'])
@@ -144,7 +145,7 @@ def link_consumers_to_global_markets(data):
             sup = contributors[0]
             exc['code'] = sup['code']
             # TODO: Too many links, create separate log
-            # logging.info({
+            # logger.info({
             #     'type': 'table element',
             #     'data': (sup['name'], ds['name'], exc['name'], ds['location'])
             # })
@@ -160,7 +161,7 @@ def log_and_delete_unlinked_exchanges(data):
     """Log and delete exchanges which haven't been linked."""
     for ds in data:
         for exc in filter(unlinked, ds['exchanges']):
-            logging.info({
+            logger.info({
                 'type': 'table element',
                 'data': (ds['name'], exc['name'], exc['amount'])
             })
