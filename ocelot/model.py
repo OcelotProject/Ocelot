@@ -2,7 +2,6 @@
 from .configuration import default_configuration
 from .filesystem import (
     cache_data,
-    check_cache_directory,
     OutputDir,
     save_intermediate_result,
 )
@@ -14,7 +13,6 @@ from .utils import get_function_meta, validate_configuration
 from collections.abc import Iterable
 import itertools
 import logging
-import os
 import shutil
 import sys
 import wrapt
@@ -99,10 +97,9 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
         save_intermediate_result(output_manager.directory, "final-results", data)
 
         logging.info({'type': 'report end'})
-
-        html = HTMLReport(logfile_path, show)
-
+        HTMLReport(logfile_path, show)
         return output_manager, data
+
     except KeyboardInterrupt:
         print("Terminating Ocelot model run")
         print("Deleting output directory:\n{}".format(output_manager.directory))

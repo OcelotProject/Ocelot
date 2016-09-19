@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from ...collection import Collection
-from ...errors import InvalidMultioutputDataset
 from ...wrapper import TransformationWrapper
 from ..utils import allocatable_production
 from .combined import (
@@ -13,7 +12,6 @@ from .markets import constrained_market_allocation
 from .utils import delete_allocation_method
 from .validation import valid_no_allocation_dataset
 from .wastes import waste_treatment_allocation, recycling_allocation
-import itertools
 import logging
 
 

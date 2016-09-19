@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-from ...collection import Collection
 from ...errors import ParameterizationError
 from ..utils import iterate_all_parameters
-from pprint import pformat
 
 
 def variable_names_are_unique(data):

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from . import remove_exchange_uncertainty
 from .pedigree import get_pedigree_variance
-import logging
 import math
 import numpy as np
 import stats_arrays as sa

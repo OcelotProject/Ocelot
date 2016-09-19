@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import arrow
-import math
+
 
 PEDIGREE_MATRIX_VALUES = {
     # From the data quality guidelines

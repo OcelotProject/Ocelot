@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from .transformations import (
     pv_cleanup,
-    ensure_mandatory_properties,
+    # ensure_mandatory_properties,
     fix_ecoinvent_parameters,
     manage_activity_links,
     validate_markets,

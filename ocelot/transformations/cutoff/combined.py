@@ -3,7 +3,6 @@ from ... import toolz
 from ...errors import InvalidExchange
 from ..utils import (
     activity_grouper,
-    allocatable_production,
     get_single_reference_product,
     nonreference_product,
 )

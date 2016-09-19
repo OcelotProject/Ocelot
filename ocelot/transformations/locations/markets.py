@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from . import topology, RC_STRING
 from ... import toolz
-from ...errors import OverlappingMarkets, MissingSupplier
+from ...errors import MissingSupplier
 from ..utils import (
-    activity_grouper,
     get_single_reference_product,
     remove_exchange_uncertainty,
 )
@@ -77,7 +76,7 @@ def add_recycled_content_suppliers_to_markets(data):
         and RC_STRING in x['reference product']
     ]
 
-    for rp, datasets in grouped.items():
+    for _, datasets in grouped.items():
         suppliers = [
             ds for ds in recycled_content_datasets
             if ds['reference product'] == rp + RC_STRING
