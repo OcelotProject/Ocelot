@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from ocelot.transformations.utils import *
-from ocelot.transformations.uncertainty import remove_exchange_uncertainty
 from ocelot.errors import InvalidMultioutputDataset, ZeroProduction
+from ocelot.transformations.uncertainty import remove_exchange_uncertainty
+from ocelot.transformations.utils import *
+from ocelot.utils import get_function_meta
 import pytest
 
 
@@ -375,3 +376,22 @@ def test_get_biggest_pv_to_exchange_ratio_no_rps():
     }
     with pytest.raises(ZeroProduction):
         get_biggest_pv_to_exchange_ratio(error)
+
+@pytest.fixture
+def func():
+    @single_input
+    def f(dataset):
+        """A docstring"""
+        return [dataset * 2]
+
+    f.__table__ = "Something about a table"
+    return f
+
+def test_single_input_metadata(func):
+    metadata = get_function_meta(func)
+    assert metadata['name'] == 'f'
+    assert metadata['description'] == "A docstring"
+    assert metadata['table'] == "Something about a table"
+
+def test_single_input_correct_unrolling(func):
+    assert func([1, 2, 3]) == [2, 4, 6]

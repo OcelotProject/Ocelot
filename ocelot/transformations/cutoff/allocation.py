@@ -164,5 +164,5 @@ cutoff_allocation = Collection(
     *[TransformationWrapper(func,
                             create_allocation_filter(label))
       for label, func in ALLOCATION_METHODS[1:]],
-    TransformationWrapper(delete_allocation_method),
+    delete_allocation_method,
 )

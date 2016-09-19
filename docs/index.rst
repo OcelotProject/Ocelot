@@ -22,6 +22,7 @@ Contents:
    space
    data_format
    foundation
+   writing-transformations
    filesystem
    uncertainty
    tests

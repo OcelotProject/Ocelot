@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+from ..utils import single_input
 import logging
 import uuid
 
 logger = logging.getLogger('ocelot')
 
 
+@single_input
 def create_pv_parameters(dataset):
     """Remove all production volume parameterization.
 

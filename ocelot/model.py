@@ -17,13 +17,15 @@ import logging
 import os
 import shutil
 import sys
+import wrapt
 
 logger = logging.getLogger('ocelot')
 
 
 def apply_transformation(function, counter, data, output_dir, save_strategy):
     # A `function` can be a list of functions
-    if isinstance(function, Iterable):
+    if (isinstance(function, Iterable)
+        and not isinstance(function, wrapt.FunctionWrapper)):
         for obj in function:
             data = apply_transformation(obj, counter, data,
                                         output_dir, save_strategy)

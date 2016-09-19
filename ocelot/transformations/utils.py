@@ -5,6 +5,7 @@ from copy import deepcopy
 from pprint import pformat
 import hashlib
 import pandas as pd
+import wrapt
 
 
 ### Activity identifiers
@@ -259,7 +260,6 @@ def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
     * ``production volume`` is deleted if present.
 
     """
-    # TODO: Make sure exchange in allocatable_production(dataset)?
     obj = deepcopy(dataset)
     if not exchange['amount']:
         message = "Zero production amount for new reference product exchange:\n{}\nIn dataset:\n{}"
@@ -277,3 +277,12 @@ def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
         for exc in nonproduction_exchanges(dataset)
     ]
     return normalize_reference_production_amount(obj)
+
+
+### Function helpers
+
+@wrapt.decorator
+def single_input(wrapped, instance, args, kwargs):
+    """Decorator to allow a transformation to transformation function to take a single dataset input."""
+    data = kwargs.get('data') or args[0]
+    return [ds for elem in data for ds in wrapped(elem)]
