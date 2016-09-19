@@ -6,6 +6,7 @@ from .validation import check_single_global_dataset
 import logging
 
 logger = logging.getLogger('ocelot')
+detailed = logging.getLogger('ocelot-detailed')
 
 
 def relabel_global_to_row(data):
@@ -34,6 +35,17 @@ def relabel_global_to_row(data):
                         # key is activity name and list of reference products
                         'data': (key[0], "; ".join(sorted(key[1])))
                     })
+                    message = "Created RoW dataset '{}' with PV {:.4g} {}"
+                    detailed.info({
+                        'ds': ds,
+                        'message': message.format(
+                            ds['name'],
+                            rp['production volume']['amount'],
+                            ds['unit'],
+                        ),
+                        'function': 'relabel_global_to_row'
+                    })
+
                 processed.append(ds)
         else:
             processed.extend(datasets)

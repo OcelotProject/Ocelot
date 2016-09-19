@@ -108,12 +108,13 @@ def link_consumers_to_regional_markets(data):
             if len(contained) == 1:
                 sup = contained[0]
                 exc['code'] = sup['code']
-                # TODO: Too many links, create separate log
-                # logger.info({
-                #     'type': 'table element',
-                #     'data': (exc['name'], ds['location'],
-                #              sup['name'], sup['location'])
-                # })
+
+                message = "Link input of '{}' to '{}' ({})"
+                detailed.info({
+                    'ds': ds,
+                    'message': message.format(exc['name'], sup['name'], sup['location']),
+                    'function': 'link_consumers_to_regional_markets'
+                })
             else:
                 # Shouldn't be possible - markets shouldn't overlap
                 message = "Multiple markets contain {} in {}:\n{}"
@@ -123,11 +124,6 @@ def link_consumers_to_regional_markets(data):
                     [x['location'] for x in contained])
                 )
     return data
-
-# link_consumers_to_regional_markets.__table__ = {
-#     'title': 'Link input exchanges to regional supply market',
-#     'columns': ["Product", "Location", "Market name", "Market location"]
-# }
 
 
 def link_consumers_to_global_markets(data):
@@ -152,17 +148,14 @@ def link_consumers_to_global_markets(data):
 
             sup = contributors[0]
             exc['code'] = sup['code']
-            # TODO: Too many links, create separate log
-            # logger.info({
-            #     'type': 'table element',
-            #     'data': (sup['name'], ds['name'], exc['name'], ds['location'])
-            # })
-    return data
 
-# link_consumers_to_global_markets.__table__ = {
-#     'title': 'Link input exchanges to correct supplying market',
-#     'columns': ["Market name", "Activity name", "Product", "Location"]
-# }
+            message = "Link input of '{}' to '{}' ({})"
+            detailed.info({
+                'ds': ds,
+                'message': message.format(exc['name'], sup['name'], sup['location']),
+                'function': 'link_consumers_to_global_markets'
+            })
+    return data
 
 
 def log_and_delete_unlinked_exchanges(data):

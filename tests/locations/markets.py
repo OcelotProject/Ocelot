@@ -36,6 +36,7 @@ def test_apportion_suppliers_to_consumers():
             'type': 'reference product',
             'location': 'DE',
             'code': 'DEfoobar',
+            'name': 'foo',
         }]
     }, {
         'code': 'RUfoobar',
@@ -45,7 +46,8 @@ def test_apportion_suppliers_to_consumers():
         'suppliers': [{
             'type': 'reference product',
             'location': 'Russia (Asia)',
-            'code': 'Russia (Asia)foobar'
+            'code': 'Russia (Asia)foobar',
+            'name': 'foo'
         }]
     }, {
         'code': 'RoWfoobar',
@@ -57,10 +59,12 @@ def test_apportion_suppliers_to_consumers():
                 'type': 'reference product',
                 'location': 'FR',
                 'code': 'FRfoobar',
+                'name': 'foo',
             }, {
                 'type': 'reference product',
                 'location': 'MY',
                 'code': 'MYfoobar',
+                'name': 'foo',
             }
         ]
     }]
@@ -172,8 +176,18 @@ def test_add_suppliers_to_markets():
         'location': 'NAFTA',
         'code': 'cNAFTA',
         'suppliers': [
-            {'code': 'cCA', 'location': 'CA', 'type': 'reference product'},
-            {'code': 'cMX', 'location': 'MX', 'type': 'reference product'}
+            {
+                'code': 'cCA',
+                'location': 'CA',
+                'type': 'reference product',
+                'name': '',
+            },
+            {
+                'code': 'cMX',
+                'location': 'MX',
+                'type': 'reference product',
+                'name': ''
+            }
         ]
     }, {
         'type': 'market activity',
@@ -184,7 +198,8 @@ def test_add_suppliers_to_markets():
         'suppliers': [{
             'code': 'cFR',
             'type': 'reference product',
-            'location': 'FR'
+            'location': 'FR',
+            'name': ''
         }]
     }, {
         'type': 'transforming activity',
@@ -209,13 +224,14 @@ def test_add_suppliers_to_markets():
         'suppliers': [{
             'code': 'cDE',
             'location': 'DE',
-            'type': 'reference product'
+            'type': 'reference product',
+            'name': '',
         }, {
             'code': 'cZA',
             'location': 'ZA',
-            'type': 'reference product'
-        }
-        ]
+            'type': 'reference product',
+            'name': '',
+        }]
     }]
     assert add_suppliers_to_markets(given) == expected
 
