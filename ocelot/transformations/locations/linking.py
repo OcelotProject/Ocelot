@@ -6,6 +6,7 @@ from ..utils import get_single_reference_product
 import logging
 
 logger = logging.getLogger('ocelot')
+detailed = logging.getLogger('ocelot-detailed')
 
 unlinked = lambda x: x['type'] == 'from technosphere' and not x.get('code')
 
@@ -13,11 +14,11 @@ unlinked = lambda x: x['type'] == 'from technosphere' and not x.get('code')
 def actualize_activity_links(data):
     """Add ``code`` field to activity links."""
     mapping = toolz.groupby("id", data)
-    link_iterator = (exc
+    link_iterator = ((exc, ds)
                      for ds in data
                      for exc in ds['exchanges']
                      if exc.get("activity link"))
-    for link in link_iterator:
+    for link, ds in link_iterator:
         references = [ds
                       for ds in mapping[link['activity link']]
                       if ds['reference product'] == link['name']]
@@ -30,7 +31,13 @@ def actualize_activity_links(data):
             })
             continue
             # raise UnresolvableActivityLink(message.format(link['activity link']))
-        link['code'] = references[0]['code']
+        message = "Linked input of '{}' to activity '{}' ({})."
+        found = references[0]
+        detailed.info({
+            'ds': ds,
+            'message': message.format(link['name'], found['name'], found['location'])
+        })
+        link['code'] = found['code']
     return data
 
 actualize_activity_links.__table__ = {
