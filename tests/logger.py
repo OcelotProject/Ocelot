@@ -16,7 +16,15 @@ def test_logging():
     detailed_log = create_detailed_log(tempdir)
 
     base_logger.info({"message": 'base logger message'})
-    detailed_logger.info({"message": 'detailed logger message'})
+    detailed_logger.info({
+        "ds": {
+            'filepath': os.path.join("foo", "bar", "baz.py"),
+            'id': 12345,
+            'code': 'abcde'
+        },
+        "message": 'detailed logger message',
+        'function': 'Kalamity Kapers'
+    })
     logging.info("Another message")
 
     with open(os.path.join(tempdir, "report.log.json")) as f:
@@ -29,3 +37,10 @@ def test_logging():
 
     assert len(detailed_log) == 1
     assert detailed_log[0]['message'] == 'detailed logger message'
+    dataset = {
+        'code': 'abcde',
+        'id': 12345,
+        'filename': 'baz.py'
+    }
+    assert detailed_log[0]['dataset'] == dataset
+    assert detailed_log[0]['function'] == 'Kalamity Kapers'
