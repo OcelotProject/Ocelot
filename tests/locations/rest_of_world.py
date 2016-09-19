@@ -14,28 +14,32 @@ def test_relabel_global_to_row():
         'location': 'GLO',
         'exchanges': [{
             'name': 'a product',
-            'type': 'reference product'
+            'type': 'reference product',
+            'production volume': {'amount': 0}
         }]
     }, {
         'name': 'make something',
         'location': 'somewhere else',
         'exchanges': [{
             'name': 'a product',
-            'type': 'reference product'
+            'type': 'reference product',
+            'production volume': {'amount': 0}
         }]
     }, {
         'name': 'make something else',
         'location': 'GLO',
         'exchanges': [{
             'name': 'a product',
-            'type': 'reference product'
+            'type': 'reference product',
+            'production volume': {'amount': 0}
         }]
     }, {
         'name': 'make something else',
         'location': 'somewhere else',
         'exchanges': [{
             'name': 'a product',
-            'type': 'reference product'
+            'type': 'reference product',
+            'production volume': {'amount': 0}
         }]
     }]
     expected = [{
@@ -43,28 +47,32 @@ def test_relabel_global_to_row():
         'location': 'RoW',
         'exchanges': [{
             'name': 'a product',
-            'type': 'reference product'
+            'type': 'reference product',
+            'production volume': {'amount': 0}
         }]
     }, {
         'name': 'make something',
         'location': 'somewhere else',
         'exchanges': [{
             'name': 'a product',
-            'type': 'reference product'
+            'type': 'reference product',
+            'production volume': {'amount': 0}
         }]
     }, {
         'name': 'make something else',
         'location': 'RoW',
         'exchanges': [{
             'name': 'another product',
-            'type': 'reference product'
+            'type': 'reference product',
+            'production volume': {'amount': 0}
         }]
     }, {
         'name': 'make something else',
         'location': 'somewhere else',
         'exchanges': [{
             'name': 'another product',
-            'type': 'reference product'
+            'type': 'reference product',
+            'production volume': {'amount': 0}
         }]
     }]
     # Can't directly compare dictionaries if order has changed
@@ -178,3 +186,91 @@ def test_drop_zero_pv_row_datasets():
         },
     ]
     assert drop_zero_pv_row_datasets(data) == expected
+
+
+def test_relabel_global_to_row_subtract_pv():
+    given = [{
+        'name': 'make something',
+        'location': 'GLO',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'production volume':{
+                'amount':100
+            }
+        }]
+    }, {
+        'name': 'make something',
+        'location': 'somewhere else',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'production volume':{
+                'amount':10
+            }
+        }]
+    }, {
+        'name': 'make something else',
+        'location': 'GLO',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'production volume':{
+                'amount':100
+            }
+        }]
+    }, {
+        'name': 'make something else',
+        'location': 'somewhere else',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'production volume':{
+                'amount':50
+            }
+        }]
+    }]
+    expected = [{
+        'name': 'make something',
+        'location': 'RoW',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'production volume':{
+                'amount':90
+            }
+        }]
+    }, {
+        'name': 'make something',
+        'location': 'somewhere else',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'production volume':{
+                'amount':10
+            }
+        }]
+    }, {
+        'name': 'make something else',
+        'location': 'RoW',
+        'exchanges': [{
+            'name': 'another product',
+            'type': 'reference product',
+            'production volume':{
+                'amount':50
+            }
+        }]
+    }, {
+        'name': 'make something else',
+        'location': 'somewhere else',
+        'exchanges': [{
+            'name': 'another product',
+            'type': 'reference product',
+            'production volume':{
+                'amount':50
+            }
+        }]
+    }]
+    # Can't directly compare dictionaries if order has changed
+    hashify = lambda x: {(y['name'], y['location'], y['exchanges'][0]['production volume']['amount']) for y in x}
+    assert hashify(relabel_global_to_row(given)) == hashify(expected)
