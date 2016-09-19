@@ -328,6 +328,44 @@ def test_iterate_all_parameters(parameterized_ds):
     assert next(generator) == parameterized_ds['parameters'][0]
     assert next(generator) == parameterized_ds['parameters'][1]
 
+@pytest.fixture(scope="function")
+def uncertain_ds():
+    return {
+        'exchanges': [{
+            'amount': 3.1415926535,
+            'uncertainty': '',
+            'production volume': {  # Nonsensical but should work
+                'uncertainty': '',
+                'amount': 42
+            },
+            'properties': [{
+                'uncertainty': '',
+                'amount': 17
+            }]
+        }, {
+            'uncertainty': '',
+            'properties': [{
+                'uncertainty': '',
+            }]
+        }],
+        'parameters': [{
+            'uncertainty': '',
+        }, {
+            'uncertainty': '',
+            'amount': 1
+        }]
+    }
+
+def test_iterate_all_uncertainties(uncertain_ds):
+    generator = iterate_all_uncertainties(uncertain_ds)
+    assert next(generator) == uncertain_ds['exchanges'][0]
+    assert next(generator) == uncertain_ds['exchanges'][0]['production volume']
+    assert next(generator) == uncertain_ds['exchanges'][0]['properties'][0]
+    assert next(generator) == uncertain_ds['exchanges'][1]
+    assert next(generator) == uncertain_ds['exchanges'][1]['properties'][0]
+    assert next(generator) == uncertain_ds['parameters'][0]
+    assert next(generator) == uncertain_ds['parameters'][1]
+
 def test_activity_hash():
     given = {
         'name': 'a',
