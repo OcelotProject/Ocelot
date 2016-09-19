@@ -35,6 +35,7 @@ def actualize_activity_links(data):
         found = references[0]
         detailed.info({
             'ds': ds,
+            'function': 'actualize_activity_links',
             'message': message.format(link['name'], found['name'], found['location'])
         })
         link['code'] = found['code']

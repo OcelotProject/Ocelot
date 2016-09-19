@@ -110,6 +110,39 @@ If tables don't work for your transformation function, you can skip the ``__tabl
 
 Messages that have the type ``list element`` can be HTML.
 
+Detailed logging
+----------------
+
+Transformation functions should also write detailed logs that can be used afterwards to debug exactly what happened to a dataset. This logging uses a different data format and logger.
+
+First, retrieve the detailed logger:
+
+.. code-block:: python
+
+    detailed = logging.getLogger('ocelot-detailed')
+
+Then, inside the body of a function, call this logger (again using the ``info`` log level):
+
+.. code-block:: python
+
+    def count_exchanges(data):
+        """Function that counts things.
+
+        Does not change any data."""
+        for ds in data:
+            detailed.info({
+                'ds': ds,
+                'message': 'Some message about number of exchanges',
+                'function': 'count_exchanges'
+            })
+        return data
+
+In the detailed log messages, the following keys are required:
+
+    * ``ds``: The dataset object being changed. If you don't have access or can't provide this dataset, don't emit a detailed log message.
+    * ``function``: The name of the function (as a string)
+    * ``message``: The message to log (as a string)
+
 Currying transformation functions
 =================================
 
