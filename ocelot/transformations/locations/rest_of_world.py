@@ -14,11 +14,24 @@ def relabel_global_to_row(data):
     for key, datasets in toolz.groupby(activity_grouper, data).items():
         if len(datasets) > 1:
             check_single_global_dataset(datasets)
+
             for ds in datasets:
                 if ds['location'] == 'GLO':
+                    # Need to adjust production volume by subtracting the region-specific
+                    # production volumes. We assume that each dataset has a single reference
+                    # product with a production volume.
+                    region_specific_pv = sum(
+                        get_single_reference_product(obj)['production volume']['amount']
+                        for obj in datasets
+                        if obj != ds
+                    )
+                    rp = get_single_reference_product(ds)
+                    rp['production volume']['amount'] = max(rp['production volume']['amount'] - region_specific_pv,0)
+
                     ds['location'] = 'RoW'
                     logger.info({
                         'type': 'table element',
+                        # key is activity name and list of reference products
                         'data': (key[0], "; ".join(sorted(key[1])))
                     })
                 processed.append(ds)
