@@ -7,7 +7,7 @@ import logging
 
 
 def relabel_global_to_row(data):
-     """Change ``GLO`` locations to ``RoW`` if there are region-specific datasets in the activity group."""
+    """Change ``GLO`` locations to ``RoW`` if there are region-specific datasets in the activity group."""
     processed = []
     for key, datasets in toolz.groupby(activity_grouper, data).items(): 
         
@@ -39,6 +39,8 @@ def relabel_global_to_row(data):
             if ds_GLO is not None:
                 rp_GLO = get_single_reference_product(ds_GLO)
                 rp_GLO['production volume']['amount'] -= non_GLO_pv
+                if rp_GLO['production volume']['amount'] < 0:
+                    rp_GLO['production volume']['amount'] = 0
                 processed.append(ds_GLO)
 
         else:
