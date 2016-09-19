@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from ...collection import Collection
-from ...wrapper import TransformationWrapper
 from ..utils import (
     allocatable_production,
     choose_reference_product_exchange,
     get_single_reference_product,
+    single_input,
 )
 from ..uncertainty import scale_exchange
 from .economic import economic_allocation
@@ -142,6 +142,7 @@ create_recycled_content_datasets.__table__ = {
 }
 
 
+@single_input
 def flip_non_allocatable_byproducts(dataset):
     """Change non-allocatable byproducts (i.e. classification ``recyclable`` or ``waste``) from outputs to technosphere to inputs from technosphere.
 
@@ -176,5 +177,5 @@ flip_non_allocatable_byproducts.__table__ = {
 handle_waste_outputs = Collection(
     rename_recyclable_content_exchanges,
     create_recycled_content_datasets,
-    TransformationWrapper(flip_non_allocatable_byproducts),
+    flip_non_allocatable_byproducts,
 )

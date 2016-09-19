@@ -2,6 +2,7 @@
 from ..utils import (
     choose_reference_product_exchange,
     get_single_reference_product,
+    single_input,
 )
 
 
@@ -36,6 +37,7 @@ def flip_non_allocatable_byproducts(dataset):
     return dataset
 
 
+@single_input
 def delete_allocation_method(dataset):
     """Delete key ``allocation method`` if present"""
     if "allocation method" in dataset:

@@ -42,57 +42,29 @@ The ``system_model`` function is actually quite simple:
 Transformation functions
 ========================
 
-Transform functions are the heart of Ocelot - each one performs one distinct change to the collection of datasets. Transform functions can be any callable, bit are mostly commonly functions.
+.. note:: See also :ref:`writing`.
 
-The report generator will use information about each transform function when creating the report. Specifically, the report generator will look at the function name, its `docstring <https://www.python.org/dev/peps/pep-0257/>`__ (a text description of what the function does, included in the function code), and a new object attribute that you have to specify: ``__table__``.
+Transform functions are the heart of Ocelot - each one performs one distinct change to the collection of datasets. Transform functions can be any callable, but most are simple functions.
 
-Most of the time you will want to provide logging data that will be turned into tables in the run report. To do this, define the transformation function attribute ``__table__`` as follows:
-
-.. code-block:: python
-
-    def some_transformation(data):
-        return data
-
-    some_transformation.__table__ = {
-        'title': 'Name of title to put in report',
-        'columns': ["names", "of", "columns"]
-    }
-
-Functions take two input arguments: The input ``data``, and the ``logger``. Functions should return the transformed data. Log messages are written using ``logger.log(message)``. Log messages should be a dictionary, with at least the key ``type`` defined. Log messages that provide table data should look like this:
-
-.. code-block:: python
-
-    logger.log({
-        'type': 'table element',
-        'data': [data in same order as columns]
-    })
-
-Log messages that provide data in a list format look like this:
-
-.. code-block:: python
-
-    logger.log({
-        'type': 'list element',
-        'data': HTML string
-    })
-
-If you need to initialize functions using `functools.partial <https://docs.python.org/3.5/library/functools.html#functools.partial>`__, the report generator will still get the correct function metadata. Other forms of currying are not supported.
+The report generator will use information about each transformation function when creating the report. Specifically, the report generator will look at the function name, its `docstring <https://www.python.org/dev/peps/pep-0257/>`__ (a text description of what the function does, included in the function code), and any additional tabular data your provide during the function call.
 
 .. _logger:
 
 Logging
 =======
 
-Ocelot uses standard `python logging <https://docs.python.org/3/library/logging.html>`_, with a custom formatter that encodes log messages to JSON dictionaries. Therefore, log messages must be **dictionaries**:
+Ocelot uses standard `python logging <https://docs.python.org/3/library/logging.html>`__, with a custom formatter that encodes log messages to JSON dictionaries. Due to this custom formatter, the ``ocelot`` logger must be retrieved in each file which uses logging:
 
 .. code-block:: python
 
     import logging
 
-    def my_transformation(data):
-        logging.info({"message": "something", "count": len(data)})
+    logger = logging.getLogger('ocelot')
 
-Log messages are written when a run is started or finished, when transformation functions are started or finished, and whenever the transformation function wants to log something. The log message format is documented in :ref:`logging-format`.
+    def my_transformation(data):
+        logger.info({"message": "something", "count": len(data)})
+
+Log messages are written when a run is started or finished, when transformation functions are started or finished, and whenever the transformation function wants to log something. The message format for the log written to disk (i.e. with each line JSON encoded) is documented in :ref:`logging-format`.
 
 .. note:: ``time`` is added automatically to each log message.
 

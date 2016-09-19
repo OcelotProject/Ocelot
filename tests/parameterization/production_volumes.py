@@ -4,7 +4,7 @@ from ocelot.transformations.parameterization.production_volumes import create_pv
 
 
 def test_create_pv_parameters_format():
-    given = {
+    given = [{
         'access restricted': 'public',
         'economic scenario': '',
         'end date': '',
@@ -32,16 +32,16 @@ def test_create_pv_parameters_format():
             }
         }],
         'parameters': []
-    }
+    }]
     assert dataset_schema(create_pv_parameters(given)[0])
 
 def test_create_pv_parameters_without_pv():
-    given = {'exchanges': [{'foo': 'bar'}]}
+    given = [{'exchanges': [{'foo': 'bar'}]}]
     expected = [{'exchanges': [{'foo': 'bar'}]}]
     assert create_pv_parameters(given) == expected
 
 def test_create_pv_parameters_create_parameter():
-    given = {
+    given = [{
         'name': 'test case',
         'exchanges': [{
             'unit': 'kg',
@@ -52,7 +52,7 @@ def test_create_pv_parameters_create_parameter():
             }
         }],
         'parameters': []
-    }
+    }]
     expected = {
         'name': 'test case',
         'exchanges': [{
@@ -75,14 +75,14 @@ def test_create_pv_parameters_create_parameter():
     assert result == expected
 
 def test_create_pv_parameters_delete_formula():
-    given = {
+    given = [{
         'exchanges': [{
             'production volume': {
                 'amount': 1.,
                 'formula': 'bar ** 2'
             }
         }],
-    }
+    }]
     expected = {
         'exchanges': [{
             'production volume': {
