@@ -305,7 +305,7 @@ class Triangular(NoUncertainty):
         if ud['minimum'] > ud['maximum']:
             ud['minimum'], ud['maximum'] = ud['maximum'], ud['minimum']
         if ud['mode'] < ud['minimum'] or ud['mode'] > ud['maximum']:
-            raise ValueError("Mode is outside (minimum, maximum) bound.")
+            return remove_exchange_uncertainty(obj)
         return obj
 
     @staticmethod

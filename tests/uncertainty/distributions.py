@@ -355,8 +355,8 @@ def test_triangular_repair_outside_bounds():
             'maximum': 3
         }
     }
-    with pytest.raises(ValueError):
-        Triangular.repair(given)
+    expected = {'amount': 4,}
+    assert Triangular.repair(given) == expected
 
 def test_triangular_rescale_zero():
     given = {
