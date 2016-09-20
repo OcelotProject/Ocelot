@@ -76,7 +76,7 @@ def add_recycled_content_suppliers_to_markets(data):
         and RC_STRING in x['reference product']
     ]
 
-    for _, datasets in grouped.items():
+    for rp, datasets in grouped.items():
         suppliers = [
             ds for ds in recycled_content_datasets
             if ds['reference product'] == rp + RC_STRING
