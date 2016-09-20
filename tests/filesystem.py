@@ -7,7 +7,6 @@ from ocelot.filesystem import (
     get_from_cache,
     get_output_directory,
 )
-from unittest import mock
 import os
 import pytest
 import random
@@ -75,7 +74,7 @@ def test_cache_expiration(fake_output_dir):
         f.write("foo")
     random_data = {k: random.randint(0, 10) for k in "abcdefghijklmnop"}
     cache_data(random_data, new_dp)
-    time.sleep(0.1)
+    time.sleep(0.5)
     with open(new_file, "w") as f:
         f.write("bar")
     assert not check_cache_directory(new_dp)

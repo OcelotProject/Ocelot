@@ -2,6 +2,8 @@
 from .utils import get_biggest_pv_to_exchange_ratio
 import logging
 
+logger = logging.getLogger('ocelot')
+
 
 def add_pv_to_allocatable_byproducts(data):
     """Add production volumes to allocatable byproducts based on reference product production volume.
@@ -20,7 +22,7 @@ def add_pv_to_allocatable_byproducts(data):
                     # from waste treatment with negative production amount
                     exc['production volume']['amount'] = \
                         abs(exc['amount'] * scale)
-                    logging.info({
+                    logger.info({
                         'type': 'table element',
                         'data': (ds['name'], exc['name'], abs(exc['amount'] * scale))
                     })

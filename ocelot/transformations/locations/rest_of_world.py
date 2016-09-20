@@ -5,6 +5,9 @@ from ..utils import activity_grouper, get_single_reference_product
 from .validation import check_single_global_dataset
 import logging
 
+logger = logging.getLogger('ocelot')
+detailed = logging.getLogger('ocelot-detailed')
+
 
 def relabel_global_to_row(data):
     """Change ``GLO`` locations to ``RoW`` if there are region-specific datasets in the activity group."""
@@ -27,11 +30,22 @@ def relabel_global_to_row(data):
                     rp['production volume']['amount'] = max(rp['production volume']['amount'] - region_specific_pv,0)
 
                     ds['location'] = 'RoW'
-                    logging.info({
+                    logger.info({
                         'type': 'table element',
                         # key is activity name and list of reference products
                         'data': (key[0], "; ".join(sorted(key[1])))
                     })
+                    message = "Created RoW dataset '{}' with PV {:.4g} {}"
+                    detailed.info({
+                        'ds': ds,
+                        'message': message.format(
+                            ds['name'],
+                            rp['production volume']['amount'],
+                            ds['unit'],
+                        ),
+                        'function': 'relabel_global_to_row'
+                    })
+
                 processed.append(ds)
         else:
             processed.extend(datasets)
@@ -50,7 +64,7 @@ def drop_zero_pv_row_datasets(data):
     filter_func = lambda x: x['type'] == 'market activity' and x['location'] == 'RoW'
     for ds in filter(filter_func, data):
         if production_volume(ds) == 0:
-            logging.info({
+            logger.info({
                 'type': 'table element',
                 'data': (ds['name'], reference_products_as_string(ds))
             })

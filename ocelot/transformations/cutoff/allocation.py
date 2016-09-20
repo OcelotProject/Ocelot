@@ -14,6 +14,8 @@ from .validation import valid_no_allocation_dataset
 from .wastes import waste_treatment_allocation, recycling_allocation
 import logging
 
+logger = logging.getLogger('ocelot')
+
 
 @valid_no_allocation_dataset
 def no_allocation(dataset):
@@ -131,7 +133,7 @@ def label_allocation_method(data):
     for ds in data:
         ds['allocation method'] = choose_allocation_method(ds)
     for label, _ in ALLOCATION_METHODS:
-        logging.info({
+        logger.info({
             'type': 'table element',
             'data': (
                 str(label),

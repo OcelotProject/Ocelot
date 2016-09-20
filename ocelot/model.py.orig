@@ -99,8 +99,15 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
         print("Saving final results")
         save_intermediate_result(output_manager.directory, "final-results", data)
 
+<<<<<<< HEAD
         logger.info({'type': 'report end'})
+
+        html = HTMLReport(logfile_path, show)
+
+=======
+        logging.info({'type': 'report end'})
         HTMLReport(logfile_path, show)
+>>>>>>> master
         return output_manager, data
 
     except KeyboardInterrupt:

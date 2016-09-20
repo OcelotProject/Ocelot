@@ -11,6 +11,8 @@ from ..errors import (
 from pprint import pformat
 import logging
 
+logger = logging.getLogger('ocelot')
+
 
 def check_single_output_activity(dataset):
     """Check that the activity has exactly one reference product and no allocatable byproducts.
@@ -84,7 +86,7 @@ def ensure_mandatory_properties(data):
                             raise ValueError
                 missing = MANDATORY.difference({p['name'] for p in exc['properties']})
                 if missing:
-                    logging.info({
+                    logger.info({
                         'type': 'table element',
                         'data': (ds['name'], exc['name'], "; ".join(sorted(missing)))
                     })

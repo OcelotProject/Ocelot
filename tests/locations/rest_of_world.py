@@ -12,6 +12,7 @@ def test_relabel_global_to_row():
     given = [{
         'name': 'make something',
         'location': 'GLO',
+        'unit': '',
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
@@ -20,6 +21,7 @@ def test_relabel_global_to_row():
     }, {
         'name': 'make something',
         'location': 'somewhere else',
+        'unit': '',
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
@@ -28,6 +30,7 @@ def test_relabel_global_to_row():
     }, {
         'name': 'make something else',
         'location': 'GLO',
+        'unit': '',
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
@@ -36,6 +39,7 @@ def test_relabel_global_to_row():
     }, {
         'name': 'make something else',
         'location': 'somewhere else',
+        'unit': '',
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
@@ -192,6 +196,7 @@ def test_relabel_global_to_row_subtract_pv():
     given = [{
         'name': 'make something',
         'location': 'GLO',
+        'unit': '',
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
@@ -202,6 +207,7 @@ def test_relabel_global_to_row_subtract_pv():
     }, {
         'name': 'make something',
         'location': 'somewhere else',
+        'unit': '',
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
@@ -212,6 +218,7 @@ def test_relabel_global_to_row_subtract_pv():
     }, {
         'name': 'make something else',
         'location': 'GLO',
+        'unit': '',
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
@@ -222,6 +229,7 @@ def test_relabel_global_to_row_subtract_pv():
     }, {
         'name': 'make something else',
         'location': 'somewhere else',
+        'unit': '',
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
@@ -279,6 +287,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
     given = [{
         'name': 'make something',
         'location': 'GLO',
+        'unit': '',
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
@@ -289,6 +298,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
     }, {
         'name': 'make something',
         'location': 'somewhere else',
+        'unit': '',
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
@@ -299,6 +309,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
     }, {
         'name': 'make something else',
         'location': 'GLO',
+        'unit': '',
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
@@ -309,6 +320,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
     }, {
         'name': 'make something else',
         'location': 'somewhere else',
+        'unit': '',
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',

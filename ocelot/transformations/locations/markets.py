@@ -10,12 +10,14 @@ from .validation import no_overlaps, no_geo_duplicates
 from copy import deepcopy
 import logging
 
+logger = logging.getLogger('ocelot')
+detailed = logging.getLogger('ocelot-detailed')
 
 
 def annotate_exchange(exc, ds):
     """Copy ``exc``, and add ``code`` and ``location`` from ``ds``."""
     exc = deepcopy(exc)
-    exc.update({k: ds[k] for k in ('location', 'code')})
+    exc.update({k: ds[k] for k in ('location', 'code', 'name')})
     return exc
 
 
@@ -54,7 +56,7 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
             get_single_reference_product(obj),
             obj
         ) for obj in contained]
-        logging.info({
+        logger.info({
             'type': 'table element',
             'data': (consumer['name'],
                      consumer['reference product'],
@@ -153,18 +155,20 @@ def allocate_suppliers(data):
                 'tag': 'intermediateExchange',
                 'code': supply_exc['code']
             }))
-            # TODO: Log to a separate file
-            # logging.info({
-            #     'type': 'table element',
-            #     'data': (ds['name'], rp['name'], ds['location'],
-            #              supply_exc['location'], amount)
-            # })
-    return data
 
-# allocate_suppliers.__table__ = {
-#     'title': 'Allocate suppliers exchange amounts to markets',
-#     'columns': ["Name", "Product", "Location", "Supplier location", "Amount"]
-# }
+            message = "Create input exchange of {:.4g} {} for '{}' from '{}' ({})"
+            detailed.info({
+                'ds': ds,
+                'message': message.format(
+                    amount,
+                    supply_exc['unit'],
+                    rp['name'],
+                    supply_exc['name'],
+                    supply_exc['location']
+                ),
+                'function': 'allocate_suppliers'
+            })
+    return data
 
 
 def update_market_production_volumes(data, kind="market activity"):
@@ -188,7 +192,7 @@ def update_market_production_volumes(data, kind="market activity"):
             rp['production volume'].get('subtracted activity link volume', 0)
         )
         rp['production volume']['amount'] = max(total_pv - missing_pv, 0)
-        logging.info({
+        logger.info({
             'type': 'table element',
             'data': (ds['name'], rp['name'], total_pv, missing_pv, rp['production volume']['amount'])
         })
@@ -231,7 +235,7 @@ def delete_allowed_zero_pv_market_datsets(data):
                            and x['name'] in can_delete_markets
                            and x['location'] == 'GLO')
     for ds in filter(delete_me, data):
-        logging.info({
+        logger.info({
             'type': 'table element',
             'data': (ds['name'], ds['reference product'])
         })
@@ -271,7 +275,7 @@ def assign_fake_pv_to_confidential_datasets(data):
     )
     for ds in filter(confidential_filter, data):
         rp = get_single_reference_product(ds)
-        logging.info({
+        logger.info({
             'type': 'table element',
             'data': (ds['name'], rp['name'], 1)
         })
