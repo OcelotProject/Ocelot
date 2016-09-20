@@ -111,21 +111,21 @@ class Lognormal(NoUncertainty):
         obj['uncertainty']['mu'] = math.log(obj['uncertainty']['mean'])
         obj['uncertainty']['variance'] = (
             obj['uncertainty']['variance with pedigree uncertainty'] -
-            get_pedigree_variance(obj['pedigree matrix'])
+            get_pedigree_variance(obj.get('pedigree matrix', {}))
         )
         if fix_extremes and 1 <= obj['uncertainty']['variance'] <= math.e:
             # TODO: Log this
             obj['uncertainty']['variance'] = math.log(obj['uncertainty']['variance'])
             obj['uncertainty']['variance with pedigree uncertainty'] = (
                 obj['uncertainty']['variance'] +
-                get_pedigree_variance(obj['pedigree matrix'])
+                get_pedigree_variance(obj.get('pedigree matrix', {}))
             )
         elif fix_extremes and obj['uncertainty']['variance'] > math.e:
             # TODO: Log this
             obj['uncertainty']['variance'] = 0.25
             obj['uncertainty']['variance with pedigree uncertainty'] = (
                 obj['uncertainty']['variance'] +
-                get_pedigree_variance(obj['pedigree matrix'])
+                get_pedigree_variance(obj.get('pedigree matrix', {}))
             )
         return obj
 
@@ -151,7 +151,7 @@ class Lognormal(NoUncertainty):
         """Recalculate uncertainty values based on new pedigree matrix values"""
         obj['uncertainty']['variance with pedigree uncertainty'] = (
             obj['uncertainty']['variance'] +
-            get_pedigree_variance(obj['pedigree matrix'])
+            get_pedigree_variance(obj.get('pedigree matrix', {}))
         )
         return obj
 
@@ -193,7 +193,7 @@ class Normal(NoUncertainty):
         # but we have product of normal and lognormal...
         # obj['uncertainty']['variance'] = (
         #     obj['uncertainty']['variance with pedigree uncertainty'] -
-        #     get_pedigree_variance(obj['pedigree matrix'])
+        #     get_pedigree_variance(obj.get('pedigree matrix', {}))
         # )
         return obj
 
