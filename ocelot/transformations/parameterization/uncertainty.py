@@ -10,8 +10,7 @@ def repair_all_uncertainty_distributions(data):
     Uses distribution-specific ``repair`` methods."""
     for ds in data:
         for obj in iterate_all_uncertainties(ds):
-            if not obj.get('uncertainty'):
-                continue
-            # TODO: Add detailed log message
-            obj = get_uncertainty_class(obj).repair(obj)
+            if obj.get('uncertainty'):
+                # TODO: Add detailed log message
+                get_uncertainty_class(obj).repair(obj)
     return data
