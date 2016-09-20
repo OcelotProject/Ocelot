@@ -106,6 +106,22 @@ def iterate_all_parameters(dataset):
             yield parameter
 
 
+def iterate_all_uncertainties(dataset):
+    """Generator that returns all objects with an uncertainty distribution."""
+    for exc in dataset['exchanges']:
+        if "uncertainty" in exc:
+            yield exc
+        pv = exc.get("production volume", {})
+        if "uncertainty" in pv:
+            yield pv
+        for prop in exc.get('properties', []):
+            if "uncertainty" in prop:
+                yield prop
+    for parameter in dataset.get('parameters', []):
+        if "uncertainty" in parameter:
+            yield parameter
+
+
 def get_biggest_pv_to_exchange_ratio(dataset):
     """Return the largest ration of production volume to exchange amount.
 
