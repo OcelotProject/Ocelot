@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from . import topology, RC_STRING
 from ... import toolz
-from ...errors import OverlappingMarkets, MissingSupplier
+from ...errors import MissingSupplier
 from ..utils import (
-    activity_grouper,
     get_single_reference_product,
     remove_exchange_uncertainty,
 )

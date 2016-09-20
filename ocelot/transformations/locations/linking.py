@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import topology, RC_STRING
 from ... import toolz
-from ...errors import UnresolvableActivityLink, OverlappingMarkets
+from ...errors import OverlappingMarkets  #, UnresolvableActivityLink
 from ..utils import get_single_reference_product
 import logging
 

@@ -263,7 +263,7 @@ def delete_unparsable_formulas(data):
         for exc in iterate_all_parameters(ds):
             if 'formula' in exc:
                 try:
-                    elements = get_ast_names(exc['formula'])
+                    get_ast_names(exc['formula'])
                 except UnparsableFormula:
                     logger.info({
                         'type': 'table element',

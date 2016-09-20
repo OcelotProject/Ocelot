@@ -2,6 +2,7 @@
 from ocelot.transformations.cutoff.combined import combined_production
 from copy import deepcopy
 
+
 cp_dataset = {
     'exchanges': [{
         'type': 'reference product',
@@ -76,6 +77,43 @@ def test_combined_production_without_byproducts():
     assert combined_production(cp_dataset) == expected
     assert original == cp_dataset
 
+def test_combined_production_repair_distributions():
+    original = {
+        'exchanges': [{
+            'amount': 1,
+            'type': 'reference product',
+        }, {
+            'type': 'to environment',
+            'amount': 1.0,
+            'formula': "first * 2",
+            'uncertainty': {
+                'type': 'lognormal',
+                'mu': 0,
+                'variance with pedigree matrix': 0.15
+            }
+        }],
+        'parameters': [{
+            'variable': 'first',
+            'amount': 0,
+        }]
+    }
+    expected = [{
+        'exchanges': [{
+            'amount': 1,
+            'type': 'reference product',
+        }, {
+            'type': 'to environment',
+            'amount': 0,
+            'formula': "first * 2",
+        }],
+        'parameters': [{
+            'variable': 'first',
+            'amount': 0,
+        }]
+    }]
+    assert combined_production(original) == expected
+
 
 def run_all_combined():
     test_combined_production_without_byproducts()
+    test_combined_production_repair_distributions()

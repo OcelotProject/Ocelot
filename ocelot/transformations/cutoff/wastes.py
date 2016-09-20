@@ -157,7 +157,7 @@ def flip_non_allocatable_byproducts(dataset):
     """
     for exc in dataset['exchanges']:
         if (exc['type'] == 'byproduct' and
-            exc['byproduct classification'] != 'allocatable product'):
+                exc['byproduct classification'] != 'allocatable product'):
             logger.info({
                 'type': 'table element',
                 'data': (dataset['name'], exc['name'], exc['byproduct classification']),

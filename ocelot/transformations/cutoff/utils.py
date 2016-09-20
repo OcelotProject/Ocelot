@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from ..utils import (
     choose_reference_product_exchange,
-    get_single_reference_product,
     single_input,
 )
 

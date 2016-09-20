@@ -39,7 +39,7 @@ def extract_parameter(obj):
 def extract_isic_classification(elem):
     for child in elem.activityDescription.iterchildren():
         if ('classification' in _(child.tag)
-            and 'ISIC' in child.classificationSystem.text):
+                and 'ISIC' in child.classificationSystem.text):
             return child.classificationValue.text
 
 

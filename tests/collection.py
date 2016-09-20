@@ -26,10 +26,6 @@ def fake_report(monkeypatch):
         get_fake_directory
     )
     monkeypatch.setattr(
-        'ocelot.model.check_cache_directory',
-        lambda x: False
-    )
-    monkeypatch.setattr(
         'ocelot.model.cache_data',
         lambda x, y: None
     )
