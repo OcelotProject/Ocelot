@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from ..utils import iterate_all_parameters
+from ..uncertainty import get_uncertainty_class
+from ..utils import iterate_all_parameters, iterate_all_uncertainties
 from asteval import Interpreter
 from bw2parameters import ParameterSet
 
@@ -68,4 +69,10 @@ def recalculate(dataset):
             exc['amount'] = interpreter.symtable[exc['variable']]
         else:
             raise ValueError
+
+    # https://github.com/OcelotProject/Ocelot/issues/111
+    for obj in iterate_all_uncertainties(dataset):
+        if obj.get('uncertainty'):
+            get_uncertainty_class(obj).repair(obj)
+
     return dataset
