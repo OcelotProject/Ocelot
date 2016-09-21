@@ -41,7 +41,7 @@ def relabel_global_to_row(data):
                         'message': message.format(
                             ds['name'],
                             rp['production volume']['amount'],
-                            ds['unit'],
+                            rp['unit'],
                         ),
                         'function': 'relabel_global_to_row'
                     })

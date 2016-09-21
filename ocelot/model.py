@@ -36,7 +36,7 @@ def apply_transformation(function, counter, data, output_dir, save_strategy):
             type="function start",
             count=len(data),
         )
-        logging.info(metadata)
+        logger.info(metadata)
 
         print("Applying transformation {}".format(metadata['name']))
         data = function(data)
@@ -47,7 +47,7 @@ def apply_transformation(function, counter, data, output_dir, save_strategy):
 
         if save_strategy(index):
             save_intermediate_result(output_dir, index, data, metadata['name'])
-        logging.info(metadata)
+        logger.info(metadata)
         return data
 
 

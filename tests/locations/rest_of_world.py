@@ -12,9 +12,9 @@ def test_relabel_global_to_row():
     given = [{
         'name': 'make something',
         'location': 'GLO',
-        'unit': '',
         'exchanges': [{
             'name': 'a product',
+            'unit': '',
             'type': 'reference product',
             'production volume': {'amount': 0}
         }]
@@ -24,6 +24,7 @@ def test_relabel_global_to_row():
         'unit': '',
         'exchanges': [{
             'name': 'a product',
+            'unit': '',
             'type': 'reference product',
             'production volume': {'amount': 0}
         }]
@@ -34,6 +35,7 @@ def test_relabel_global_to_row():
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
+            'unit': '',
             'production volume': {'amount': 0}
         }]
     }, {
@@ -43,6 +45,7 @@ def test_relabel_global_to_row():
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
+            'unit': '',
             'production volume': {'amount': 0}
         }]
     }]
@@ -51,6 +54,7 @@ def test_relabel_global_to_row():
         'location': 'RoW',
         'exchanges': [{
             'name': 'a product',
+            'unit': '',
             'type': 'reference product',
             'production volume': {'amount': 0}
         }]
@@ -59,6 +63,7 @@ def test_relabel_global_to_row():
         'location': 'somewhere else',
         'exchanges': [{
             'name': 'a product',
+            'unit': '',
             'type': 'reference product',
             'production volume': {'amount': 0}
         }]
@@ -67,6 +72,7 @@ def test_relabel_global_to_row():
         'location': 'RoW',
         'exchanges': [{
             'name': 'another product',
+            'unit': '',
             'type': 'reference product',
             'production volume': {'amount': 0}
         }]
@@ -75,6 +81,7 @@ def test_relabel_global_to_row():
         'location': 'somewhere else',
         'exchanges': [{
             'name': 'another product',
+            'unit': '',
             'type': 'reference product',
             'production volume': {'amount': 0}
         }]
@@ -200,6 +207,7 @@ def test_relabel_global_to_row_subtract_pv():
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':100
             }
@@ -211,6 +219,7 @@ def test_relabel_global_to_row_subtract_pv():
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':10
             }
@@ -222,6 +231,7 @@ def test_relabel_global_to_row_subtract_pv():
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':100
             }
@@ -233,6 +243,7 @@ def test_relabel_global_to_row_subtract_pv():
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':50
             }
@@ -244,6 +255,7 @@ def test_relabel_global_to_row_subtract_pv():
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':90
             }
@@ -254,6 +266,7 @@ def test_relabel_global_to_row_subtract_pv():
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':10
             }
@@ -264,6 +277,7 @@ def test_relabel_global_to_row_subtract_pv():
         'exchanges': [{
             'name': 'another product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':50
             }
@@ -274,6 +288,7 @@ def test_relabel_global_to_row_subtract_pv():
         'exchanges': [{
             'name': 'another product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':50
             }
@@ -291,6 +306,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':100
             }
@@ -302,6 +318,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':110
             }
@@ -313,6 +330,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':100
             }
@@ -324,6 +342,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':150
             }
@@ -335,6 +354,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':0
             }
@@ -345,6 +365,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
         'exchanges': [{
             'name': 'a product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':110
             }
@@ -355,6 +376,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
         'exchanges': [{
             'name': 'another product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':0
             }
@@ -365,6 +387,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
         'exchanges': [{
             'name': 'another product',
             'type': 'reference product',
+            'unit': '',
             'production volume':{
                 'amount':150
             }
