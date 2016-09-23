@@ -15,6 +15,13 @@ class Topology(object):
         ('IAI Area 3', "IAI Area 3, South America"),
         ("IAI Area 4&5 without China", 'IAI Area 4&5, without China'),
         ('IAI Area 8', "IAI Area 8, Gulf"),
+        # Compatability for ecoinvent 3.3
+        ('IAI Area, North America, without Quebec', 'IAI Area 2, without Quebec'),
+        ('IAI Area, South America', 'IAI Area 3, South America'),
+        ('IAI Area, Russia & RER w/o EU27 & EFTA', 'IAI Area, Europe outside EU & EFTA'),
+        ('IAI Area, Asia, without China and GCC', 'IAI Area 4&5, without China'),
+        ('IAI Area, Gulf Cooperation Council', 'IAI Area 8, Gulf'),
+        ('IAI Area, Africa', 'IAI Area 1, Africa'),
     ]
 
     def __init__(self):
