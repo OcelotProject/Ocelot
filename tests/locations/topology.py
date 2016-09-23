@@ -23,6 +23,10 @@ def test_topology_intersects():
     assert topology.intersects('RoW') == set()
     # Test compatibility labels
     assert topology.intersects('IAI Area 8')
+    # Test new Ecoinvent 3.3 compatablility labels
+    assert topology.intersects('IAI Area, Asia, without China and GCC')
+    assert topology.intersects('IAI Area, Gulf Cooperation Council')
+
     with pytest.raises(KeyError):
         topology.intersects('foo')
 
