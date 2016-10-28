@@ -48,7 +48,6 @@ setup(
         'pandas',
         'psutil',
         'pyprind',
-        'pyrsistent',
         'pytest',
         'stats_arrays',
         'toolz',
