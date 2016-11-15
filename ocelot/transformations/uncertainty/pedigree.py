@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import arrow
+from datetime import datetime
 
 
 PEDIGREE_MATRIX_VALUES = {
@@ -32,12 +32,32 @@ def get_pedigree_variance(pm, version="original"):
     return sum(PEDIGREE_MATRIX_VALUES[version][k][v - 1] for k, v in pm.items())
 
 
+def get_difference_in_years(first, second):
+    """Get absolute value of difference in years between ``first`` and ``second``.
+
+    Input values can be integers, or datetime strings like "2002-12-31". Only uses the year of a datetime string, and no rounding, so the difference between "2002-01-01" and "2002-12-31" is zero.
+
+    Returns an integer.
+
+    """
+    year = lambda x: x if isinstance(x, int) else datetime.strptime(x, "%Y-%m-%d").year
+    return abs(year(first) - year(second))
+
+
 def adjust_pedigree_matrix_time(ds, exc, year):
+    """Adjust values of ``temporal correlation`` in the pedigree matrix of exchange ``exc`` to a new year ``year``.
+
+    Does nothing if pedigree matrix not present in exchange.
+
+    Datasets are defined for a certain temporal period. If the baseline year is outside that period, the values of ``temporal correlation`` need to be modified to adjust the increased uncertainty that comes from applying the dataset to a different year. Modified numbers from a table provided by IFU Hamburg.
+
+    Modifies the exchange in place, and returns the modified exchange.
+
+    """
     if 'pedigree matrix' not in exc:
         return exc
 
-    new_year = year if isinstance(year, int) else arrow.get(year).year
-    difference = new_year - arrow.get(ds['end date']).year
+    difference = get_difference_in_years(ds['end date'], year)
     current_value = exc['pedigree matrix']['temporal correlation']
 
     if difference > 0:
