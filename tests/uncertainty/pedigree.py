@@ -6,6 +6,8 @@ import pytest
 apmt = adjust_pedigree_matrix_time
 
 
+### Test changing pedigree matrix variance
+
 def test_get_pedigree_variance_error():
     matrix = {
         "reliability": 1,
@@ -35,6 +37,20 @@ def test_get_pedigree_variance_no_keys():
 
 def test_adjust_pedigree_matrix_time_no_pm():
     assert apmt(None, {}, None) == {}
+
+
+### Test changing pedigree matrix temporal correlation
+
+def test_get_difference_in_years():
+    a = "2002-12-31"
+    b = "2002-01-01"
+    c = "2012-01-31"
+    assert get_difference_in_years(a, b) == 0
+    assert get_difference_in_years(b, a) == 0
+    assert get_difference_in_years(b, c) == 10
+    assert get_difference_in_years(c, a) == 10
+    assert get_difference_in_years(2006, a) == 4
+
 
 def test_adjust_pedigree_matrix_time():
     def ds_and_exc(current=0):

@@ -38,7 +38,6 @@ setup(
     },
     install_requires=[
         'appdirs',
-        'arrow',
         'bw2parameters',
         'docopt',
         'docutils',
