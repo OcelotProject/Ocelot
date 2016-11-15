@@ -316,6 +316,7 @@ def test_update_market_production_volumes():
     given = [{
         'name': '',
         'type': 'foo',
+        'location': '',
         'exchanges': [{
             'name': '',
             'type': 'reference product',
@@ -333,6 +334,7 @@ def test_update_market_production_volumes_activity_link():
     given = [{
         'name': '',
         'type': 'foo',
+        'location': '',
         'exchanges': [{
             'name': '',
             'type': 'reference product',
@@ -353,6 +355,7 @@ def test_update_market_production_volumes_negative_sum():
     given = [{
         'name': '',
         'type': 'foo',
+        'location': '',
         'exchanges': [{
             'name': '',
             'type': 'reference product',

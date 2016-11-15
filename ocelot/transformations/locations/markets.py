@@ -194,13 +194,14 @@ def update_market_production_volumes(data, kind="market activity"):
         rp['production volume']['amount'] = max(total_pv - missing_pv, 0)
         logger.info({
             'type': 'table element',
-            'data': (ds['name'], rp['name'], total_pv, missing_pv, rp['production volume']['amount'])
+            'data': (ds['name'], rp['name'], ds['location'], total_pv,
+                     missing_pv, rp['production volume']['amount'])
         })
     return data
 
 update_market_production_volumes.__table__ = {
     'title': 'Update market production volumes while subtracting hard links',
-    'columns': ["Name", "Product", "Total", "Activity links", "Net"]
+    'columns': ["Name", "Product", "Location", "Total", "Activity links", "Net"]
 }
 
 
