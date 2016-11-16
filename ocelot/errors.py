@@ -90,3 +90,8 @@ class InvalidTransformationFunction(OcelotError):
 class MissingSupplier(OcelotError):
     """Input from global or RoW market is needed, but this market doesn't exist"""
     pass
+
+
+class MarketGroupError(OcelotError):
+    """Error with market group definition or suppliers"""
+    pass

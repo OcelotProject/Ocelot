@@ -1,57 +1,61 @@
 # -*- coding: utf-8 -*-
 from . import topology
 from .markets import allocate_suppliers, annotate_exchange
-
-
-"""
-consumer['suppliers'] = [annotate_exchange(
-    get_single_reference_product(obj),
-    obj
-) for obj in contained]
-"""
+from ..utils import get_single_reference_product
+from ... import toolz
+from ...errors import MarketGroupError
+import itertools
 
 
 def link_market_group_suppliers(data):
     """Link suppliers to market groups, and adjust production volumes."""
-
-
-
-    """Link technosphere exchange inputs to markets.
-
-    Should only be run after ``add_suppliers_to_markets``. Skips hard (activity) links, and exchanges which have already been linked.
-
-    Add the field ``code`` to each exchange with the code of the linked market activity."""
-    filter_func = lambda x: x['type'] == "market activity"
-    market_mapping = toolz.groupby(
+    filter_func = lambda x: x['type'] == "market group"
+    market_groups = dict(toolz.groupby(
         'reference product',
         filter(filter_func, data)
-    )
-    for ds in data:
-        for exc in filter(unlinked, ds['exchanges']):
-            try:
-                contained = [
-                    market
-                    for market in market_mapping[exc['name']]
-                    if topology.contains(market['location'], ds['location'])]
-                assert contained
-            except (KeyError, AssertionError):
-                continue
-            if len(contained) == 1:
-                sup = contained[0]
-                exc['code'] = sup['code']
+    ))
+    
+    # Check to make sure names are consistent
+    for group in market_groups.values():
+        if not len({ds['name'] for ds in group}) == 1:
+            raise MarketGroupError("Inconsistent activity names in market group")
 
-                message = "Link input of '{}' to '{}' ({})"
-                detailed.info({
-                    'ds': ds,
-                    'message': message.format(exc['name'], sup['name'], sup['location']),
-                    'function': 'link_consumers_to_regional_markets'
-                })
-            else:
-                # Shouldn't be possible - markets shouldn't overlap
-                message = "Multiple markets contain {} in {}:\n{}"
-                raise OverlappingMarkets(message.format(
-                    exc['name'],
-                    ds['location'],
-                    [x['location'] for x in contained])
-                )
+    for ref_product, groups in market_groups.items():
+        suppliers = [ds for ds in data 
+                     if ds['type'] == 'market activity'
+                     and ds['reference product'] == ref_product]
+
+        location_lookup = {x['location']: x for x in suppliers}
+        location_lookup.update({x['location']: x for x in groups})
+        if not len(location_lookup) == len(suppliers) + len(groups):
+            raise MarketGroupError("Market groups can't have same location as markets")
+
+        tree = topology.tree(itertools.chain(suppliers, groups))
+
+        # Turn `tree` from nested dictionaries to flat list of key, values.
+        # Breadth first search
+        def unroll(lst, dct):
+            for key, value in dct.items():
+                lst.append((key, value))
+            for value in dct.values():
+                if value:
+                    lst = unroll(lst, value)
+            return lst
+
+        flat = unroll([], tree)
+
+        for loc, children in flat:
+            if children and not location_lookup[loc]['type'] == 'market group':
+                raise MarketGroupError
+
+        for parent, children in flat[::-1]:
+            if not children:
+                continue
+            parent = location_lookup[parent]
+            parent['suppliers'] = [annotate_exchange(
+                    get_single_reference_product(location_lookup[obj]),
+                    location_lookup[obj]
+                ) for obj in children]
+            allocate_suppliers(parent)
+
     return data

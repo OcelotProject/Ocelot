@@ -23,6 +23,7 @@ from .markets import (
     delete_suppliers_list,
     update_market_production_volumes,
 )
+from .market_groups import link_market_group_suppliers
 from .rest_of_world import relabel_global_to_row, drop_zero_pv_row_datasets
 from functools import partial
 
@@ -41,6 +42,7 @@ link_markets = Collection(
                                       to_type="market group"),
     partial(update_market_production_volumes, kind='market group'),
     allocate_all_market_suppliers,
+    link_market_group_suppliers,
     # delete_suppliers_list,
     # drop_zero_pv_row_datasets,
     link_consumers_to_regional_markets,
