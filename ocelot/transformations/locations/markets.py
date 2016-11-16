@@ -125,50 +125,57 @@ add_suppliers_to_markets.__table__ = {
 }
 
 
-def allocate_suppliers(data):
+def allocate_all_market_suppliers(data):
+    """Allocate all market activity suppliers.
+
+    Uses the function ``allocate_suppliers``, which modifies data in place.
+
+    """
+    for ds in (o for o in data if o['type'] == "market activity"):
+        allocate_suppliers(ds)
+    return data
+
+
+def allocate_suppliers(dataset):
     """Allocate suppliers to a market dataset and create input exchanges.
 
-    Works on both market activities and market groups.
-
     The sum of the suppliers inputs should add up to the production amount of the market (reference product exchange amount), minus any constrained market links. Constrained market exchanges should already be in the list of dataset exchanges, with the attribute ``constrained``."""
-    MARKETS = ("market activity", "market group")
-    for ds in (o for o in data if o['type'] in MARKETS):
-        rp = get_single_reference_product(ds)
-        scale_factor = rp['amount']
-        total_pv = sum(o['production volume']['amount']
-                       for o in ds['suppliers'])
+    rp = get_single_reference_product(dataset)
+    scale_factor = rp['amount']
+    total_pv = sum(o['production volume']['amount']
+                   for o in dataset['suppliers'])
 
-        if not total_pv:
-            # TODO: Raise error here
-            print("Skipping zero total PV with multiple inputs:\n\t{}/{} ({}, {} suppliers)".format(ds['name'], rp['name'], ds['location'], len(ds['suppliers'])))
+    if not total_pv:
+        # TODO: Raise error here
+        print("Skipping zero total PV with multiple inputs:\n\t{}/{} ({}, {} suppliers)".format(dataset['name'], rp['name'], dataset['location'], len(dataset['suppliers'])))
+        return
+
+    for supply_exc in dataset['suppliers']:
+        amount = supply_exc['production volume']['amount'] / total_pv * scale_factor
+        if not amount:
             continue
+        dataset['exchanges'].append(remove_exchange_uncertainty({
+            'amount': amount,
+            'name': supply_exc['name'],
+            'unit': supply_exc['unit'],
+            'type': 'from technosphere',
+            'tag': 'intermediateExchange',
+            'code': supply_exc['code']
+        }))
 
-        for supply_exc in ds['suppliers']:
-            amount = supply_exc['production volume']['amount'] / total_pv * scale_factor
-            if not amount:
-                continue
-            ds['exchanges'].append(remove_exchange_uncertainty({
-                'amount': amount,
-                'name': supply_exc['name'],
-                'unit': supply_exc['unit'],
-                'type': 'from technosphere',
-                'tag': 'intermediateExchange',
-                'code': supply_exc['code']
-            }))
-
-            message = "Create input exchange of {:.4g} {} for '{}' from '{}' ({})"
-            detailed.info({
-                'ds': ds,
-                'message': message.format(
-                    amount,
-                    supply_exc['unit'],
-                    rp['name'],
-                    supply_exc['name'],
-                    supply_exc['location']
-                ),
-                'function': 'allocate_suppliers'
-            })
-    return data
+        message = "Create input exchange of {:.4g} {} for '{}' from '{}' ({})"
+        detailed.info({
+            'ds': dataset,
+            'message': message.format(
+                amount,
+                supply_exc['unit'],
+                rp['name'],
+                supply_exc['name'],
+                supply_exc['location']
+            ),
+            'function': 'allocate_suppliers'
+        })
+    return dataset
 
 
 def update_market_production_volumes(data, kind="market activity"):
