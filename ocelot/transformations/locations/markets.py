@@ -174,12 +174,9 @@ def allocate_suppliers(data):
 def update_market_production_volumes(data, kind="market activity"):
     """Update market production volumes to sum to the production volumes of all applicable inputs, minus any hard (activity) links to the market and to the market suppliers.
 
-    By default works only on markets with type ``market activity``, but can be curried to work on ``market group`` types as well.
+    By default works only on markets with type ``market activity``, but can be `curried <https://en.wikipedia.org/wiki/Currying>`__ to work on ``market group`` types as well.
 
-    Activity link amounts are added by ``add_hard_linked_production_volumes`` and are currently given in the following:
-
-        * The producto
-     ``rp_exchange['production volume']['subtracted activity link volume']``.
+    Activity link amounts are added by ``add_hard_linked_production_volumes`` and are currently given in ``rp_exchange['production volume']['subtracted activity link volume']``.
 
     Production volume is set to zero is the net production volume is negative."""
     for ds in (o for o in data if o['type'] == kind):
