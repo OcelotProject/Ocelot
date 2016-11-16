@@ -43,6 +43,33 @@ class Topology(object):
         """Return boolean of whether ``parent`` contains ``child``"""
         return child in self.contained(parent)
 
+    def tree(self, datasets):
+        """Construct a tree of containing geographic relationships.
+
+        ``datasets`` is a list of datasets with the ``locations parameter``.
+
+        Returns a list of dictionaries like:
+
+            .. code-block:: python
+
+            [{
+                "Europe": [{
+                    "Western Europe": [{
+                        "France": [],
+                        "Belgium": []
+                    }]
+                }]
+            }]
+
+        ``GLO`` contains all other locations, ``RoW`` contains nothing.
+
+        Behaviour is not defined if the provided locations make a "diamond" shape where "A" contains "B" and "C", which each contain "D".
+
+        """
+        locations = {x['location'] for x in datasets}
+        filtered = lambda lst: {x for x in lst if x in locations}
+        return
+
     @functools.lru_cache(maxsize=512)
     def intersects(self, location):
         if location in ('GLO', 'RoW'):

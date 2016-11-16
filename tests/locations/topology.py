@@ -44,3 +44,36 @@ def test_topology_contains():
     assert topology.contains("RER", "CH")
     assert topology.contains("CH", "CH")
     assert not topology.contains("US", "CH")
+
+def test_topology_tree():
+    given = [
+        # market group for electricity, low voltage, ecoinvent 3.3
+        {'location': 'CA'},
+        {'location': 'Canada without Quebec'},
+        {'location': 'RNA'},
+        {'location': 'CN'},
+        {'location': 'ENTSO-E'},
+        {'location': 'Europe without Switzerland'},
+        {'location': 'GLO'},
+        {'location': 'RAF'},
+        {'location': 'RAS'},
+        {'location': 'RER'},
+        {'location': 'RLA'},
+        {'location': 'RME'},
+        {'location': 'UCTE'},
+        {'location': 'US'},
+    ]
+    expected = [{
+        'GLO': [{
+            'RNA': [{
+                'CA': [{
+                    'Canada without Quebec': []
+                }]
+            }]
+        }]
+    }]
+    assert topology.tree(given) == expected
+
+def test_topology_tree_row():
+    pass
+
