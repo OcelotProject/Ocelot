@@ -129,7 +129,7 @@ def check_markets_only_supply_one_market_group(data):
 
     code_dict = {x['code']: x for x in data}
 
-    message = "Activity {} ({}, {}) supplies multiple market groups: {} {} and {}."
+    message = "Activity {} ({}) supplies multiple market groups: {} {} and {}."
 
     for name, groups in market_groups.items():
         for group in groups:

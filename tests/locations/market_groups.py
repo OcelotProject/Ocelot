@@ -573,7 +573,6 @@ def test_check_markets_only_supply_one_market_group_error():
         }]
     }, {
         'name': 'market for foo',
-        'unit': 'kg',
         'location': 'here',
         'type': 'market activity',
         'code': '2',
