@@ -75,7 +75,6 @@ def link_market_group_suppliers(data):
             return annotate_exchange(get_single_reference_product(obj), obj)
 
         for parent, children in flat[::-1]:
-            print(parent, children)
             # Special case RoW
             if parent == 'RoW':
                 obj = location_lookup[parent]
