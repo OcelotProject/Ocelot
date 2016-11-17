@@ -235,7 +235,7 @@ def test_add_suppliers_to_markets():
     }]
     assert add_suppliers_to_markets(given) == expected
 
-def test_allocate_suppliers():
+def test_allocate_all_market_suppliers():
     given = [{
         'location': 'dining room',
         'name': 'dinner',
@@ -278,9 +278,9 @@ def test_allocate_suppliers():
         'type': 'from technosphere',
         'unit': '',
     }]
-    assert allocate_suppliers(deepcopy(given))[0]['exchanges'] == expected
+    assert allocate_all_market_suppliers(deepcopy(given))[0]['exchanges'] == expected
 
-def test_allocate_suppliers_single_supplier():
+def test_allocate_all_market_suppliers_single_supplier():
     given = [{
         'location': 'dining room',
         'name': 'dinner',
@@ -310,7 +310,7 @@ def test_allocate_suppliers_single_supplier():
         'type': 'from technosphere',
         'unit': '',
     }]
-    assert allocate_suppliers(deepcopy(given))[0]['exchanges'] == expected
+    assert allocate_all_market_suppliers(deepcopy(given))[0]['exchanges'] == expected
 
 def test_update_market_production_volumes():
     given = [{

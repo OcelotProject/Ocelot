@@ -53,6 +53,8 @@ Markets don't start with production volumes - instead, their production volume i
 
 Our ``add_suppliers_to_markets`` function has not allocated *between* the possible suppliers - it has only created the list ``suppliers`` which has these possible suppliers. We then choose *how much* of each possible supplier will contribute to each market, based on the supplier's production volumes.
 
+.. autofunction:: ocelot.transformations.locations.markets.allocate_all_market_suppliers
+
 .. autofunction:: ocelot.transformations.locations.markets.allocate_suppliers
 
 Finding consumers
