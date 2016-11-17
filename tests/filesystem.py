@@ -20,6 +20,10 @@ def test_base_directory():
 def test_output_directory():
     assert get_output_directory()
 
+def test_output_directory_envvar():
+    os.environ["OCELOT_OUTPUT"] = os.getcwd()
+    assert get_output_directory() == os.getcwd()
+
 def test_cache_directory():
     assert get_cache_directory()
 
