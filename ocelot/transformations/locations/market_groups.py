@@ -137,11 +137,18 @@ def check_markets_only_supply_one_market_group(data):
                            if exc['type'] == 'from technosphere'}
             for other in (obj for obj in groups if obj is not group):
                 for exc in (exc for exc in other['exchanges']
-                            if exc['type'] == 'from technosphere'):
-                    if exc['code'] in input_codes:
-                        act = code_dict[exc['code']]
-                        raise MarketGroupError(message.format(
-                            act['name'], act['unit'], act['location'],
-                            name, group['location'], other['location'],
-                        ))
+                            if exc['type'] == 'from technosphere'
+                            and exc['code'] in input_codes):
+                    # Duplicate are only prohibited if one market group is
+                    # completely within another market group.
+                    one = topology(group['location'])
+                    two = topology(other['location'])
+                    if one.difference(two) and two.difference(one):
+                        continue
+
+                    act = code_dict[exc['code']]
+                    raise MarketGroupError(message.format(
+                        act['name'], act['location'],
+                        name, group['location'], other['location'],
+                    ))
     return data

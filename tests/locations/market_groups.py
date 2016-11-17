@@ -545,7 +545,7 @@ def test_check_markets_only_supply_one_market_group():
 def test_check_markets_only_supply_one_market_group_error():
     given = [{
         'name': 'market group for foo',
-        'location': 'there',
+        'location': 'RER',
         'code': '1',
         'type': 'market group',
         'exchanges': [{
@@ -559,7 +559,7 @@ def test_check_markets_only_supply_one_market_group_error():
         }]
     }, {
         'name': 'market group for foo',
-        'location': 'everywhere',
+        'location': 'WEU',
         'code': '3',
         'type': 'market group',
         'exchanges': [{
@@ -573,10 +573,49 @@ def test_check_markets_only_supply_one_market_group_error():
         }]
     }, {
         'name': 'market for foo',
-        'location': 'here',
+        'location': 'FR',
         'type': 'market activity',
         'code': '2',
         'exchanges': []
     }]
     with pytest.raises(MarketGroupError):
         check_markets_only_supply_one_market_group(given)
+
+def test_check_markets_only_supply_one_market_group_overlapping_allowed():
+    # Neither ENTSO-E nor Europe with Switzerland completely cover each other
+    given = [{
+        'name': 'market group for foo',
+        'location': 'ENTSO-E',
+        'code': '1',
+        'type': 'market group',
+        'exchanges': [{
+            'code': '1',
+            'type': 'production exchange',
+            'amount': 1
+        }, {
+            'code': '2',
+            'type': 'from technosphere',
+            'amount': 1
+        }]
+    }, {
+        'name': 'market group for foo',
+        'location': 'Europe without Switzerland',
+        'code': '3',
+        'type': 'market group',
+        'exchanges': [{
+            'code': '3',
+            'type': 'production exchange',
+            'amount': 1
+        }, {
+            'code': '2',
+            'type': 'from technosphere',
+            'amount': 1
+        }]
+    }, {
+        'name': 'market for foo',
+        'location': 'EE',
+        'type': 'market activity',
+        'code': '2',
+        'exchanges': []
+    }]
+    assert check_markets_only_supply_one_market_group(given)
