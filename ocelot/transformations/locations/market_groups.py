@@ -113,3 +113,42 @@ link_market_group_suppliers.__table__ = {
     'title': "Link and allocate suppliers for market groups. Suppliers can be market activities or other market groups.",
     'columns': ["Name", "Location", "Supplier Location"]
 }
+
+
+def check_markets_only_supply_one_market_group(data):
+    """Validation function to make sure that a market only supplies one market group.
+
+    Some markets have supplied multiple market groups in the past, probably due to a GIS implementation which considered one market group at a time.
+
+    Raises a ``MarketGroupError`` if duplicate supply is found."""
+    filter_func = lambda x: x['type'] == "market group"
+    market_groups = dict(toolz.groupby(
+        'name',
+        filter(filter_func, data)
+    ))
+
+    code_dict = {x['code']: x for x in data}
+
+    message = "Activity {} ({}) supplies multiple market groups: {} {} and {}."
+
+    for name, groups in market_groups.items():
+        for group in groups:
+            input_codes = {exc['code'] for exc in group['exchanges']
+                           if exc['type'] == 'from technosphere'}
+            for other in (obj for obj in groups if obj is not group):
+                for exc in (exc for exc in other['exchanges']
+                            if exc['type'] == 'from technosphere'
+                            and exc['code'] in input_codes):
+                    # Duplicate are only prohibited if one market group is
+                    # completely within another market group.
+                    one = topology(group['location'])
+                    two = topology(other['location'])
+                    if one.difference(two) and two.difference(one):
+                        continue
+
+                    act = code_dict[exc['code']]
+                    raise MarketGroupError(message.format(
+                        act['name'], act['location'],
+                        name, group['location'], other['location'],
+                    ))
+    return data

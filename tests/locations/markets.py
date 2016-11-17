@@ -2,7 +2,6 @@
 from ocelot.errors import OverlappingMarkets, MissingSupplier
 from ocelot.transformations.locations.markets import *
 from copy import deepcopy
-import pytest
 
 
 def generate_dataset(location, name='foo', rp='bar'):
