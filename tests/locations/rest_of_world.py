@@ -90,6 +90,25 @@ def test_relabel_global_to_row():
     hashify = lambda x: {(y['name'], y['location']) for y in x}
     assert hashify(relabel_global_to_row(given)) == hashify(expected)
 
+def test_relabel_global_to_row_skip_market_groups():
+    given = [{
+        'name': 'market group for foo',
+        'location': 'GLO',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product'
+        }]
+    }, {
+        'name': 'market group for foo',
+        'location': 'CN',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product'
+        }]
+    }]
+    expected = deepcopy(given)
+    assert relabel_global_to_row(given) == expected
+
 def test_relabel_global_to_row_only_single_global():
     given = [{
         'name': 'make something',
