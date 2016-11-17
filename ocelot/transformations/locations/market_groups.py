@@ -54,6 +54,8 @@ def link_market_group_suppliers(data):
                     if (obj['location'] != 'RoW'
                         and obj['location'] in tree['GLO']):
                         del tree['GLO'][obj['location']]
+        else:
+            row_activities = []
 
         # Turn `tree` from nested dictionaries to flat list of key, values.
         # Breadth first search

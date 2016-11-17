@@ -458,3 +458,62 @@ def test_same_location_market_group_market(monkeypatch):
         'exchanges': [{'type': 'reference product', 'name': 'foo'}]
     }]
     assert link_market_group_suppliers(given) == expected
+
+def test_row_only_supply_no_market_group(monkeypatch):
+    monkeypatch.setattr(
+        'ocelot.transformations.locations.market_groups.allocate_suppliers',
+        lambda x: x
+    )
+    given = [{
+        'type': 'market activity',
+        'location': 'RoW',
+        'code': '1',
+        'name': 'market for foo',
+        'reference product': 'foo',
+        'exchanges': [{'type': 'reference product', 'name': 'foo'}]
+    }, {
+        'type': 'market activity',
+        'location': 'RER',
+        'code': '2',
+        'name': 'market for foo',
+        'reference product': 'foo',
+        'exchanges': [{'type': 'reference product', 'name': 'foo'}]
+    }, {
+        'type': 'market group',
+        'location': 'GLO',
+        'code': '5',
+        'name': 'market group for foo',
+        'reference product': 'foo',
+        'exchanges': [{'type': 'reference product', 'name': 'foo'}]
+    }]
+    expected = [{
+        'type': 'market activity',
+        'location': 'RoW',
+        'code': '1',
+        'name': 'market for foo',
+        'reference product': 'foo',
+        'exchanges': [{'type': 'reference product', 'name': 'foo'}]
+    }, {
+        'type': 'market activity',
+        'location': 'RER',
+        'code': '2',
+        'name': 'market for foo',
+        'reference product': 'foo',
+        'exchanges': [{'type': 'reference product', 'name': 'foo'}]
+    }, {
+        'type': 'market group',
+        'location': 'GLO',
+        'code': '5',
+        'name': 'market group for foo',
+        'reference product': 'foo',
+        'suppliers': [{'code': '1',
+                       'location': 'RoW',
+                       'name': 'market for foo',
+                       'type': 'reference product'},
+                      {'code': '2',
+                       'location': 'RER',
+                       'name': 'market for foo',
+                       'type': 'reference product'}],
+        'exchanges': [{'type': 'reference product', 'name': 'foo'}]
+    }]
+    assert link_market_group_suppliers(given) == expected
