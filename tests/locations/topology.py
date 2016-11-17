@@ -46,6 +46,8 @@ def test_topology_contains():
     assert topology.contains("RER", "CH")
     assert topology.contains("CH", "CH")
     assert not topology.contains("US", "CH")
+    assert topology.contains('NAFTA', 'US')
+    assert topology.contains('UN-ASIA', 'Cyprus No Mans Area')
 
 def test_topology_tree():
     given = [
