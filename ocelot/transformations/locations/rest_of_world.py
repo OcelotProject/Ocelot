@@ -13,7 +13,7 @@ def relabel_global_to_row(data):
     """Change ``GLO`` locations to ``RoW`` if there are region-specific datasets in the activity group."""
     processed = []
     for key, datasets in toolz.groupby(activity_grouper, data).items():
-        if key[0].startswith("market group"):
+        if datasets and datasets[0]["type"] == "market group":
             processed.extend(datasets)
             continue
         if len(datasets) > 1:
