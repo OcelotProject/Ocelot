@@ -69,6 +69,55 @@ def group_fixture(monkeypatch):
     }]
     return data
 
+
+def test_inconsistent_names():
+    data = [{
+        'type': 'market group',
+        'name': 'market group for bar',
+        'reference product': 'foo',
+    }, {
+        'type': 'market group',
+        'name': 'market group for foo',
+        'reference product': 'foo',
+    }]
+    with pytest.raises(MarketGroupError):
+        link_market_group_suppliers(data)
+
+def test_overlapping_markets():
+    data = [{
+        'type': 'market activity',
+        'location': 'FR',
+        'code': '1',
+        'name': 'market for foo',
+        'reference product': 'foo',
+        'exchanges': [{
+            'type': 'reference product',
+            'name': 'foo',
+        }]
+    }, {
+        'type': 'market activity',
+        'location': 'RER',
+        'code': '2',
+        'name': 'market for foo',
+        'reference product': 'foo',
+        'exchanges': [{
+            'type': 'reference product',
+            'name': 'foo',
+        }]
+    }, {
+        'type': 'market group',
+        'location': 'GLO',
+        'code': '3',
+        'name': 'market group for foo',
+        'reference product': 'foo',
+        'exchanges': [{
+            'type': 'reference product',
+            'name': 'foo',
+        }]
+    }]
+    with pytest.raises(MarketGroupError):
+        link_market_group_suppliers(data)
+
 def test_link_market_group_suppliers(group_fixture):
     expected = [{
         'type': 'market activity',
