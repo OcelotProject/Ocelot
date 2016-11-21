@@ -234,6 +234,192 @@ def test_add_suppliers_to_markets():
     }]
     assert add_suppliers_to_markets(given) == expected
 
+def test_add_suppliers_to_markets():
+    given = [{
+        'type': 'skip me',
+    }, {
+        'code': 'cCA',
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'CA',
+        'exchanges': [{'type': 'reference product'}],
+    }, {
+        'code': 'cMX',
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'MX',
+        'exchanges': [{'type': 'reference product'}],
+    }, {
+        'code': 'cFR',
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'FR',
+        'exchanges': [{'type': 'reference product'}],
+    }, {
+        'code': 'cNAFTA',
+        'type': 'market activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'NAFTA',
+    }, {
+        'code': 'cRER',
+        'type': 'market activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'RER',
+    }, {
+        'code': 'cDE',
+        'type': 'transforming activity',
+        'reference product': 'bar',
+        'name': '',
+        'location': 'DE',
+        'exchanges': [{'type': 'reference product'}],
+    }, {
+        'code': 'cZA',
+        'type': 'transforming activity',
+        'reference product': 'bar',
+        'name': '',
+        'location': 'ZA',
+        'exchanges': [{'type': 'reference product'}],
+    }, {
+        'code': 'cRoW',
+        'type': 'market activity',
+        'reference product': 'bar',
+        'name': '',
+        'location': 'RoW',
+    }]
+    expected = [{
+        'type': 'skip me',
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'CA',
+        'code': 'cCA',
+        'exchanges': [{'type': 'reference product'}],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'MX',
+        'code': 'cMX',
+        'exchanges': [{'type': 'reference product'}],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'FR',
+        'code': 'cFR',
+        'exchanges': [{'type': 'reference product'}],
+    }, {
+        'type': 'market activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'NAFTA',
+        'code': 'cNAFTA',
+        'suppliers': [
+            {
+                'code': 'cCA',
+                'location': 'CA',
+                'type': 'reference product',
+                'name': '',
+            },
+            {
+                'code': 'cMX',
+                'location': 'MX',
+                'type': 'reference product',
+                'name': ''
+            }
+        ]
+    }, {
+        'type': 'market activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'RER',
+        'code': 'cRER',
+        'suppliers': [{
+            'code': 'cFR',
+            'type': 'reference product',
+            'location': 'FR',
+            'name': ''
+        }]
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'bar',
+        'name': '',
+        'location': 'DE',
+        'code': 'cDE',
+        'exchanges': [{'type': 'reference product'}],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'bar',
+        'name': '',
+        'location': 'ZA',
+        'code': 'cZA',
+        'exchanges': [{'type': 'reference product'}],
+    }, {
+        'type': 'market activity',
+        'reference product': 'bar',
+        'name': '',
+        'location': 'RoW',
+        'code': 'cRoW',
+        'suppliers': [{
+            'code': 'cDE',
+            'location': 'DE',
+            'type': 'reference product',
+            'name': '',
+        }, {
+            'code': 'cZA',
+            'location': 'ZA',
+            'type': 'reference product',
+            'name': '',
+        }]
+    }]
+    assert add_suppliers_to_markets(given) == expected
+
+def test_add_suppliers_to_markets_no_consumers():
+    given = [{
+        'code': 'cCA',
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'CA',
+        'exchanges': [{'type': 'reference product'}],
+    }, {
+        'code': 'cMX',
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'MX',
+        'exchanges': [{'type': 'reference product'}],
+    }, {
+        'code': 'cFR',
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'FR',
+        'exchanges': [{'type': 'reference product'}],
+    }, {
+        'code': 'cNAFTA',
+        'type': 'market activity',
+        'reference product': 'bar',
+        'name': '',
+        'location': 'NAFTA',
+    }, {
+        'code': 'cRER',
+        'type': 'market activity',
+        'reference product': 'bar',
+        'name': '',
+        'location': 'RER',
+    }]
+    expected = deepcopy(given)
+    expected[3]['suppliers'] = []
+    expected[4]['suppliers'] = []
+    assert add_suppliers_to_markets(given) == expected
+
 def test_allocate_all_market_suppliers():
     given = [{
         'location': 'dining room',
