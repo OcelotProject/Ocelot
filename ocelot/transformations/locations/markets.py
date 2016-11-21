@@ -67,26 +67,31 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
 
 
 def add_recycled_content_suppliers_to_markets(data):
-    """Link markets to recycled content producing activities."""
-    from_type, to_type = "transforming activity", "market activity"
-    filter_func = lambda x: x['type'] in (from_type, to_type)
-    grouped = toolz.groupby("reference product", filter(filter_func, data))
+    """Link markets to recycled content producing activities.
+
+    At this point, the markets have not been modified in any way, but the recycled content cut-off processes have been created by ``create_recycled_content_datasets``. So, we have the following:
+
+    * A market activity has a name ``market for foo``, and a reference product of ``foo``.
+    * A new transforming activity has the name ``foo, Recycled Content cut-off``, and a reference product of ``foo, Recycled Content cut-off``.
+
+    We need to correctly add the recycled content suppliers to these markets. The general purpose ``add_suppliers_to_markets`` doesn't work because the reference products are different."""
+    market_filter = lambda x: x['type'] == "market activity"
+    grouped = toolz.groupby("reference product", filter(market_filter, data))
 
     recycled_content_datasets = [
         x for x in data
-        if x['type'] == from_type
-        and RC_STRING in x['reference product']
+        if x['type'] == 'transforming activity'
+        and x['reference product'].endswith(RC_STRING)
     ]
 
-    for rp, datasets in grouped.items():
+    for rp, markets in grouped.items():
         suppliers = [
             ds for ds in recycled_content_datasets
             if ds['reference product'] == rp + RC_STRING
         ]
-        consumers = [ds for ds in datasets if ds['type'] == to_type]
-        if consumers and suppliers:
-            no_overlaps(consumers)
-            apportion_suppliers_to_consumers(consumers, suppliers)
+        no_overlaps(markets)
+        if suppliers:
+            apportion_suppliers_to_consumers(markets, suppliers)
     return data
 
 add_recycled_content_suppliers_to_markets.__table__ = {

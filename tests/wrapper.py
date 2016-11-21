@@ -30,3 +30,9 @@ def test_correct_unrolling(func):
     filter_func = lambda x: x == 2
     wrapped = TransformationWrapper(funky, filter_func)
     assert wrapped([1, 2, 3]) == [1, 1, 2, 3, 3]
+
+def test_correct_unrolling_no_filter(func):
+    funky = lambda x: [1,2,3]
+    wrapped = TransformationWrapper(funky)
+    assert wrapped([None, None]) == [1, 2, 3, 1, 2, 3]
+

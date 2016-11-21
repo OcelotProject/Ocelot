@@ -20,8 +20,19 @@ def test_base_directory():
 def test_output_directory():
     assert get_output_directory()
 
+def test_output_directory_envvar():
+    os.environ["OCELOT_OUTPUT"] = os.getcwd()
+    assert get_output_directory() == os.getcwd()
+
 def test_cache_directory():
     assert get_cache_directory()
+
+def test_cache_directory_error(monkeypatch):
+    monkeypatch.setattr(
+        'ocelot.filesystem.get_cache_filepath_for_data_path',
+        lambda x: "not a real thing"
+    )
+    assert not check_cache_directory(os.getcwd())
 
 def test_directory_structure():
     base = get_base_directory()

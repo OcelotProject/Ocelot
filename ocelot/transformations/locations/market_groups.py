@@ -69,6 +69,7 @@ def link_market_group_suppliers(data):
 
         flat = unroll([], tree)
 
+        # Shouldn't exist - means that markets overlap
         for loc, children in flat:
             if children and not location_lookup[loc]['type'] == 'market group':
                 raise MarketGroupError
