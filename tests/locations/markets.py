@@ -114,6 +114,52 @@ def test_apportion_suppliers_to_consumers_global_group():
     expected[0]['suppliers'].sort(key = lambda x: x['location'])
     assert consumers == expected
 
+def test_apportion_suppliers_to_consumers_global_supplier():
+    suppliers = [{
+        'code': 'a',
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': 'first',
+        'location': 'GLO',
+        'exchanges': [{'type': 'reference product'}],
+    }, {
+        'code': 'b',
+        'type': 'transforming activity',
+        'reference product': 'foo',
+        'name': 'second',
+        'location': 'MX',
+        'exchanges': [{'type': 'reference product'}],
+    }]
+    consumers = [{
+        'code': 'c',
+        'type': 'market activity',
+        'reference product': 'foo',
+        'name': '',
+        'location': 'NAFTA',
+    }]
+    expected = [{
+        'code': 'c',
+        'reference product': 'foo',
+        'type': 'market activity',
+        'name': '',
+        'location': 'NAFTA',
+        'suppliers': [{
+            'type': 'reference product',
+            'location': 'GLO',
+            'code': 'a',
+            'name': 'first',
+        }, {
+            'type': 'reference product',
+            'location': 'MX',
+            'code': 'b',
+            'name': 'second',
+        }]
+    }]
+    apportion_suppliers_to_consumers(consumers, suppliers)
+    consumers[0]['suppliers'].sort(key = lambda x: x['location'])
+    expected[0]['suppliers'].sort(key = lambda x: x['location'])
+    assert consumers == expected
+
 def test_apportion_suppliers_to_consumers_no_suppliers():
     consumers = [
         generate_dataset('UCTE without France'),
