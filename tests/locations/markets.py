@@ -420,3 +420,18 @@ def test_delete_allowed_zero_pv_market_datsets():
         'reference product': '',
     }]
     assert delete_allowed_zero_pv_market_datsets(given) == expected
+
+def test_allocate_suppliers_no_production_volume():
+    given = {
+        'name': '',
+        'location': '',
+        'exchanges': [{
+            'type': 'reference product',
+            'name': '',
+            'amount': 1,
+        }],
+        'suppliers': [{
+            'production volume': {'amount': 0}
+        }]
+    }
+    assert allocate_suppliers(given) is None
