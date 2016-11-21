@@ -435,3 +435,53 @@ def test_allocate_suppliers_no_production_volume():
         }]
     }
     assert allocate_suppliers(given) is None
+
+def test_allocate_suppliers_skip_zero_amount():
+    given = {
+        'exchanges': [{
+            'type': 'reference product',
+            'name': '',
+            'amount': 1,
+        }],
+        'suppliers': [{
+            'name': 'skip me',
+            'amount': 1,
+            'production volume': {'amount': 0},
+        }, {
+            'name': 'keep me',
+            'unit': '',
+            'location': '',
+            'code': '',
+            'amount': 1,
+            'production volume': {'amount': 1},
+
+        }]
+    }
+    expected = {
+        'exchanges': [{
+            'type': 'reference product',
+            'name': '',
+            'amount': 1,
+        }, {
+            'amount': 1,
+            'code': '',
+            'name': 'keep me',
+            'tag': 'intermediateExchange',
+            'type': 'from technosphere',
+            'unit': '',
+        }],
+        'suppliers': [{
+            'name': 'skip me',
+            'amount': 1,
+            'production volume': {'amount': 0},
+        }, {
+            'name': 'keep me',
+            'unit': '',
+            'location': '',
+            'code': '',
+            'amount': 1,
+            'production volume': {'amount': 1},
+
+        }]
+    }
+    assert allocate_suppliers(given) == expected
