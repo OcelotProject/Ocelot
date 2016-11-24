@@ -74,10 +74,10 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
 
     """
     print("Starting Ocelot model run")
+    config = validate_configuration(config or default_configuration)
+    data = extract_directory(data_path, use_cache)
+    output_manager = OutputDir()
     try:
-        config = validate_configuration(config or default_configuration)
-        data = extract_directory(data_path, use_cache)
-        output_manager = OutputDir()
         counter = itertools.count()
         logfile_path = create_log(output_manager.directory)
         create_detailed_log(output_manager.directory)
