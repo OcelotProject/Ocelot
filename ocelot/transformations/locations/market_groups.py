@@ -7,6 +7,7 @@ from .markets import allocate_suppliers, annotate_exchange
 import copy
 import itertools
 import logging
+import numpy as np
 
 logger = logging.getLogger('ocelot')
 
@@ -153,3 +154,15 @@ def check_markets_only_supply_one_market_group(data):
                         name, group['location'], other['location'],
                     ))
     return data
+
+
+def create_flow_array_from_dataset_and_dict(flow, ds, dct):
+    """"""
+    ds_dict = {exc}
+    return np.array([])
+
+
+def link_market_group_consumers(data):
+    filter_func = lambda x: x['type'] != "market group"
+    for ds in reduce(filter_func, data):
+        pass
