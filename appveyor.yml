@@ -1,26 +1,39 @@
-# Modified from https://ci.appveyor.com/project/jkbrzt/httpie
+skip_commits:
+  message: /^Merge pull request /
+
 build: false
 
 environment:
-  matrix:
-    - PYTHON: "C:\\Python35_64"
-      PYTHON_VERSION: "3.5"
-      PYTHON_ARCH: "64"
-      CONDA_PY: "35"
-      CONDA_NPY: "110"
+  PYTHONIOENCODING: "UTF-8"
 
-    - PYTHON: "C:\\Python35_32"
-      PYTHON_VERSION: "3.5"
+  matrix:
+    - PYTHON_VERSION: "3.5"
       PYTHON_ARCH: "32"
       CONDA_PY: "35"
-      CONDA_NPY: "110"
+      CONDA_INSTALL_LOCN: "C:\\Miniconda35"
+
+    - PYTHON_VERSION: "3.5"
+      PYTHON_ARCH: "64"
+      CONDA_PY: "35"
+      CONDA_INSTALL_LOCN: "C:\\Miniconda35-x64"
+
+    - PYTHON_VERSION: "3.6"
+      PYTHON_ARCH: "32"
+      CONDA_PY: "36"
+      CONDA_INSTALL_LOCN: "C:\\Miniconda36"
+
+    - PYTHON_VERSION: "3.6"
+      PYTHON_ARCH: "64"
+      CONDA_PY: "36"
+      CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
 
 install:
-  - powershell .\\ci\\appveyor-install.ps1
-  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - "pip install --no-cache-dir -r requirements.txt"
+    # Use the pre-installed Miniconda for the desired arch
+    - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
+    - cmd: conda update -y -q conda
+    - cmd: conda install -y -q -c conda-forge -c cmutel numpy scipy psutil bw2parameters appdirs arrow docopt docutils jinja2 lxml pandas pyprind pytest stats_arrays cytoolz wrapt voluptuous
 
 test_script:
-  - "py.test"
+  - "pytest"
   - "python setup.py -q install"
   - "python.exe tests/manual/run_all_ci.py"
