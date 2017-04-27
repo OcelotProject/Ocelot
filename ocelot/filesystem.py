@@ -83,7 +83,7 @@ def get_cache_filepath_for_data_path(data_path):
     return os.path.join(
         get_cache_directory(),
         hashlib.md5(
-            (data_path + __io_version__).encode("utf-8")
+            (os.path.abspath(data_path) + __io_version__).encode("utf-8")
         ).hexdigest() + ".pickle"
     )
 
