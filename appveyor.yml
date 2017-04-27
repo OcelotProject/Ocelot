@@ -31,7 +31,7 @@ install:
     # Use the pre-installed Miniconda for the desired arch
     - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
     - cmd: conda update -y -q conda
-    - cmd: conda install -y -q -c cmutel bw2parameters
+    - cmd: conda install -y -q -c cmutel -c conda-forge bw2parameters
     - cmd: conda install -y -q -c conda-forge numpy scipy psutil bw2parameters appdirs arrow docopt docutils jinja2 lxml pandas pyprind pytest cytoolz wrapt voluptuous
     - cmd: pip install stats_arrays
 
