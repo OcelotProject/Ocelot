@@ -103,6 +103,53 @@ def test_single_reference_product_none():
             'exchanges': [{'type': 'something'}]
         })
 
+def test_normalize_reference_production_logging():
+    given = {
+        'name': 'foo',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'name': 'bar',
+                'amount': 0.5
+            },
+            {
+                'type': 'something else',
+                'amount': 10
+            }
+        ]
+    }
+    assert normalize_reference_production_amount(given)
+
+def test_normalize_reference_production_epsilon():
+    given = {
+        'name': 'foo',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'amount': 0.9
+            },
+            {
+                'type': 'something else',
+                'amount': 10
+            }
+        ]
+    }
+    expected = {
+        'name': 'foo',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'amount': 0.9
+            },
+            {
+                'type': 'something else',
+                'amount': 10
+            }
+        ]
+    }
+    result = normalize_reference_production_amount(given, epsilon=0.5, log=False)[0]
+    assert result == expected
+
 def test_normalize_reference_production_amount():
     given = {'exchanges': [
         {
@@ -124,7 +171,7 @@ def test_normalize_reference_production_amount():
             'amount': 20
         }
     ]}
-    assert normalize_reference_production_amount(given) == expected
+    assert normalize_reference_production_amount(given, log=False)[0] == expected
 
 def test_normalize_reference_production_amount_zero_amount():
     given = {
@@ -135,7 +182,7 @@ def test_normalize_reference_production_amount_zero_amount():
         }]
     }
     with pytest.raises(ZeroProduction):
-        normalize_reference_production_amount(given)
+        normalize_reference_production_amount(given, log=False)
 
 def test_activity_grouper():
     given = {
@@ -214,7 +261,7 @@ def test_nonreference_product():
 def no_normalization(monkeypatch):
     monkeypatch.setattr(
         'ocelot.transformations.utils.normalize_reference_production_amount',
-        lambda x: x
+        lambda x, log=True, epsilon=1e-14: x
     )
 
 def test_choose_reference_product_exchange(no_normalization):

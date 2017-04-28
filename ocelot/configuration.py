@@ -4,6 +4,7 @@ from .transformations import (
     # ensure_mandatory_properties,
     fix_ecoinvent_parameters,
     manage_activity_links,
+    normalize_reference_production_amount,
     validate_markets,
     variable_names_are_unique,
 )
@@ -15,6 +16,7 @@ from .transformations.cutoff import (
 )
 from .transformations.cutoff.cleanup import drop_rp_activity_links
 from .transformations.locations import link_markets
+from .wrapper import TransformationWrapper
 
 
 class Configuration(object):
@@ -43,6 +45,6 @@ default_configuration = [
     link_markets,
     rename_recycled_content_products_after_linking,
     # extrapolate to database reference year
-    # normalize_reference_production_amount
+    TransformationWrapper(normalize_reference_production_amount),
     # final output processing
 ]

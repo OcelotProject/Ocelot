@@ -6,6 +6,9 @@ from pprint import pformat
 import hashlib
 import pandas as pd
 import wrapt
+import logging
+
+logger = logging.getLogger('ocelot')
 
 
 ### Activity identifiers
@@ -213,18 +216,27 @@ def allocatable_production_as_dataframe(dataset):
 
 ### Exchange modifiers
 
-def normalize_reference_production_amount(dataset):
+def normalize_reference_production_amount(dataset, log=True, epsilon=1e-14):
     """Scale the exchange amounts so the reference product exchange has an amount of 1 or -1"""
     product = get_single_reference_product(dataset)
     if not product['amount']:
         message = "Zero production amount for dataset:\n{}"
         raise ZeroProduction(message.format(dataset['filepath']))
     factor = 1 / abs(product['amount'])
-    # TODO: Skip if very close to one?
-    if factor != 1:
+    if abs(factor - 1) > epsilon:
+        if log:
+            logger.info({
+                'type': 'table element',
+                'data': (dataset['name'], product['name'], factor)
+            })
         for exchange in dataset['exchanges']:
             scale_exchange(exchange, factor)
-    return dataset
+    return [dataset]
+
+normalize_reference_production_amount.__table__ = {
+    'title': 'Normalize all exchanges to production amount of one.',
+    'columns': ["Activity name", "Reference product", "Scale factor"]
+}
 
 
 def label_reference_product(data):
@@ -292,7 +304,8 @@ def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
         scale_exchange(deepcopy(exc), allocation_factor)
         for exc in nonproduction_exchanges(dataset)
     ]
-    return normalize_reference_production_amount(obj)
+    normalize_reference_production_amount(obj, log=False)
+    return obj
 
 
 ### Function helpers
