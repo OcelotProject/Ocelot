@@ -13,6 +13,7 @@ from .parameterization import (
     variable_names_are_unique,
 )
 from .production_volumes import add_pv_to_allocatable_byproducts
+from .utils import normalize_reference_production_amount
 from .validation import (
     ensure_mandatory_properties,
     ensure_production_exchanges_have_production_volume,
