@@ -27,6 +27,8 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
 
     A supplier must be completely contained within a consumer, or it is rejected, and the global or RoW activity is chosen.
 
+    Region-specific markets (i.e. those without locations ``GLO`` or ``RoW``) should not consume from global providers.
+
     Modifies in place."""
     row_excluded_faces = set.union(*[
         topology(obj['location'])
@@ -47,7 +49,8 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
             else:
                 candidates = [ds for ds in group
                               if topology.contains(consumer['location'], ds['location'])]
-            if not candidates:
+            # Allow global suppliers only if consumer is also global
+            if not candidates and consumer['location'] in ("GLO", "RoW"):
                 candidates = [ds for ds in group
                               if ds['location'] in ("GLO", "RoW")]
             contained.extend(candidates)
