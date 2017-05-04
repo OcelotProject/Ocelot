@@ -57,7 +57,7 @@ def test_can_pass_collection_directly(fake_report):
 
 def test_can_nest_collections(fake_report):
     empty_collection = Collection("0")
-    report, data = system_model([1,2,3,4], Collection("0", empty_collection))
+    report, data = system_model([1,2,3,4], [Collection("0", empty_collection)])
     assert data == [1,2,3,4]
 
 def test_empty_collection_is_falsey():
@@ -89,6 +89,38 @@ def test_collection_contains():
     collection = Collection("1", 1, 2)
     assert 1 in collection
     assert 3 not in collection
+
+def test_collection_unwrapped():
+    collection = Collection("foo", 1, 2, Collection("bar", 3, 4))
+    assert collection.functions == [1,2,3,4]
+
+def test_collection_getitem():
+    collection = Collection("foo", 1, 2, 3)
+    assert collection[1] == 2
+
+def test_collection_setitem():
+    collection = Collection("foo", 1, 2, 3)
+    collection[2] = 'bar'
+    assert collection.functions == [1, 2, 'bar']
+
+def test_collection_deltiem():
+    collection = Collection("foo", 1, 2, 3)
+    del collection[1]
+    assert collection.functions == [1, 3]
+
+def test_collection_insert():
+    collection = Collection("foo", 1, 2, 3)
+    collection.insert(0, 'foo')
+    assert collection.functions == ['foo', 1, 2, 3]
+
+def test_collection_reversed():
+    collection = Collection("foo", 1, 2, 3)
+    assert list(reversed(collection)) == [3, 2, 1]
+
+def test_collection_str():
+    collection = Collection("foo", 1, 2, 3)
+    assert str(collection) == 'Collection foo with 3 functions'
+    assert repr(collection) == 'Collection foo with 3 functions'
 
 def test_unwrap_functions():
     a = lambda x: False

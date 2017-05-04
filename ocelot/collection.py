@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from collections.abc import MutableSequence, Iterable
+import wrapt
 
 
 class Collection(MutableSequence):
@@ -11,7 +12,6 @@ class Collection(MutableSequence):
 
     """
     def __init__(self, name, *functions):
-        print(name)
         self.name = name
         self.functions = functions
         self.unwrap()
@@ -58,10 +58,10 @@ class Collection(MutableSequence):
 def unwrap_functions(lst):
     """Unwrap a list of functions, some of which could themselves be lists of functions."""
     def unwrapper(functions):
-        print(type(functions))
-        print(functions)
         for func in functions:
-            if isinstance(func, Iterable):
+            # wrapt decorators are iterable for some reason
+            if (isinstance(func, Iterable) and
+                not isinstance(func, wrapt.FunctionWrapper)):
                 for obj in unwrapper(func):
                     yield obj
             else:
