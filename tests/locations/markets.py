@@ -125,8 +125,6 @@ def test_apportion_suppliers_to_consumers_global_group():
     apportion_suppliers_to_consumers(consumers, suppliers)
     consumers[0]['suppliers'].sort(key = lambda x: x['location'])
     expected[0]['suppliers'].sort(key = lambda x: x['location'])
-    from datadiff import diff
-    print(diff(consumers, expected))
     assert consumers == expected
 
 def test_apportion_suppliers_to_consumers_global_supplier_excluded():
