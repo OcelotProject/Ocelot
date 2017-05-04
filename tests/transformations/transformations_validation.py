@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ocelot.errors import (
+    IdenticalDatasets,
     InvalidExchange,
     InvalidMarket,
     InvalidMarketExchange,
@@ -8,6 +9,7 @@ from ocelot.errors import (
 )
 from ocelot.transformations.validation import (
     check_single_output_activity,
+    ensure_ids_are_unique,
     ensure_mandatory_properties,
     ensure_markets_dont_consume_their_ref_product,
     ensure_markets_only_have_one_reference_product,
@@ -15,6 +17,19 @@ from ocelot.transformations.validation import (
 )
 import pytest
 
+
+def test_ensure_ids_are_unique():
+    correct = [
+        {'id': 1},
+        {'id': 2}
+    ]
+    assert ensure_ids_are_unique(correct)
+    incorrect = [
+        {'id': 1},
+        {'id': 1}
+    ]
+    with pytest.raises(IdenticalDatasets):
+        ensure_ids_are_unique(incorrect)
 
 def test_check_single_output():
     ds = {'exchanges': [{

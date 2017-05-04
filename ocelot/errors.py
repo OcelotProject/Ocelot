@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 class OcelotError(Exception):
     """Base for custom ocelot errors"""
     pass
@@ -91,6 +92,9 @@ class MissingSupplier(OcelotError):
     """Input from global or RoW market is needed, but this market doesn't exist"""
     pass
 
+class MissingAlternativeProducer(OcelotError):
+    """Alternative producer for byproduct not found"""
+    pass
 
 class MarketGroupError(OcelotError):
     """Error with market group definition or suppliers"""

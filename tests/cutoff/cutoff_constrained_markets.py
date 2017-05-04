@@ -4,6 +4,7 @@ import pytest
 
 
 def test_constrained_market_allocation(monkeypatch):
+    """This test literally does nothing useful, and is included only to make sure that this function doesn't produce an error when called with valid data"""
     def visit_exchange(exc):
         exc['touched'] = True
 
