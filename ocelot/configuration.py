@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from .collection import Collection
 from .transformations import (
     ensure_ids_are_unique,
     pv_cleanup,
@@ -31,17 +32,9 @@ from .transformations.locations import link_markets_by_pv
 from .wrapper import TransformationWrapper
 
 
-class Configuration(object):
-    """This is a dummy class, to be filled in with code that can parse various ways for defining a system model in a list of Python functions, including currying, etc."""
-    def __init__(self):
-        self.functions = []
-
-    def __iter__(self):
-        return iter(self.functions)
-
-
 # Default config for now is cutoff
-cutoff_config = [
+cutoff_config = Collection(
+    'Ecoinvent 3 cutoff by classification system model',
     ensure_ids_are_unique,
     variable_names_are_unique,
     # There are a *lot* of missing mandatory properties
@@ -61,9 +54,10 @@ cutoff_config = [
     # extrapolate to database reference year
     TransformationWrapper(normalize_reference_production_amount),
     # final output processing
-]
+)
 
-consequential_config = [
+consequential_config = Collection(
+    'Ecoinvent 3 consequential long-term system model',
     ensure_ids_are_unique,
     variable_names_are_unique,
     validate_markets,
@@ -79,4 +73,4 @@ consequential_config = [
     # extrapolate to database reference year
     TransformationWrapper(normalize_reference_production_amount),
     # final output processing
-]
+)
