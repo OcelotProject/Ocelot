@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .configuration import default_configuration
+from .configuration import cutoff_config
 from .filesystem import (
     cache_data,
     OutputDir,
@@ -74,7 +74,7 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
 
     """
     print("Starting Ocelot model run")
-    config = validate_configuration(config or default_configuration)
+    config = validate_configuration(config or cutoff_config)
     data = extract_directory(data_path, use_cache)
     output_manager = OutputDir()
     try:

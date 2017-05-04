@@ -15,9 +15,10 @@ detailed = logging.getLogger('ocelot-detailed')
 
 
 def annotate_exchange(exc, ds):
-    """Copy ``exc``, and add ``code`` and ``location`` from ``ds``."""
+    """Copy ``exc``, and add ``code``, ``technology level``, ``name``, and ``location`` from ``ds``."""
+    FIELDS = ('location', 'code', 'technology level', 'name')
     exc = deepcopy(exc)
-    exc.update({k: ds[k] for k in ('location', 'code', 'name')})
+    exc.update({k: ds[k] for k in FIELDS if k in ds})
     return exc
 
 

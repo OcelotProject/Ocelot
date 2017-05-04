@@ -23,8 +23,11 @@ from .cleanup import (
 )
 
 cleanup_activity_links = Collection(
+<<<<<<< HEAD
     "Cleanup hard (activity) links",
     remove_consequential_exchanges,
+=======
+>>>>>>> master
     drop_rp_activity_links,
     drop_zero_amount_activity_links,
 )

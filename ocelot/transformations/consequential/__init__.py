@@ -26,7 +26,10 @@ from functools import partial
 
 
 link_markets_by_technology_level = Collection(
+<<<<<<< HEAD
     "Consequential market linking by technology level",
+=======
+>>>>>>> master
     label_reference_product,
     delete_allowed_zero_pv_market_datsets,
     assign_fake_pv_to_confidential_datasets,
