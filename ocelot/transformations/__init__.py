@@ -22,6 +22,7 @@ from .validation import (
 )
 
 pv_cleanup = Collection(
+    "Production volume cleanup",
     ensure_production_exchanges_have_production_volume,
     add_pv_to_allocatable_byproducts,
     create_pv_parameters,

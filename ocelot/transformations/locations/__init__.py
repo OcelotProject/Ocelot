@@ -32,6 +32,7 @@ from functools import partial
 
 
 link_markets_by_pv = Collection(
+    "Link markets and market groups",
     label_reference_product,
     delete_allowed_zero_pv_market_datsets,
     assign_fake_pv_to_confidential_datasets,

@@ -312,6 +312,6 @@ def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
 
 @wrapt.decorator
 def single_input(wrapped, instance, args, kwargs):
-    """Decorator to allow a transformation to transformation function to take a single dataset input."""
+    """Decorator to allow a transformation function to take a single dataset input."""
     data = kwargs.get('data') or args[0]
     return [ds for elem in data for ds in wrapped(elem)]

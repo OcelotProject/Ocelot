@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from .errors import InvalidTransformationFunction
+from .collection import Collection
 from collections.abc import Iterable
 import functools
 
@@ -20,8 +21,10 @@ def get_function_meta(function):
 
 
 def validate_configuration(config):
-    unroll = lambda x: x if isinstance(x, Iterable) else [x]
-    as_iterable = (elem for function in config for elem in unroll(function))
+    if not isinstance(config, Collection):
+        as_iterable = Collection("Wrapper", *config)
+    else:
+        as_iterable = config
     for function in as_iterable:
         try:
             assert get_function_meta(function)

@@ -23,6 +23,7 @@ from .cleanup import (
 )
 
 cleanup_activity_links = Collection(
+    "Cleanup hard (activity) links",
     drop_rp_activity_links,
     drop_zero_amount_activity_links,
 )
