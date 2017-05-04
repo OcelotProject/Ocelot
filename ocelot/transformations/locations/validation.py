@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from ...errors import MultipleGlobalDatasets, OverlappingActivities
 from . import topology
-from ... import toolz
-import itertools
 import wrapt
 
 
@@ -10,24 +8,6 @@ def check_single_global_dataset(datasets):
     """Raises ``MultipleGlobalDatasets`` if more than one global dataset is present."""
     if len([ds for ds in datasets if ds['location'] == 'GLO']) > 1:
         raise MultipleGlobalDatasets
-
-
-# def check_markets_dont_overlap(data):
-#     """Raise ``OverlappingActivities`` if markets overlap."""
-#     markets = (ds for ds in data if ds['type'] == 'market activity')
-#     for rp, datasets in toolz.groupby('reference product', markets).items():
-#         # Short circuit if don't need error message
-#         if not topology.overlaps([ds['location'] for ds in datasets]):
-#             continue
-
-#         faces = {ds['location']: topology(ds['location']) for ds in datasets}
-#         for first, second in itertools.combinations(faces, 2):
-#             if first in ("GLO", "RoW") or second in ("GLO", "RoW"):
-#                 continue
-#             if faces[first].intersection(faces[second]):
-#                 message = "Markets {} and {} for {} overlap"
-#                 raise OverlappingActivities(message.format(first, second, rp))
-#     return data
 
 
 def no_overlaps(data):

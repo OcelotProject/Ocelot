@@ -12,68 +12,117 @@ def test_relabel_global_to_row():
     given = [{
         'name': 'make something',
         'location': 'GLO',
+        'type': 'market activity',
         'exchanges': [{
             'name': 'a product',
-            'type': 'reference product'
+            'unit': '',
+            'type': 'reference product',
+            'production volume': {'amount': 0}
         }]
     }, {
         'name': 'make something',
         'location': 'somewhere else',
+        'unit': '',
+        'type': 'market activity',
         'exchanges': [{
             'name': 'a product',
-            'type': 'reference product'
+            'unit': '',
+            'type': 'reference product',
+            'production volume': {'amount': 0}
         }]
     }, {
         'name': 'make something else',
         'location': 'GLO',
+        'unit': '',
+        'type': 'market activity',
         'exchanges': [{
             'name': 'a product',
-            'type': 'reference product'
+            'type': 'reference product',
+            'unit': '',
+            'production volume': {'amount': 0}
         }]
     }, {
         'name': 'make something else',
         'location': 'somewhere else',
+        'unit': '',
+        'type': 'market activity',
         'exchanges': [{
             'name': 'a product',
-            'type': 'reference product'
+            'type': 'reference product',
+            'unit': '',
+            'production volume': {'amount': 0}
         }]
     }]
     expected = [{
         'name': 'make something',
         'location': 'RoW',
+        'type': 'market activity',
         'exchanges': [{
             'name': 'a product',
-            'type': 'reference product'
+            'unit': '',
+            'type': 'reference product',
+            'production volume': {'amount': 0}
         }]
     }, {
         'name': 'make something',
         'location': 'somewhere else',
+        'type': 'market activity',
         'exchanges': [{
             'name': 'a product',
-            'type': 'reference product'
+            'unit': '',
+            'type': 'reference product',
+            'production volume': {'amount': 0}
         }]
     }, {
         'name': 'make something else',
         'location': 'RoW',
+        'type': 'market activity',
         'exchanges': [{
             'name': 'another product',
-            'type': 'reference product'
+            'unit': '',
+            'type': 'reference product',
+            'production volume': {'amount': 0}
         }]
     }, {
         'name': 'make something else',
         'location': 'somewhere else',
+        'type': 'market activity',
         'exchanges': [{
             'name': 'another product',
-            'type': 'reference product'
+            'unit': '',
+            'type': 'reference product',
+            'production volume': {'amount': 0}
         }]
     }]
     # Can't directly compare dictionaries if order has changed
     hashify = lambda x: {(y['name'], y['location']) for y in x}
     assert hashify(relabel_global_to_row(given)) == hashify(expected)
 
+def test_relabel_global_to_row_skip_market_groups():
+    given = [{
+        'name': 'shellfish',
+        'type': 'market group',
+        'location': 'GLO',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product'
+        }]
+    }, {
+        'name': 'shellfish',
+        'type': 'market group',
+        'location': 'CN',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product'
+        }]
+    }]
+    expected = deepcopy(given)
+    assert relabel_global_to_row(given) == expected
+
 def test_relabel_global_to_row_only_single_global():
     given = [{
         'name': 'make something',
+        'type': 'market activity',
         'location': 'GLO',
         'exchanges': [{
             'name': 'a product',
@@ -86,6 +135,7 @@ def test_relabel_global_to_row_only_single_global():
 def test_relabel_global_to_row_only_single_nonglobal():
     given = [{
         'name': 'make something',
+        'type': 'market activity',
         'location': 'somewhere',
         'exchanges': [{
             'name': 'a product',
@@ -98,6 +148,7 @@ def test_relabel_global_to_row_only_single_nonglobal():
 def test_multiple_global_datasets():
     given = [{
         'name': 'make something',
+        'type': 'market activity',
         'location': 'GLO',
         'exchanges': [{
             'name': 'a product',
@@ -105,6 +156,7 @@ def test_multiple_global_datasets():
         }]
     }, {
         'name': 'make something',
+        'type': 'market activity',
         'location': 'GLO',
         'exchanges': [{
             'name': 'a product',
@@ -178,3 +230,218 @@ def test_drop_zero_pv_row_datasets():
         },
     ]
     assert drop_zero_pv_row_datasets(data) == expected
+
+
+def test_relabel_global_to_row_subtract_pv():
+    given = [{
+        'name': 'make something',
+        'location': 'GLO',
+        'unit': '',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':100
+            }
+        }]
+    }, {
+        'name': 'make something',
+        'location': 'somewhere else',
+        'unit': '',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':10
+            }
+        }]
+    }, {
+        'name': 'make something else',
+        'location': 'GLO',
+        'unit': '',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':100
+            }
+        }]
+    }, {
+        'name': 'make something else',
+        'location': 'somewhere else',
+        'unit': '',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':50
+            }
+        }]
+    }]
+    expected = [{
+        'name': 'make something',
+        'location': 'RoW',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':90
+            }
+        }]
+    }, {
+        'name': 'make something',
+        'location': 'somewhere else',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':10
+            }
+        }]
+    }, {
+        'name': 'make something else',
+        'location': 'RoW',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'another product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':50
+            }
+        }]
+    }, {
+        'name': 'make something else',
+        'location': 'somewhere else',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'another product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':50
+            }
+        }]
+    }]
+    # Can't directly compare dictionaries if order has changed
+    hashify = lambda x: {(y['name'], y['location'], y['exchanges'][0]['production volume']['amount']) for y in x}
+    assert hashify(relabel_global_to_row(given)) == hashify(expected)
+
+def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
+    given = [{
+        'name': 'make something',
+        'location': 'GLO',
+        'unit': '',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':100
+            }
+        }]
+    }, {
+        'name': 'make something',
+        'location': 'somewhere else',
+        'unit': '',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':110
+            }
+        }]
+    }, {
+        'name': 'make something else',
+        'location': 'GLO',
+        'unit': '',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':100
+            }
+        }]
+    }, {
+        'name': 'make something else',
+        'location': 'somewhere else',
+        'unit': '',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':150
+            }
+        }]
+    }]
+    expected = [{
+        'name': 'make something',
+        'location': 'RoW',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':0
+            }
+        }]
+    }, {
+        'name': 'make something',
+        'location': 'somewhere else',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':110
+            }
+        }]
+    }, {
+        'name': 'make something else',
+        'location': 'RoW',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'another product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':0
+            }
+        }]
+    }, {
+        'name': 'make something else',
+        'location': 'somewhere else',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'another product',
+            'type': 'reference product',
+            'unit': '',
+            'production volume':{
+                'amount':150
+            }
+        }]
+    }]
+    # Can't directly compare dictionaries if order has changed
+    hashify = lambda x: {(y['name'], y['location'], y['exchanges'][0]['production volume']['amount']) for y in x}
+    assert hashify(relabel_global_to_row(given)) == hashify(expected)

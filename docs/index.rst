@@ -1,4 +1,6 @@
-.. image:: images/ocelot-logo.png
+.. image:: images/code-as-logo.png
+    :target: _images/code-as-logo-full.png
+    :alt: Ocelot logo in Python text from https://commits.io.
     :align: center
 
 Ocelot
@@ -22,6 +24,7 @@ Contents:
    space
    data_format
    foundation
+   writing-transformations
    filesystem
    uncertainty
    tests

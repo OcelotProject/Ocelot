@@ -11,7 +11,7 @@ To install using ``Anaconda``, download `the relevant Miniconda installer <http:
 
 Run the installation script in the terminal/powershell/command window.
 
-.. warning:: If you have other Python installations on your machine, be sure to **no** to the questions about making this your default Python, and add Miniconda to your path. You will then need to adjust the following commands to the ``bin`` directory of your miniconda installation.
+.. warning:: If you have other Python installations on your machine, be sure to answer **no** to the questions about making this your default Python, and add Miniconda to your path. You will then need to adjust the following commands to the ``bin`` directory of your miniconda installation.
 
 Then, run the following commands to create an Ocelot environment:
 
@@ -52,9 +52,9 @@ If you want, you can also install `Brightway2 <https://brightwaylca.org/>`__ in 
 .. code-block:: bash
 
     conda install wheel && conda update pip wheel setuptools
-    conda install ipython ipython-notebook jupyter matplotlib flask requests docopt whoosh xlsxwriter xlrd unidecode appdirs future psutil unicodecsv wrapt
-    pip install --no-cache-dir eight
-    pip install --no-cache-dir brightway2
+    conda install -q -y -c haasad pypardiso
+    conda install -q -y ipython ipython-notebook jupyter matplotlib flask requests docopt whoosh xlsxwriter xlrd unidecode appdirs future psutil unicodecsv wrapt
+    pip install --no-cache-dir eight brightway2
 
 Faster calculations on Linux and OS X
 `````````````````````````````````````

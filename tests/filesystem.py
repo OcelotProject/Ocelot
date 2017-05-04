@@ -7,7 +7,6 @@ from ocelot.filesystem import (
     get_from_cache,
     get_output_directory,
 )
-from unittest import mock
 import os
 import pytest
 import random
@@ -21,8 +20,19 @@ def test_base_directory():
 def test_output_directory():
     assert get_output_directory()
 
+def test_output_directory_envvar():
+    os.environ["OCELOT_OUTPUT"] = os.getcwd()
+    assert get_output_directory() == os.getcwd()
+
 def test_cache_directory():
     assert get_cache_directory()
+
+def test_cache_directory_error(monkeypatch):
+    monkeypatch.setattr(
+        'ocelot.filesystem.get_cache_filepath_for_data_path',
+        lambda x: "not a real thing"
+    )
+    assert not check_cache_directory(os.getcwd())
 
 def test_directory_structure():
     base = get_base_directory()
@@ -75,7 +85,7 @@ def test_cache_expiration(fake_output_dir):
         f.write("foo")
     random_data = {k: random.randint(0, 10) for k in "abcdefghijklmnop"}
     cache_data(random_data, new_dp)
-    time.sleep(0.1)
+    time.sleep(0.5)
     with open(new_file, "w") as f:
         f.write("bar")
     assert not check_cache_directory(new_dp)

@@ -58,7 +58,7 @@ def test_flip_non_allocatable_byproducts():
             'name': "Fix me!",
         },
     ]}]
-    assert flip_non_allocatable_byproducts(given) == expected
+    assert flip_non_allocatable_byproducts([given]) == expected
 
 
 def test_create_new_recycled_content_dataset():

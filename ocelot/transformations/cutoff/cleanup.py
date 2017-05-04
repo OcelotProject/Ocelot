@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
+logger = logging.getLogger('ocelot')
+
 
 def drop_zero_amount_activity_links(data):
     """Drop activity links that have an exchange amount of zero."""
@@ -10,7 +12,7 @@ def drop_zero_amount_activity_links(data):
                               if not exc['amount']
                               and exc.get('activity link'))
         for exc in filtered_exchanges:
-            logging.info({
+            logger.info({
                 'type': 'table element',
                 'data': (ds['name'], exc['name'])
             })
@@ -36,7 +38,7 @@ def drop_rp_activity_links(data):
                               if exc['type'] in KINDS
                               and exc.get('activity link'))
         for exc in filtered_exchanges:
-            logging.info({
+            logger.info({
                 'type': 'table element',
                 'data': (ds['name'], exc['name'])
             })
@@ -64,7 +66,7 @@ def remove_consequential_exchanges(data):
     for ds in data:
         for exc in ds['exchanges']:
             if has_consequential_property(exc):
-                logging.info({
+                logger.info({
                     'type': 'table element',
                     'data': (ds['name'], exc['name'], exc['amount'])
                 })

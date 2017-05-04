@@ -38,6 +38,8 @@ def test_actualize_activity_links():
     given = [{
         'code': 'find me',
         'id': 'the right one',
+        'name': '',
+        'location': '',
         'exchanges': [],
         'reference product': 'foo',
     }, {
@@ -55,6 +57,8 @@ def test_actualize_activity_links():
     expected = [{
         'code': 'find me',
         'id': 'the right one',
+        'name': '',
+        'location': '',
         'exchanges': [],
         'reference product': 'foo',
     }, {

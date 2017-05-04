@@ -38,7 +38,6 @@ setup(
     },
     install_requires=[
         'appdirs',
-        'arrow',
         'bw2parameters',
         'docopt',
         'docutils',
@@ -48,7 +47,6 @@ setup(
         'pandas',
         'psutil',
         'pyprind',
-        'pyrsistent',
         'pytest',
         'stats_arrays',
         'toolz',

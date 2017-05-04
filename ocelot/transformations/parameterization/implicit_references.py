@@ -3,6 +3,8 @@ from ...io.ecospold2_meta import REFERENCE_REGULAR_EXPRESSIONS
 from ..utils import iterate_all_parameters
 import logging
 
+logger = logging.getLogger('ocelot')
+
 
 def get_exchange_reference(formula):
     """Return list of ``(full_reference_strings, uuid)`` from string ``formula``.
@@ -62,7 +64,7 @@ def replace_implicit_references(data):
                     # TODO: Check to make sure variable names are unique?
                     variable = "ref_replacement_{}".format(uuid.replace("-", ""))
                     reference['variable'] = variable
-                logging.info({
+                logger.info({
                     'type': 'table element',
                     'data': (ds['name'], string, variable)
                 })
@@ -75,7 +77,7 @@ def replace_implicit_references(data):
                 else:
                     variable = "ref_pv_replacement_{}".format(uuid.replace("-", ""))
                     reference['variable'] = variable
-                logging.info({
+                logger.info({
                     'type': 'table element',
                     'data': (ds['name'], string, variable)
                 })

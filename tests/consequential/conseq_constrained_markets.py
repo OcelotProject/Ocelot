@@ -25,6 +25,7 @@ def test_flip_exchange():
 def fluosilicic():
     return [{
         'name': 'market for fluosilicic acid',
+        'location': 'somewhere',
         'type': 'market activity',
         'id': 'the market',
         'exchanges': [{
@@ -41,6 +42,7 @@ def fluosilicic():
     }, {
         'name': 'cryolite production',
         'type': 'transforming activity',
+        'location': 'here',
         'id': 'the producer',
         'exchanges': [{
             'amount': 1,
@@ -60,6 +62,7 @@ def fluosilicic():
 def test_handle_constrained_markets(fluosilicic):
     expected = [{
         'name': 'market for fluosilicic acid',
+        'location': 'somewhere',
         'type': 'market activity',
         'id': 'the market',
         'exchanges': [{
@@ -76,6 +79,7 @@ def test_handle_constrained_markets(fluosilicic):
     }, {
         'name': 'cryolite production',
         'type': 'transforming activity',
+        'location': 'here',
         'id': 'the producer',
         'exchanges': [{
             'amount': -1,

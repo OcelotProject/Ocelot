@@ -149,22 +149,26 @@ def test_ensure_mandatory_properties():
     }]
     assert ensure_mandatory_properties(given)
 
-    # missing = [{
-    #     'filepath': '',
-    #     'exchanges': [{
-    #         'name': 'something',
-    #         'type': 'from technosphere',
-    #         'properties': [
-    #             {'amount': 1, 'name': "dry mass"},
-    #             {'amount': 1, 'name': "water in wet mass"},
-    #             {'amount': 1, 'name': "wet mass"},
-    #             {'amount': 1, 'name': "water content"},
-    #             {'amount': 1, 'name': "carbon content fossil"},
-    #         ]
-    #     }]
-    # }]
+    missing = [{
+        'name': 'foo',
+        'filepath': '',
+        'exchanges': [{
+            'name': 'something',
+            'type': 'from technosphere',
+            'properties': [
+                {'amount': 1, 'name': "dry mass"},
+                {'amount': 1, 'name': "water in wet mass"},
+                {'amount': 1, 'name': "wet mass"},
+                {'amount': 1, 'name': "water content"},
+                {'amount': 1, 'name': "carbon content fossil"},
+            ]
+        }]
+    }]
     # with pytest.raises(MissingMandatoryProperty):
     #     ensure_mandatory_properties(missing)
+
+    # Will pass, even though properties are missing; tests logging
+    assert ensure_mandatory_properties(missing)
 
     missing = [{
         'filepath': '',

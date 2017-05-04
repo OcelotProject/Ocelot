@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-import numpy as np
 from .utils import apply_allocation_factors
 from .validation import valid_economic_activity
 from ..utils import (
     allocatable_production,
-    get_numerical_property,
     allocatable_production_as_dataframe,
 )
 

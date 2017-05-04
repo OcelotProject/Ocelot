@@ -2,7 +2,6 @@
 from ..collection import Collection
 from ..errors import UnresolvableActivityLink
 from .utils import allocatable_production, get_biggest_pv_to_exchange_ratio
-from .validation import ensure_production_exchanges_have_production_volume
 from pprint import pformat
 
 

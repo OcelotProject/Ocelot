@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from ...collection import Collection
-from ...wrapper import TransformationWrapper
 from ..utils import (
     allocatable_production,
     choose_reference_product_exchange,
     get_single_reference_product,
+    single_input,
 )
 from ..uncertainty import scale_exchange
 from .economic import economic_allocation
@@ -12,6 +12,8 @@ from .validation import valid_recycling_activity, valid_waste_treatment_activity
 from . import RC_STRING
 from copy import deepcopy
 import logging
+
+logger = logging.getLogger('ocelot')
 
 
 @valid_recycling_activity
@@ -92,7 +94,7 @@ def rename_recycled_content_products_after_linking(data):
 
 
 def create_new_recycled_content_dataset(ds, exc):
-    """Create a new dataset that consume recycled content production."""
+    """Create a new dataset that consumes recycled content production."""
     common = ('access restricted', 'economic scenario', 'end date',
               'filepath', 'id', 'start date', 'technology level',
               'dataset author', 'data entry')
@@ -130,7 +132,7 @@ def create_recycled_content_datasets(data):
             rc = create_new_recycled_content_dataset(ds, exc)
             new_datasets[rc['name']] = rc
     for name in new_datasets:
-        logging.info({
+        logger.info({
             'type': 'table element',
             'data': (name,),
         })
@@ -142,6 +144,7 @@ create_recycled_content_datasets.__table__ = {
 }
 
 
+@single_input
 def flip_non_allocatable_byproducts(dataset):
     """Change non-allocatable byproducts (i.e. classification ``recyclable`` or ``waste``) from outputs to technosphere to inputs from technosphere.
 
@@ -154,8 +157,8 @@ def flip_non_allocatable_byproducts(dataset):
     """
     for exc in dataset['exchanges']:
         if (exc['type'] == 'byproduct' and
-            exc['byproduct classification'] != 'allocatable product'):
-            logging.info({
+                exc['byproduct classification'] != 'allocatable product'):
+            logger.info({
                 'type': 'table element',
                 'data': (dataset['name'], exc['name'], exc['byproduct classification']),
             })
@@ -176,5 +179,5 @@ flip_non_allocatable_byproducts.__table__ = {
 handle_waste_outputs = Collection(
     rename_recyclable_content_exchanges,
     create_recycled_content_datasets,
-    TransformationWrapper(flip_non_allocatable_byproducts),
+    flip_non_allocatable_byproducts,
 )

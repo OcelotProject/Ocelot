@@ -12,6 +12,8 @@ from ..errors import (
 from pprint import pformat
 import logging
 
+logger = logging.getLogger('ocelot')
+
 
 def ensure_ids_are_unique(data):
     """Make sure that ids are actually unique"""
@@ -92,7 +94,7 @@ def ensure_mandatory_properties(data):
                             raise ValueError
                 missing = MANDATORY.difference({p['name'] for p in exc['properties']})
                 if missing:
-                    logging.info({
+                    logger.info({
                         'type': 'table element',
                         'data': (ds['name'], exc['name'], "; ".join(sorted(missing)))
                     })

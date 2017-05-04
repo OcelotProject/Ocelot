@@ -2,6 +2,8 @@
 from ..utils import iterate_all_parameters
 import logging
 
+logger = logging.getLogger('ocelot')
+
 KNOWN_SUBSTITUTIONS = (
     (
         'thermoforming of plastic sheets',
@@ -33,7 +35,7 @@ def fix_known_bad_formula_strings(data):
             if ds['name'] == name:
                 for param in iterate_all_parameters(ds):
                     if bad in param.get('formula', ''):
-                        logging.info({
+                        logger.info({
                             'type': 'list element',
                             'data': message.format(
                                 ds['name'], ds['location'], bad, good
@@ -59,7 +61,7 @@ def fix_specific_ecoinvent_issues(data):
                            if (exc['name'] != 'refinery gas' or exc['amount'])]
         after = len(ds['exchanges'])
         if before != after:
-            logging.info({
+            logger.info({
                 'type': 'table element',
                 'data': (ds['name'], ds['location'], before, after)
             })

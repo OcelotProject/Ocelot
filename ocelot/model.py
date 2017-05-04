@@ -2,26 +2,28 @@
 from .configuration import cutoff_config
 from .filesystem import (
     cache_data,
-    check_cache_directory,
     OutputDir,
     save_intermediate_result,
 )
 from .io import extract_directory
-from .logger import create_log
+from .logger import create_log, create_detailed_log
 from .report import HTMLReport
 from .results import SaveStrategy
 from .utils import get_function_meta, validate_configuration
 from collections.abc import Iterable
 import itertools
 import logging
-import os
 import shutil
 import sys
+import wrapt
+
+logger = logging.getLogger('ocelot')
 
 
 def apply_transformation(function, counter, data, output_dir, save_strategy):
     # A `function` can be a list of functions
-    if isinstance(function, Iterable):
+    if (isinstance(function, Iterable)
+        and not isinstance(function, wrapt.FunctionWrapper)):
         for obj in function:
             data = apply_transformation(obj, counter, data,
                                         output_dir, save_strategy)
@@ -34,7 +36,7 @@ def apply_transformation(function, counter, data, output_dir, save_strategy):
             type="function start",
             count=len(data),
         )
-        logging.info(metadata)
+        logger.info(metadata)
 
         print("Applying transformation {}".format(metadata['name']))
         data = function(data)
@@ -45,7 +47,7 @@ def apply_transformation(function, counter, data, output_dir, save_strategy):
 
         if save_strategy(index):
             save_intermediate_result(output_dir, index, data, metadata['name'])
-        logging.info(metadata)
+        logger.info(metadata)
         return data
 
 
@@ -72,15 +74,16 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
 
     """
     print("Starting Ocelot model run")
+    config = validate_configuration(config or cutoff_config)
+    data = extract_directory(data_path, use_cache)
+    output_manager = OutputDir()
     try:
-        config = validate_configuration(config or cutoff_config)
-        data = extract_directory(data_path, use_cache)
-        output_manager = OutputDir()
         counter = itertools.count()
         logfile_path = create_log(output_manager.directory)
+        create_detailed_log(output_manager.directory)
         print("Opening log file at: {}".format(logfile_path))
 
-        logging.info({
+        logger.info({
             'type': 'report start',
             'uuid': output_manager.report_id,
             'count': len(data),
@@ -96,11 +99,10 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
         print("Saving final results")
         save_intermediate_result(output_manager.directory, "final-results", data)
 
-        logging.info({'type': 'report end'})
-
-        html = HTMLReport(logfile_path, show)
-
+        logger.info({'type': 'report end'})
+        HTMLReport(logfile_path, show)
         return output_manager, data
+
     except KeyboardInterrupt:
         print("Terminating Ocelot model run")
         print("Deleting output directory:\n{}".format(output_manager.directory))

@@ -10,11 +10,13 @@ from .python_compatibility import (
     replace_reserved_words,
 )
 from .recalculation import recalculate
+from .uncertainty import repair_all_uncertainty_distributions
 from .validation import variable_names_are_unique
 
 fix_ecoinvent_parameters = Collection(
     fix_specific_ecoinvent_issues,
     replace_implicit_references,
+    repair_all_uncertainty_distributions,
     fix_known_bad_formula_strings,
     lowercase_all_parameters,
     fix_math_formulas,

@@ -5,6 +5,10 @@ from copy import deepcopy
 from pprint import pformat
 import hashlib
 import pandas as pd
+import wrapt
+import logging
+
+logger = logging.getLogger('ocelot')
 
 
 ### Activity identifiers
@@ -105,6 +109,22 @@ def iterate_all_parameters(dataset):
             yield parameter
 
 
+def iterate_all_uncertainties(dataset):
+    """Generator that returns all objects with an uncertainty distribution."""
+    for exc in dataset['exchanges']:
+        if "uncertainty" in exc:
+            yield exc
+        pv = exc.get("production volume", {})
+        if "uncertainty" in pv:
+            yield pv
+        for prop in exc.get('properties', []):
+            if "uncertainty" in prop:
+                yield prop
+    for parameter in dataset.get('parameters', []):
+        if "uncertainty" in parameter:
+            yield parameter
+
+
 def get_biggest_pv_to_exchange_ratio(dataset):
     """Return the largest ration of production volume to exchange amount.
 
@@ -196,18 +216,27 @@ def allocatable_production_as_dataframe(dataset):
 
 ### Exchange modifiers
 
-def normalize_reference_production_amount(dataset):
+def normalize_reference_production_amount(dataset, log=True, epsilon=1e-14):
     """Scale the exchange amounts so the reference product exchange has an amount of 1 or -1"""
     product = get_single_reference_product(dataset)
     if not product['amount']:
         message = "Zero production amount for dataset:\n{}"
         raise ZeroProduction(message.format(dataset['filepath']))
     factor = 1 / abs(product['amount'])
-    # TODO: Skip if very close to one?
-    if factor != 1:
+    if abs(factor - 1) > epsilon:
+        if log:
+            logger.info({
+                'type': 'table element',
+                'data': (dataset['name'], product['name'], factor)
+            })
         for exchange in dataset['exchanges']:
             scale_exchange(exchange, factor)
-    return dataset
+    return [dataset]
+
+normalize_reference_production_amount.__table__ = {
+    'title': 'Normalize all exchanges to production amount of one.',
+    'columns': ["Activity name", "Reference product", "Scale factor"]
+}
 
 
 def label_reference_product(data):
@@ -259,7 +288,6 @@ def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
     * ``production volume`` is deleted if present.
 
     """
-    # TODO: Make sure exchange in allocatable_production(dataset)?
     obj = deepcopy(dataset)
     if not exchange['amount']:
         message = "Zero production amount for new reference product exchange:\n{}\nIn dataset:\n{}"
@@ -276,4 +304,14 @@ def choose_reference_product_exchange(dataset, exchange, allocation_factor=1):
         scale_exchange(deepcopy(exc), allocation_factor)
         for exc in nonproduction_exchanges(dataset)
     ]
-    return normalize_reference_production_amount(obj)
+    normalize_reference_production_amount(obj, log=False)
+    return obj
+
+
+### Function helpers
+
+@wrapt.decorator
+def single_input(wrapped, instance, args, kwargs):
+    """Decorator to allow a transformation to transformation function to take a single dataset input."""
+    data = kwargs.get('data') or args[0]
+    return [ds for elem in data for ds in wrapped(elem)]

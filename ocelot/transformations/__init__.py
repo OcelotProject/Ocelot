@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from ..collection import Collection
-from ..wrapper import TransformationWrapper
 from .activity_links import (
     check_activity_link_validity,
     add_hard_linked_production_volumes,
@@ -14,6 +13,7 @@ from .parameterization import (
     variable_names_are_unique,
 )
 from .production_volumes import add_pv_to_allocatable_byproducts
+from .utils import normalize_reference_production_amount
 from .validation import (
     ensure_ids_are_unique,
     ensure_mandatory_properties,
@@ -24,5 +24,5 @@ from .validation import (
 pv_cleanup = Collection(
     ensure_production_exchanges_have_production_volume,
     add_pv_to_allocatable_byproducts,
-    TransformationWrapper(create_pv_parameters),
+    create_pv_parameters,
 )

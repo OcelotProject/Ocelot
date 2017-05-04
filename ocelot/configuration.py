@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
 from .transformations import (
     ensure_ids_are_unique,
+    pv_cleanup,
     ensure_mandatory_properties,
     fix_ecoinvent_parameters,
     manage_activity_links,
-    pv_cleanup,
+    normalize_reference_production_amount,
     validate_markets,
     variable_names_are_unique,
+)
+from .transformations.consequential import (
+    delete_activity_links_to_constrained_markets,
+    ensure_byproducts_have_alternative_production,
+    handle_constrained_markets,
+    link_markets_by_technology_level,
+    split_combined_production,
 )
 from .transformations.cutoff import (
     cleanup_activity_links,
@@ -20,13 +28,7 @@ from .transformations.cutoff.cleanup import (
     remove_consequential_exchanges,
 )
 from .transformations.locations import link_markets_by_pv
-from .transformations.consequential import (
-    delete_activity_links_to_constrained_markets,
-    ensure_byproducts_have_alternative_production,
-    handle_constrained_markets,
-    link_markets_by_technology_level,
-    split_combined_production,
-)
+from .wrapper import TransformationWrapper
 
 
 class Configuration(object):
@@ -57,7 +59,7 @@ cutoff_config = [
     link_markets_by_pv,
     rename_recycled_content_products_after_linking,
     # extrapolate to database reference year
-    # normalize_reference_production_amount
+    TransformationWrapper(normalize_reference_production_amount),
     # final output processing
 ]
 
@@ -75,6 +77,6 @@ consequential_config = [
     ensure_byproducts_have_alternative_production,
     link_markets_by_technology_level,
     # extrapolate to database reference year
-    # normalize_reference_production_amount
+    TransformationWrapper(normalize_reference_production_amount),
     # final output processing
 ]

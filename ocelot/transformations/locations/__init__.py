@@ -18,12 +18,15 @@ from .markets import (
     add_recycled_content_suppliers_to_markets,
     add_suppliers_to_markets,
     assign_fake_pv_to_confidential_datasets,
-    allocate_suppliers,
+    allocate_all_market_suppliers,
     delete_allowed_zero_pv_market_datsets,
     delete_suppliers_list,
     update_market_production_volumes,
 )
-from .market_groups import substitute_market_group_links
+from .market_groups import (
+    check_markets_only_supply_one_market_group,
+    link_market_group_suppliers,
+)
 from .rest_of_world import relabel_global_to_row, drop_zero_pv_row_datasets
 from functools import partial
 
@@ -41,7 +44,9 @@ link_markets_by_pv = Collection(
     partial(add_suppliers_to_markets, from_type="market activity",
                                       to_type="market group"),
     partial(update_market_production_volumes, kind='market group'),
-    allocate_suppliers,
+    allocate_all_market_suppliers,
+    link_market_group_suppliers,
+    check_markets_only_supply_one_market_group,
     # delete_suppliers_list,
     # drop_zero_pv_row_datasets,
     link_consumers_to_regional_markets,
@@ -49,5 +54,4 @@ link_markets_by_pv = Collection(
     link_consumers_to_global_markets,
     add_reference_product_codes,
     log_and_delete_unlinked_exchanges,
-    # substitute_market_group_links,  # TODO: Need clever approach
 )

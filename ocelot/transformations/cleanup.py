@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from ..data_helpers import production_volume
-import logging
 import pprint
 
 

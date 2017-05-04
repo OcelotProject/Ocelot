@@ -5,20 +5,50 @@ from ..utils import activity_grouper, get_single_reference_product
 from .validation import check_single_global_dataset
 import logging
 
+logger = logging.getLogger('ocelot')
+detailed = logging.getLogger('ocelot-detailed')
+
 
 def relabel_global_to_row(data):
     """Change ``GLO`` locations to ``RoW`` if there are region-specific datasets in the activity group."""
     processed = []
     for key, datasets in toolz.groupby(activity_grouper, data).items():
+        if datasets and datasets[0]["type"] == "market group":
+            processed.extend(datasets)
+            continue
         if len(datasets) > 1:
             check_single_global_dataset(datasets)
+
             for ds in datasets:
                 if ds['location'] == 'GLO':
+                    # Need to adjust production volume by subtracting the region-specific
+                    # production volumes. We assume that each dataset has a single reference
+                    # product with a production volume.
+                    region_specific_pv = sum(
+                        get_single_reference_product(obj)['production volume']['amount']
+                        for obj in datasets
+                        if obj != ds
+                    )
+                    rp = get_single_reference_product(ds)
+                    rp['production volume']['amount'] = max(rp['production volume']['amount'] - region_specific_pv,0)
+
                     ds['location'] = 'RoW'
-                    logging.info({
+                    logger.info({
                         'type': 'table element',
+                        # key is activity name and list of reference products
                         'data': (key[0], "; ".join(sorted(key[1])))
                     })
+                    message = "Created RoW dataset '{}' with PV {:.4g} {}"
+                    detailed.info({
+                        'ds': ds,
+                        'message': message.format(
+                            ds['name'],
+                            rp['production volume']['amount'],
+                            rp['unit'],
+                        ),
+                        'function': 'relabel_global_to_row'
+                    })
+
                 processed.append(ds)
         else:
             processed.extend(datasets)
@@ -37,7 +67,7 @@ def drop_zero_pv_row_datasets(data):
     filter_func = lambda x: x['type'] == 'market activity' and x['location'] == 'RoW'
     for ds in filter(filter_func, data):
         if production_volume(ds) == 0:
-            logging.info({
+            logger.info({
                 'type': 'table element',
                 'data': (ds['name'], reference_products_as_string(ds))
             })

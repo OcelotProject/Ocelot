@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from ocelot.transformations.utils import *
-from ocelot.transformations.uncertainty import remove_exchange_uncertainty
 from ocelot.errors import InvalidMultioutputDataset, ZeroProduction
+from ocelot.transformations.uncertainty import remove_exchange_uncertainty
+from ocelot.transformations.utils import *
+from ocelot.utils import get_function_meta
 import pytest
 
 
@@ -102,6 +103,53 @@ def test_single_reference_product_none():
             'exchanges': [{'type': 'something'}]
         })
 
+def test_normalize_reference_production_logging():
+    given = {
+        'name': 'foo',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'name': 'bar',
+                'amount': 0.5
+            },
+            {
+                'type': 'something else',
+                'amount': 10
+            }
+        ]
+    }
+    assert normalize_reference_production_amount(given)
+
+def test_normalize_reference_production_epsilon():
+    given = {
+        'name': 'foo',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'amount': 0.9
+            },
+            {
+                'type': 'something else',
+                'amount': 10
+            }
+        ]
+    }
+    expected = {
+        'name': 'foo',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'amount': 0.9
+            },
+            {
+                'type': 'something else',
+                'amount': 10
+            }
+        ]
+    }
+    result = normalize_reference_production_amount(given, epsilon=0.5, log=False)[0]
+    assert result == expected
+
 def test_normalize_reference_production_amount():
     given = {'exchanges': [
         {
@@ -123,7 +171,7 @@ def test_normalize_reference_production_amount():
             'amount': 20
         }
     ]}
-    assert normalize_reference_production_amount(given) == expected
+    assert normalize_reference_production_amount(given, log=False)[0] == expected
 
 def test_normalize_reference_production_amount_zero_amount():
     given = {
@@ -134,7 +182,7 @@ def test_normalize_reference_production_amount_zero_amount():
         }]
     }
     with pytest.raises(ZeroProduction):
-        normalize_reference_production_amount(given)
+        normalize_reference_production_amount(given, log=False)
 
 def test_activity_grouper():
     given = {
@@ -213,7 +261,7 @@ def test_nonreference_product():
 def no_normalization(monkeypatch):
     monkeypatch.setattr(
         'ocelot.transformations.utils.normalize_reference_production_amount',
-        lambda x: x
+        lambda x, log=True, epsilon=1e-14: x
     )
 
 def test_choose_reference_product_exchange(no_normalization):
@@ -327,6 +375,44 @@ def test_iterate_all_parameters(parameterized_ds):
     assert next(generator) == parameterized_ds['parameters'][0]
     assert next(generator) == parameterized_ds['parameters'][1]
 
+@pytest.fixture(scope="function")
+def uncertain_ds():
+    return {
+        'exchanges': [{
+            'amount': 3.1415926535,
+            'uncertainty': '',
+            'production volume': {  # Nonsensical but should work
+                'uncertainty': '',
+                'amount': 42
+            },
+            'properties': [{
+                'uncertainty': '',
+                'amount': 17
+            }]
+        }, {
+            'uncertainty': '',
+            'properties': [{
+                'uncertainty': '',
+            }]
+        }],
+        'parameters': [{
+            'uncertainty': '',
+        }, {
+            'uncertainty': '',
+            'amount': 1
+        }]
+    }
+
+def test_iterate_all_uncertainties(uncertain_ds):
+    generator = iterate_all_uncertainties(uncertain_ds)
+    assert next(generator) == uncertain_ds['exchanges'][0]
+    assert next(generator) == uncertain_ds['exchanges'][0]['production volume']
+    assert next(generator) == uncertain_ds['exchanges'][0]['properties'][0]
+    assert next(generator) == uncertain_ds['exchanges'][1]
+    assert next(generator) == uncertain_ds['exchanges'][1]['properties'][0]
+    assert next(generator) == uncertain_ds['parameters'][0]
+    assert next(generator) == uncertain_ds['parameters'][1]
+
 def test_activity_hash():
     given = {
         'name': 'a',
@@ -375,3 +461,22 @@ def test_get_biggest_pv_to_exchange_ratio_no_rps():
     }
     with pytest.raises(ZeroProduction):
         get_biggest_pv_to_exchange_ratio(error)
+
+@pytest.fixture
+def func():
+    @single_input
+    def f(dataset):
+        """A docstring"""
+        return [dataset * 2]
+
+    f.__table__ = "Something about a table"
+    return f
+
+def test_single_input_metadata(func):
+    metadata = get_function_meta(func)
+    assert metadata['name'] == 'f'
+    assert metadata['description'] == "A docstring"
+    assert metadata['table'] == "Something about a table"
+
+def test_single_input_correct_unrolling(func):
+    assert func([1, 2, 3]) == [2, 4, 6]

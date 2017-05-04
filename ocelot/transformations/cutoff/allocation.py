@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from ...collection import Collection
-from ...errors import InvalidMultioutputDataset
 from ...wrapper import TransformationWrapper
 from ..utils import allocatable_production
 from .combined import (
@@ -13,8 +12,9 @@ from .markets import constrained_market_allocation
 from .utils import delete_allocation_method
 from .validation import valid_no_allocation_dataset
 from .wastes import waste_treatment_allocation, recycling_allocation
-import itertools
 import logging
+
+logger = logging.getLogger('ocelot')
 
 
 @valid_no_allocation_dataset
@@ -133,7 +133,7 @@ def label_allocation_method(data):
     for ds in data:
         ds['allocation method'] = choose_allocation_method(ds)
     for label, _ in ALLOCATION_METHODS:
-        logging.info({
+        logger.info({
             'type': 'table element',
             'data': (
                 str(label),
@@ -162,5 +162,5 @@ cutoff_allocation = Collection(
     *[TransformationWrapper(func,
                             create_allocation_filter(label))
       for label, func in ALLOCATION_METHODS[1:]],
-    TransformationWrapper(delete_allocation_method),
+    delete_allocation_method,
 )

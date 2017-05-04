@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from . import topology, RC_STRING
 from ... import toolz
-from ...errors import OverlappingMarkets, MissingSupplier
+from ...errors import MissingSupplier
 from ..utils import (
-    activity_grouper,
     get_single_reference_product,
     remove_exchange_uncertainty,
 )
@@ -11,13 +10,15 @@ from .validation import no_overlaps, no_geo_duplicates
 from copy import deepcopy
 import logging
 
+logger = logging.getLogger('ocelot')
+detailed = logging.getLogger('ocelot-detailed')
 
 
 def annotate_exchange(exc, ds):
-    """Copy ``exc``, and add ``code``, ``technology level``, and ``location`` from ``ds``."""
-    FIELDS = ('location', 'code', 'technology level')
+    """Copy ``exc``, and add ``code``, ``technology level``, ``name``, and ``location`` from ``ds``."""
+    FIELDS = ('location', 'code', 'technology level', 'name')
     exc = deepcopy(exc)
-    exc.update({k: ds[k] for k in FIELDS})
+    exc.update({k: ds[k] for k in FIELDS if k in ds})
     return exc
 
 
@@ -26,6 +27,8 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
     """Apportion suppliers to consumers based on their geographic relationships.
 
     A supplier must be completely contained within a consumer, or it is rejected, and the global or RoW activity is chosen.
+
+    Region-specific markets (i.e. those without locations ``GLO`` or ``RoW``) should not consume from global providers.
 
     Modifies in place."""
     row_excluded_faces = set.union(*[
@@ -47,7 +50,8 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
             else:
                 candidates = [ds for ds in group
                               if topology.contains(consumer['location'], ds['location'])]
-            if not candidates:
+            # Allow global suppliers only if consumer is also global
+            if not candidates and consumer['location'] in ("GLO", "RoW"):
                 candidates = [ds for ds in group
                               if ds['location'] in ("GLO", "RoW")]
             contained.extend(candidates)
@@ -56,7 +60,7 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
             get_single_reference_product(obj),
             obj
         ) for obj in contained]
-        logging.info({
+        logger.info({
             'type': 'table element',
             'data': (consumer['name'],
                      consumer['reference product'],
@@ -67,26 +71,31 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
 
 
 def add_recycled_content_suppliers_to_markets(data):
-    """Link markets to recycled content producing activities."""
-    from_type, to_type = "transforming activity", "market activity"
-    filter_func = lambda x: x['type'] in (from_type, to_type)
-    grouped = toolz.groupby("reference product", filter(filter_func, data))
+    """Link markets to recycled content producing activities.
+
+    At this point, the markets have not been modified in any way, but the recycled content cut-off processes have been created by ``create_recycled_content_datasets``. So, we have the following:
+
+    * A market activity has a name ``market for foo``, and a reference product of ``foo``.
+    * A new transforming activity has the name ``foo, Recycled Content cut-off``, and a reference product of ``foo, Recycled Content cut-off``.
+
+    We need to correctly add the recycled content suppliers to these markets. The general purpose ``add_suppliers_to_markets`` doesn't work because the reference products are different."""
+    market_filter = lambda x: x['type'] == "market activity"
+    grouped = toolz.groupby("reference product", filter(market_filter, data))
 
     recycled_content_datasets = [
         x for x in data
-        if x['type'] == from_type
-        and RC_STRING in x['reference product']
+        if x['type'] == 'transforming activity'
+        and x['reference product'].endswith(RC_STRING)
     ]
 
-    for rp, datasets in grouped.items():
+    for rp, markets in grouped.items():
         suppliers = [
             ds for ds in recycled_content_datasets
             if ds['reference product'] == rp + RC_STRING
         ]
-        consumers = [ds for ds in datasets if ds['type'] == to_type]
-        if consumers and suppliers:
-            no_overlaps(consumers)
-            apportion_suppliers_to_consumers(consumers, suppliers)
+        no_overlaps(markets)
+        if suppliers:
+            apportion_suppliers_to_consumers(markets, suppliers)
     return data
 
 add_recycled_content_suppliers_to_markets.__table__ = {
@@ -125,59 +134,65 @@ add_suppliers_to_markets.__table__ = {
 }
 
 
-def allocate_suppliers(data):
-    """Allocate suppliers to a market dataset and create input exchanges.
+def allocate_all_market_suppliers(data):
+    """Allocate all market activity suppliers.
 
-    Works on both market activities and market groups.
+    Uses the function ``allocate_suppliers``, which modifies data in place.
 
-    The sum of the suppliers inputs should add up to the production amount of the market (reference product exchange amount)."""
-    MARKETS = ("market activity", "market group")
-    for ds in (o for o in data if o['type'] in MARKETS):
-        rp = get_single_reference_product(ds)
-        scale_factor = rp['amount']
-        total_pv = sum(o['production volume']['amount']
-                       for o in ds['suppliers'])
-
-        if not total_pv:
-            # TODO: Raise error here
-            print("Skipping zero total PV with multiple inputs:\n\t{}/{} ({}, {} suppliers)".format(ds['name'], rp['name'], ds['location'], len(ds['suppliers'])))
-            continue
-
-        for supply_exc in ds['suppliers']:
-            amount = supply_exc['production volume']['amount'] / total_pv * scale_factor
-            if not amount:
-                continue
-            ds['exchanges'].append(remove_exchange_uncertainty({
-                'amount': amount,
-                'name': supply_exc['name'],
-                'unit': supply_exc['unit'],
-                'type': 'from technosphere',
-                'tag': 'intermediateExchange',
-                'code': supply_exc['code']
-            }))
-            # TODO: Log to a separate file
-            # logging.info({
-            #     'type': 'table element',
-            #     'data': (ds['name'], rp['name'], ds['location'],
-            #              supply_exc['location'], amount)
-            # })
+    """
+    for ds in (o for o in data if o['type'] == "market activity"):
+        allocate_suppliers(ds)
     return data
 
-# allocate_suppliers.__table__ = {
-#     'title': 'Allocate suppliers exchange amounts to markets',
-#     'columns': ["Name", "Product", "Location", "Supplier location", "Amount"]
-# }
+
+def allocate_suppliers(dataset):
+    """Allocate suppliers to a market dataset and create input exchanges.
+
+    The sum of the suppliers inputs should add up to the production amount of the market (reference product exchange amount), minus any constrained market links. Constrained market exchanges should already be in the list of dataset exchanges, with the attribute ``constrained``."""
+    rp = get_single_reference_product(dataset)
+    scale_factor = rp['amount']
+    total_pv = sum(o['production volume']['amount']
+                   for o in dataset['suppliers'])
+
+    if not total_pv:
+        # TODO: Raise error here
+        print("Skipping zero total PV with multiple inputs:\n\t{}/{} ({}, {} suppliers)".format(dataset['name'], rp['name'], dataset['location'], len(dataset['suppliers'])))
+        return
+
+    for supply_exc in dataset['suppliers']:
+        amount = supply_exc['production volume']['amount'] / total_pv * scale_factor
+        if not amount:
+            continue
+        dataset['exchanges'].append(remove_exchange_uncertainty({
+            'amount': amount,
+            'name': supply_exc['name'],
+            'unit': supply_exc['unit'],
+            'type': 'from technosphere',
+            'tag': 'intermediateExchange',
+            'code': supply_exc['code']
+        }))
+
+        message = "Create input exchange of {:.4g} {} for '{}' from '{}' ({})"
+        detailed.info({
+            'ds': dataset,
+            'message': message.format(
+                amount,
+                supply_exc['unit'],
+                rp['name'],
+                supply_exc['name'],
+                supply_exc['location']
+            ),
+            'function': 'allocate_suppliers'
+        })
+    return dataset
 
 
 def update_market_production_volumes(data, kind="market activity"):
     """Update market production volumes to sum to the production volumes of all applicable inputs, minus any hard (activity) links to the market and to the market suppliers.
 
-    By default works only on markets with type ``market activity``, but can be curried to work on ``market group`` types as well.
+    By default works only on markets with type ``market activity``, but can be `curried <https://en.wikipedia.org/wiki/Currying>`__ to work on ``market group`` types as well.
 
-    Activity link amounts are added by ``add_hard_linked_production_volumes`` and are currently given in the following:
-
-        * The producto
-     ``rp_exchange['production volume']['subtracted activity link volume']``.
+    Activity link amounts are added by ``add_hard_linked_production_volumes`` and are currently given in ``rp_exchange['production volume']['subtracted activity link volume']``.
 
     Production volume is set to zero is the net production volume is negative."""
     for ds in (o for o in data if o['type'] == kind):
@@ -190,15 +205,16 @@ def update_market_production_volumes(data, kind="market activity"):
             rp['production volume'].get('subtracted activity link volume', 0)
         )
         rp['production volume']['amount'] = max(total_pv - missing_pv, 0)
-        logging.info({
+        logger.info({
             'type': 'table element',
-            'data': (ds['name'], rp['name'], total_pv, missing_pv, rp['production volume']['amount'])
+            'data': (ds['name'], rp['name'], ds['location'], total_pv,
+                     missing_pv, rp['production volume']['amount'])
         })
     return data
 
 update_market_production_volumes.__table__ = {
     'title': 'Update market production volumes while subtracting hard links',
-    'columns': ["Name", "Product", "Total", "Activity links", "Net"]
+    'columns': ["Name", "Product", "Location", "Total", "Activity links", "Net"]
 }
 
 
@@ -233,7 +249,7 @@ def delete_allowed_zero_pv_market_datsets(data):
                            and x['name'] in can_delete_markets
                            and x['location'] == 'GLO')
     for ds in filter(delete_me, data):
-        logging.info({
+        logger.info({
             'type': 'table element',
             'data': (ds['name'], ds['reference product'])
         })
@@ -273,7 +289,7 @@ def assign_fake_pv_to_confidential_datasets(data):
     )
     for ds in filter(confidential_filter, data):
         rp = get_single_reference_product(ds)
-        logging.info({
+        logger.info({
             'type': 'table element',
             'data': (ds['name'], rp['name'], 1)
         })

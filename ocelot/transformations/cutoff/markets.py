@@ -2,6 +2,8 @@
 from ..utils import nonreference_product
 import logging
 
+logger = logging.getLogger('ocelot')
+
 
 def constrained_market_allocation(dataset):
     """Perform constrained market allocation on a dataset.
@@ -16,7 +18,7 @@ def constrained_market_allocation(dataset):
                    if exc['type'] == 'byproduct'
                    and exc.get('conditional exchange'))
     for exc in conditional:
-        logging.info({
+        logger.info({
             'type': 'table element',
             'data': (dataset['name'], exc['name']),
         })
