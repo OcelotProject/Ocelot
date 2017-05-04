@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 __all__ = (
-    "Configuration",
     "HTMLReport",
     "OutputDir",
     "system_model",
@@ -29,7 +28,6 @@ from .data import data_dir
 from .collection import Collection
 from .io import *
 from .configuration import (
-    Configuration,
     cutoff_config,
     consequential_config,
 )
