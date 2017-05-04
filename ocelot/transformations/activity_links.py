@@ -116,6 +116,7 @@ def add_hard_linked_production_volumes(data):
 
 
 manage_activity_links = Collection(
+    "Resolve hard (activity) links",
     check_activity_link_validity,
     add_hard_linked_production_volumes,
 )

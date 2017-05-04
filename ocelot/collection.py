@@ -1,17 +1,23 @@
 # -*- coding: utf-8 -*-
-from collections.abc import Iterable
+from collections.abc import MutableSequence, Iterable
 
 
-class Collection(Iterable):
+class Collection(MutableSequence):
     """A collection of transformation functions is correctly unwrapped by a ``system_model``.
 
     Useful to quickly specify a list of commonly-grouped functions (e.g. ecospold common data cleanup, economic allocation).
 
-    Instantiate a ``Collection`` with the desired transformation functions: ``Collection(do_something, do_something_else)``.
+    Instantiate a ``Collection`` with a name, and the desired transformation functions: ``Collection("some name", do_something, do_something_else)``.
 
     """
-    def __init__(self, *functions):
+    def __init__(self, name, *functions):
+        print(name)
+        self.name = name
         self.functions = functions
+        self.unwrap()
+
+    def unwrap(self):
+        self.functions = unwrap_functions(self.functions)
 
     def __iter__(self):
         return iter(self.functions)
@@ -19,15 +25,41 @@ class Collection(Iterable):
     def __len__(self):
         return len(self.functions)
 
+    def __contains__(self, obj):
+        return obj in self.functions
+
+    def __getitem__(self, index):
+        return self.functions[index]
+
+    def __setitem__(self, index, obj):
+        self.functions[index] = obj
+
+    def insert(self, index, obj):
+        self.functions = self.functions[:index] + [obj] + self.functions[index:]
+
+    def __delitem__(self, index):
+        del self.functions[index]
+
+    def __reversed__(self):
+        for obj in self.functions[::-1]:
+            yield obj
+
     def __call__(self, data):
         for func in self:
             data = func(data)
         return data
 
+    def __str__(self):
+        return "Collection {} with {} functions".format(self.name,len(self))
+
+    __repr__ = lambda self: str(self)
+
 
 def unwrap_functions(lst):
-    """Unwrap a list of functions, some of which could be themselves lists of functions."""
+    """Unwrap a list of functions, some of which could themselves be lists of functions."""
     def unwrapper(functions):
+        print(type(functions))
+        print(functions)
         for func in functions:
             if isinstance(func, Iterable):
                 for obj in unwrapper(func):

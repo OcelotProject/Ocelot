@@ -177,6 +177,7 @@ flip_non_allocatable_byproducts.__table__ = {
 
 
 handle_waste_outputs = Collection(
+    "Handle waste outputs",
     rename_recyclable_content_exchanges,
     create_recycled_content_datasets,
     flip_non_allocatable_byproducts,

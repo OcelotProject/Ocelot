@@ -14,6 +14,7 @@ from .uncertainty import repair_all_uncertainty_distributions
 from .validation import variable_names_are_unique
 
 fix_ecoinvent_parameters = Collection(
+    "Fix ecoinvent parameters",
     fix_specific_ecoinvent_issues,
     replace_implicit_references,
     repair_all_uncertainty_distributions,

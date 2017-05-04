@@ -59,6 +59,7 @@ def ensure_markets_dont_consume_their_ref_product(data):
 
 
 validate_markets = Collection(
+    "Validate markets",
     ensure_markets_only_have_one_reference_product,
     ensure_markets_dont_consume_their_ref_product,
 )

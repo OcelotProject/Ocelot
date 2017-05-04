@@ -158,6 +158,7 @@ def create_allocation_filter(label):
 
 
 cutoff_allocation = Collection(
+    "Cutoff allocation functions",
     label_allocation_method,
     *[TransformationWrapper(func,
                             create_allocation_filter(label))
