@@ -23,7 +23,7 @@ def annotate_exchange(exc, ds):
 
 
 @no_geo_duplicates
-def apportion_suppliers_to_consumers(consumers, suppliers):
+def apportion_suppliers_to_consumers(consumers, suppliers, topo_func=topology.contains):
     """Apportion suppliers to consumers based on their geographic relationships.
 
     A supplier must be completely contained within a consumer, or it is rejected, and the global or RoW activity is chosen.
@@ -49,7 +49,7 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
                 ]
             else:
                 candidates = [ds for ds in group
-                              if topology.contains(consumer['location'], ds['location'])]
+                              if topo_func(consumer['location'], ds['location'])]
             # Allow global suppliers only if consumer is also global
             if not candidates and consumer['location'] in ("GLO", "RoW"):
                 candidates = [ds for ds in group

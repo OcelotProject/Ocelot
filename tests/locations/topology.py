@@ -18,19 +18,24 @@ def test_topology_contained():
 def test_topology_contained_exclude_self():
     assert topology.contained('RU', exclude_self=True) == {'Russia (Asia)', 'Russia (Europe)'}
 
-def test_topology_intersects():
-    assert 'UN-EUROPE' in topology.intersects('DE')
-    assert 'DE' in topology.intersects('DE')
-    assert 'RER w/o AT+BE+CH+DE+FR+IT' not in topology.intersects('CH')
-    assert topology.intersects('GLO') == set()
-    assert topology.intersects('RoW') == set()
+def test_topology_intersected():
+    assert 'UN-EUROPE' in topology.intersected('DE')
+    assert 'DE' in topology.intersected('DE')
+    assert 'DE' not in topology.intersected('DE', exclude_self=True)
+    assert 'RER w/o AT+BE+CH+DE+FR+IT' not in topology.intersected('CH')
+    assert topology.intersected('GLO') == set()
+    assert topology.intersected('RoW') == set()
     # Test compatibility labels
-    assert topology.intersects('IAI Area 8')
+    assert topology.intersected('IAI Area 8')
     # Test new Ecoinvent 3.3 compatablility labels
-    assert topology.intersects('IAI Area, Asia, without China and GCC')
-    assert topology.intersects('IAI Area, Gulf Cooperation Council')
+    assert topology.intersected('IAI Area, Asia, without China and GCC')
+    assert topology.intersected('IAI Area, Gulf Cooperation Council')
     with pytest.raises(KeyError):
-        topology.intersects('foo')
+        topology.intersected('foo')
+
+def test_topology_intersects():
+    assert topology.intersects('DE', 'UN-EUROPE')
+    assert not topology.intersects('US', 'UN-EUROPE')
 
 def test_topology_calls():
     assert topology('US') == topology.data['US']

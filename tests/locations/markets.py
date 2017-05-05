@@ -13,6 +13,26 @@ def generate_dataset(location, name='foo', rp='bar'):
         'technology level': 'current',
     }
 
+def test_apportion_suppliers_to_consumers_intersections():
+    consumers = [
+        generate_dataset('RU'),
+    ]
+    suppliers = [
+        generate_dataset('RER'),
+        generate_dataset('Russia (Asia)'),
+    ]
+    for s in suppliers:
+        s.update({'exchanges': [{'type': 'reference product'}]})
+    apportion_suppliers_to_consumers(consumers, suppliers)
+    assert len(consumers) == 1
+    assert len(consumers[0]['suppliers']) == 1
+    consumers = [
+        generate_dataset('RU'),
+    ]
+    apportion_suppliers_to_consumers(consumers, suppliers, topo_func=topology.intersects)
+    assert len(consumers) == 1
+    assert len(consumers[0]['suppliers']) == 2
+
 def test_apportion_suppliers_to_consumers():
     consumers = [
         generate_dataset('UCTE without France'),

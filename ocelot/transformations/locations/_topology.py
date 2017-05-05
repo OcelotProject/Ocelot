@@ -87,7 +87,7 @@ class Topology(object):
         parents = locations.difference(children).difference({'GLO', 'RoW'})
 
         # Depth first search
-        def add_children(keys): 
+        def add_children(keys):
             return {key: add_children(contained[key]) for key in keys}
 
         tree = add_children(parents)
@@ -101,13 +101,18 @@ class Topology(object):
         return tree
 
     @functools.lru_cache(maxsize=512)
-    def intersects(self, location):
+    def intersected(self, location, exclude_self=False):
         if location in ('GLO', 'RoW'):
             return set()
         faces = self(location)
         return {key
                 for key, value in self.data.items()
-                if value.intersection(faces)}
+                if value.intersection(faces)
+                and not (key == location and exclude_self)}
+
+    def intersects(self, parent, child):
+        """Return boolean of whether ``parent`` contains ``child``"""
+        return child in self.intersected(parent)
 
     def overlaps(self, group):
         """Return a boolean if any elements in ``group`` overlap each other"""
