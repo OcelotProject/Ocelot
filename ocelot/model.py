@@ -100,6 +100,8 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
         save_intermediate_result(output_manager.directory, "final-results", data)
 
         logger.info({'type': 'report end'})
+        print(("Compare results with: ocelot-compare compare {} "
+               "<reference results>").format(output_manager.report_id))
         HTMLReport(logfile_path, show)
         return output_manager, data
 
