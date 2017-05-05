@@ -105,7 +105,7 @@ add_recycled_content_suppliers_to_markets.__table__ = {
 
 
 def add_suppliers_to_markets(data, from_type="transforming activity",
-                             to_type="market activity"):
+                             to_type="market activity", topo_func=None):
     """Add references to supplying exchanges to markets in field ``suppliers``.
 
     By default works with inputs to markets, but can be curried to work with market groups.
@@ -125,7 +125,8 @@ def add_suppliers_to_markets(data, from_type="transforming activity",
             continue
         if to_type == 'market activity':
             no_overlaps(consumers)
-        apportion_suppliers_to_consumers(consumers, suppliers)
+        apportion_suppliers_to_consumers(consumers, suppliers,
+            topo_func=topo_func or topology.contains)
     return data
 
 add_suppliers_to_markets.__table__ = {
