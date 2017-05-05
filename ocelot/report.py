@@ -21,9 +21,10 @@ def read_json_log(fp):
 def jsonize(data):
     """Convert some values to JSON strings and do a few other manipulations"""
     _ = lambda x: json.dumps(x, ensure_ascii=False)
-    data['count_labels'] = _([x[0] for x in data['counts']])
+    # data['count_labels'] = _([x[0] for x in data['counts']])
+    data['count_labels'] = [str(x) for x, _ in enumerate(data['counts'])]
     data['count_data'] = _([x[1] for x in data['counts']])
-    data['time_labels'] = _([x[0] for x in data['times']])
+    data['time_labels'] = [str(x) for x, _ in enumerate(data['times'])]
     data['time_data'] = _([x[1] for x in data['times']])
     for k, v in data['functions'].items():
         if hasattr(v, "tabledata"):
