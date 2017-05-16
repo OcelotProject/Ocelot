@@ -17,7 +17,7 @@ Then, run the following commands to create an Ocelot environment:
 
 .. code-block:: bash
 
-    conda create -y -n ocelot python=3.5 lxml cytoolz numpy scipy pandas
+    conda create -y -n ocelot python=3.6
 
 On Windows, then run:
 
@@ -25,6 +25,7 @@ On Windows, then run:
 
     activate ocelot
     conda install -y pywin32
+    conda install -c conda-forge -c cmutel appdirs bw2parameters docopt docutils jinja2 lxml pandas pyprind psutil pytest stats_arrays cytoolz toolz voluptuous wrapt jupyter
     pip install --no-cache-dir https://github.com/OcelotProject/Ocelot/zipball/master
 
 Otherwise, do:
@@ -32,6 +33,7 @@ Otherwise, do:
 .. code-block:: bash
 
     source activate ocelot
+    conda install -c conda-forge -c cmutel appdirs bw2parameters docopt docutils jinja2 lxml pandas pyprind psutil pytest stats_arrays cytoolz toolz voluptuous wrapt jupyter
     pip install --no-cache-dir https://github.com/OcelotProject/Ocelot/zipball/master
 
 .. note:: If you install from pypi, you will have to install the ``ocelot-lca`` package - someone pipped us during development!
@@ -51,12 +53,4 @@ If you want, you can also install `Brightway2 <https://brightwaylca.org/>`__ in 
 
 .. code-block:: bash
 
-    conda install wheel && conda update pip wheel setuptools
-    conda install -q -y -c haasad pypardiso
-    conda install -q -y ipython ipython-notebook jupyter matplotlib flask requests docopt whoosh xlsxwriter xlrd unidecode appdirs future psutil unicodecsv wrapt
-    pip install --no-cache-dir eight brightway2
-
-Faster calculations on Linux and OS X
-`````````````````````````````````````
-
-You can do faster matrix calculations on OS X and Linux if you install `scikit-umfpack <https://github.com/scikit-umfpack/scikit-umfpack>`__.
+    conda install -y -q -c conda-forge -c cmutel -c haasad brightway2
