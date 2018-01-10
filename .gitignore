@@ -12,3 +12,4 @@ notebooks/.ipynb_checkpoints
 .cache
 .coverage
 ~*.*
+.DS_Store
