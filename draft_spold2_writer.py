@@ -1,22 +1,17 @@
 # -*- coding: utf-8 -*-
 import utils, spold2_utils
-import os, numpy, inspect
+import os, numpy, inspect, pyprind
 from lxml import objectify
 from copy import copy
 from jinja2 import Environment, FileSystemLoader
 
 #template and environment when writing to xml and spold2 with jinja2
-template_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'templates', 'spold')
+template_path = r'C:\python\Ocelot\templates'
 env = Environment(loader=FileSystemLoader(template_path), 
                   keep_trailing_newline = True, 
                   lstrip_blocks = True, 
                   trim_blocks = True)
 
-end_object = {'str': str, 
-              'int': int, 
-              'float': float, 
-              'bool': utils._bool}
-spold2_types = {}
 class TestObject:
     def __init__(self, o, schema_sel = [], folder = '', filename = ''):
         if folder != '':
@@ -24,18 +19,19 @@ class TestObject:
                 root = objectify.parse(f).getroot()
                 if hasattr(root, 'activityDataset'):
                     o = root.activityDataset
+                    self.activityDataset = 'activityDataset'
                 else:
                     o = root.childActivityDataset
+                    self.activityDataset = 'childActivityDataset'
+            self.folder = folder
+            self.filename = filename
         element_tag = o.tag.replace(spold2_utils.tag_re.match(o.tag).group(), '')
         for attr, value in o.attrib.items():
             key = (element_tag, attr)
             if key in spold2_utils.schema:
                 sel = spold2_utils.schema[key]
                 if not sel['ignore']:
-                    field = sel['Python name']
-                    assert not utils.is_empty(field)
-                    setattr(self, field, end_object[sel['Python type']](value))
-                    
+                    setattr(self, sel['Python name'], spold2_utils.end_object[sel['Python type']](value))
         for c in o.iterchildren():
             field_tag = c.tag.replace(spold2_utils.tag_re.match(c.tag).group(), '')
             key = (element_tag, field_tag)
@@ -43,18 +39,18 @@ class TestObject:
             if not sel['ignore']:
                 field = sel['Python name']
                 if sel['multiple']:
-                    assert not utils.is_empty(field)
                     if not hasattr(self, field):
                         setattr(self, field, [])
                     if field in ['tags', 'comment', 'synonyms']:
-                        c = end_object[sel['Python type']](c)
+                        c = spold2_utils.end_object[sel['Python type']](c)
                         if not utils.is_empty(c):
-                            getattr(self, field).append(end_object[sel['Python type']](c))
+                            getattr(self, field).append(c)
                     else:
                         getattr(self, field).append(TestObject(c, sel))
+                elif sel['Python type'] in spold2_utils.end_object:
+                    setattr(self, field, spold2_utils.end_object[sel['Python type']](c))
                 elif 'Comment' in field or field == 'details':
                     setattr(self, field, [])
-                    variables = []
                     for cc in c.iterchildren():
                         t = cc.tag.replace(spold2_utils.tag_re.match(o.tag).group(), '')
                         if t in ['text', 'imageUrl']:
@@ -63,26 +59,24 @@ class TestObject:
                             else:
                                 getattr(self, field).append((t, cc.get('index'), str(cc.text)))
                         else:
-                            1/0#handle me
+                            getattr(self, field).append(('variable', cc.get('name'), str(cc.text)))
                 elif utils.is_empty(sel['Python type']):
                     t = TestObject(c, sel)
                     for field in utils.list_attributes(t):
                         setattr(self, field, getattr(t, field))
-                elif sel['Python type'] in end_object:
-                    assert not utils.is_empty(field)
-                    setattr(self, field, end_object[sel['Python type']](c))
                 else:
-                    if field == 'activityName':
-                        1/0
-                    assert not utils.is_empty(field)
                     setattr(self, field, TestObject(c, sel))
         if utils.is_empty(schema_sel):
             self.spold2_type = 'Dataset'
+            self.flowData = []
+            for field in ['intermediateExchange', 'elementaryExchange', 'parameters']:
+                if hasattr(self, field):
+                    self.flowData.extend(getattr(self, field))
+                    delattr(self, field)
         elif not utils.is_empty(schema_sel['Python type']):
             self.spold2_type = schema_sel['Python type']
         else:
             self.spold2_type = ''#will not be stored anyway
-        
         if self.spold2_type == 'Exchange':
             if hasattr(self, 'inputGroup'):
                 if self.inputGroup in [5, '5']:
@@ -113,18 +107,68 @@ class TestObject:
                 self.exchangeType = 'intermediateExchange'
             #remove dummy properties, or not store them in the first place
             #remove legacy comments
-            if hasattr(self, 'productionVolumeUncertainty'):
-                self.productionVolumeUncertainty.field = 'productionVolumeUncertainty'
         elif self.spold2_type == 'TUncertainty':
-            1/0
+            for c in o.iterchildren():
+                if 'pedigreeMatrix' not in c.tag and 'comment' not in c.tag:
+                    self.type = c.tag.replace(spold2_utils.tag_re.match(c.tag).group(), '')
+            self.pedigreeMatrix = []
+            for criteria in spold2_utils.pedigreeCriteria:
+                if hasattr(self, criteria):
+                    self.pedigreeMatrix.append(int(getattr(self, criteria)))
+                else:
+                    self.pedigreeMatrix.append(5)
+            if self.type == 'lognormal':
+                assert hasattr(self, 'varianceWithPedigreeUncertainty')
+            if 'productionVolumeUncertainty' in element_tag:
+                self.field = 'productionVolumeUncertainty'
+            else:
+                self.field = 'uncertainty'
         elif self.spold2_type == 'TParameter':
             if not hasattr(self, 'unitName') or utils.is_empty(self.unitName):
                 #these are listed as optional in the schema, but it causes problem later
                 #so they are forced to "dimensionless" when absent
                 self.unitName = 'dimensionless'
                 self.unitId = '577e242a-461f-44a7-922c-d8e1c3d2bf45'
-        if hasattr(self, 'uncertainty'):
-            self.uncertainty.field = 'uncertainty'
+    
+    def write_to_spold(self, folder = ''):
+        data = utils.object_to_dict(self)
+        for field, v in data.items():
+            if self.spold2_type in ['Exchange', 'TProperty', 'TParameter', 'TUncertainty'
+                    ] and field == 'comment':
+                data[field] = '\n'.join(v)
+            if isinstance(v, str):
+                data[field] = utils.replace_HTML_entities(v)
+            elif type(v) in [int, set, float]:
+                pass
+            elif isinstance(v, bool):
+                data[field] = str(v).lower()
+            elif isinstance(v, list):
+                for i in range(len(v)):
+                    if self.spold2_type == 'TTextAndImage':
+                        1/0
+                        data[field][i] = (v[i][0], utils.replace_HTML_entities(v[i][1]))
+                    if hasattr(data[field][i], 'write_to_spold'):
+                        data[field][i] = v[i].write_to_spold()
+                    elif isinstance(v[i], str):
+                        data[field] = utils.replace_HTML_entities(v[i])
+                    elif type(v[i]) in [int, set, float]:
+                        pass
+                    else:
+                        NotImplementedError
+            elif hasattr(v, 'write_to_spold'):
+                data[field] = v.write_to_spold()
+            else:
+                raise NotImplementedError
+        template_name = '{}_2.xml'.format(self.spold2_type)
+        template = env.get_template(template_name)
+        output = template.render(**data)
+        if self.spold2_type == 'Dataset':
+            output_filename = os.path.join(result_folder, self.filename)
+            writer = open(output_filename, 'w', encoding = 'utf-8')
+            writer.write(output)
+            writer.close()
+        else:
+            return output
 class BaseClass:
     def __init__(self, o, is_child = False):
         for attr, value in iterate_object(o, is_child).items():
@@ -622,5 +666,9 @@ def iterate_object(o, is_child):
 
 if __name__ == '__main__':
     folder = r'C:\Dropbox (ecoinvent)\ei-int\technical\releases\3.4\Undefined\datasets'
-    filename = '0a3ac992-aa33-4872-9b01-6e1857b79d9b.spold'
-    f = TestObject('', folder = folder, filename = filename)
+    result_folder = r'C:\Dropbox (ecoinvent)\ei-int\technical\releases\3.4\Undefined\test'
+    filelist = utils.build_file_list(folder)
+    for filename in pyprind.prog_bar(filelist):
+        f = TestObject('', '', folder = folder, filename = filename)
+#        f.write_to_spold(result_folder)
+        break

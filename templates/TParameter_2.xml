@@ -1,0 +1,15 @@
+<parameter parameterId="{{ parameterId }}" 
+	  {% if variableName %}variableName="{{ variableName }}" {% endif %}
+	  {% if mathematicalRelation is string %}mathematicalRelation="{{ mathematicalRelation }}" {% endif %}
+	  {% if isCalculatedAmount %}isCalculatedAmount="{{ isCalculatedAmount }}" {% endif %}
+	  {% if parameterContextId %}parameterContextId="{{ parameterContextId }}" {% endif %}
+	  {% if unitContextId %}unitContextId="{{ unitContextId }}" {% endif %}
+	  amount="{{ amount }}">
+        <name xml:lang="en">{{ name }}</name>
+		<unitName xml:lang="en">{{ unitName }}</unitName>
+        {% if uncertainty %}
+        {{ uncertainty }}
+        {% endif %}
+		{% if comment %}
+        <comment xml:lang="en">{{ comment }}</comment>{% endif %}
+      </parameter>

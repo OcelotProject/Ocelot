@@ -1,0 +1,20 @@
+<review 
+	  reviewerId="{{ reviewerId }}" 
+	  {% if reviewerContextId %}reviewerContextId="{{ reviewerContextId }}" {% endif %}
+	  reviewerName="{{ reviewerName }}" 
+	  reviewerEmail="{{ reviewerEmail }}" 
+	  reviewDate="{{ reviewDate }}" 
+	  reviewedMajorRelease="{{ reviewedMajorRelease }}" 
+	  reviewedMinorRelease="{{ reviewedMinorRelease }}" 
+	  reviewedMajorRevision="{{ reviewedMajorRevision }}" 
+	  reviewedMinorRevision="{{ reviewedMinorRevision }}"
+	  >
+	    {% if details %}
+		<details>
+        {{ details }}
+		</details>
+		{% endif %}
+		{% if otherDetails %}
+        <otherDetails>{{ otherDetails }}</otherDetails>
+		{% endif %}
+      </review>

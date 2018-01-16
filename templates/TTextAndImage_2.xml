@@ -1,0 +1,3 @@
+{% if e[0] is equalto "text" %}<text xml:lang="en" index="{{ e[1] }}">{{ e[2] }}</text>{% endif %}
+{% if e[0] is equalto "imageUrl" %}<imageUrl index="{{ e[1] }}">{{ e[2] }}</imageUrl>{% endif %}
+{% if e[0] is equalto "variable" %}<variable xml:lang="en" name="{{ e[1] }}">{{ e[2] }}</variable>{% endif %}

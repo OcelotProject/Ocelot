@@ -1,0 +1,28 @@
+<fileAttributes 
+	  majorRelease="{{ majorRelease }}" 
+	  minorRelease="{{ minorRelease }}" 
+	  majorRevision="{{ majorRevision }}" 
+	  minorRevision="{{ minorRevision }}" 
+	  {% if internalSchemaVersion %}internalSchemaVersion="{{ internalSchemaVersion }}" {% endif %}
+	  {% if defaultLanguage %}defaultLanguage="{{ defaultLanguage }}" {% endif %}
+	  {% if creationTimest %}creationTimestamp="{{ creationTimestamp }}" {% endif %}
+	  {% if lastEditTimestamp %}lastEditTimestamp="{{ lastEditTimestamp }}" {% endif %}
+	  {% if fileGenerator %}fileGenerator="{{ fileGenerator }}" {% endif %}
+	  {% if fileTimestamp %}fileTimestamp="{{ fileTimestamp }}" {% endif %}
+	  {% if contextId %}contextId="{{ contextId }}" {% endif %}
+	  >
+	  {% if contextName %}
+        <contextName xml:lang="en">{{ contextName }}</contextName>
+	  {% endif %}
+	  {% if requiredContext %}
+		{% if requiredContext.majorRelease %}majorRelease="{{ requiredContext.majorRelease }}" {% endif %}
+		{% if requiredContext.minorRelease %}minorRelease="{{ requiredContext.minorRelease }}" {% endif %}
+		{% if requiredContext.majorRevision %}majorRevision="{{ requiredContext.majorRevision }}" {% endif %}
+		{% if requiredContext.minorRevision %}minorRevision="{{ requiredContext.minorRevision }}" {% endif %}
+		{% if requiredContext.requiredContextId %}requiredContextId="{{ requiredContext.requiredContextId }}" {% endif %}
+		{% if requiredContext.requiredContextFileLocation %}requiredContextFileLocation="{{ requiredContext.requiredContextFileLocation }}" {% endif %}
+	  {% endif %}
+		{% if requiredContext %}
+		  <requiredContextName>{{ requiredContext.requiredContextName }}</requiredContextName>
+		{% endif %}
+      </fileAttributes>

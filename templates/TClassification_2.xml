@@ -1,0 +1,7 @@
+<classification classificationId="{{ classificationId }}">
+        <classificationSystem xml:lang="en">{{ classificationSystem }}</classificationSystem>
+        <classificationValue xml:lang="en">{{ classificationValue }}</classificationValue>
+		{% if classificationContextId %}
+		<classificationContextId xml:lang="en">{{ classificationContextId }}</classificationValue>
+		{% endif %}
+      </classification>

@@ -1,0 +1,20 @@
+<dataGeneratorAndPublication 
+	  personId="{{ personId }}" 
+	  personName="{{ personName }}" 
+	  personEmail="{{ personEmail }}" 
+	  {% if dataPublishedIn %}dataPublishedIn="{{ dataPublishedIn }}" {% endif %}
+	  {% if publishedSourceId %}publishedSourceId="{{ publishedSourceId }}" {% endif %}
+	  {% if publishedSourceYear %}publishedSourceYear="{{ publishedSourceYear }}" {% endif %}
+	  {% if publishedSourceFirstAuthor %}publishedSourceFirstAuthor="{{ publishedSourceFirstAuthor }}" {% endif %}
+	  isCopyrightProtected="{{ isCopyrightProtected }}" 
+	  {% if personContextId %}personContextId="{{ personContextId }}" {% endif %}
+	  {% if publishedSourceContextId %}publishedSourceContextId="{{ publishedSourceContextId }}" {% endif %}
+	  {% if publishedSourceIdOverwrittenByChild %}publishedSourceIdOverwrittenByChild="{{ publishedSourceIdOverwrittenByChild }}" {% endif %}
+	  {% if pageNumbers %}pageNumbers="{{ pageNumbers }}" {% endif %}
+	  {% if companyId %}companyId="{{ companyId }}" {% endif %}
+	  {% if companyContextId %}companyContextId="{{ companyContextId }}" {% endif %}
+	  {% if companyCode %}companyCode="{{ companyCode }}" {% endif %}
+	  {% if companyIdOverwrittenByChild %}companyIdOverwrittenByChild="{{ companyIdOverwrittenByChild }}" {% endif %}
+	  {% if accessRestrictedTo %}accessRestrictedTo="{{ accessRestrictedTo }}" {% endif %}
+	  />
+	  

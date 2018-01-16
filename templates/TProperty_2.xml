@@ -1,0 +1,26 @@
+<property 
+		propertyId="{{ propertyId }}" 
+		{% if unitId %}unitId="{{ unitId }}" {% endif %}
+		{% if amount is number%}amount="{{ amount }}" {% endif %}
+		{% if propertyContextId %}propertyContextId="{{ propertyContextId }}" {% endif %}
+		{% if unitContextId %}unitContextId="{{ unitContextId }}" {% endif %}
+		{% if isDefiningValue %}isDefiningValue="{{ isDefiningValue }}" {% endif %}
+		{% if isCalculatedAmount %}isCalculatedAmount="{{ isCalculatedAmount }}" {% endif %}
+		{% if sourceId %}sourceId="{{ sourceId }}" {% endif %}
+		{% if sourceContextId %}sourceContextId="{{ sourceContextId }}" {% endif %}
+		{% if sourceIdOverwrittenByChild %}sourceIdOverwrittenByChild="{{ sourceIdOverwrittenByChild }}" {% endif %}
+		{% if sourceYear %}sourceYear="{{ sourceYear }}" {% endif %}
+		{% if sourceFirstAuthor %}sourceFirstAuthor="{{ sourceFirstAuthor }}" {% endif %}
+		{% if mathematicalRelation is string %}mathematicalRelation="{{ mathematicalRelation }}" {% endif %}
+		{% if variableName %}variableName="{{ variableName }}" {% endif %}
+		>
+          <name xml:lang="en">{{ name }}</name>
+          {% if unitName %}<unitName xml:lang="en">{{ unitName }}</unitName> {% endif %}
+		  {% if uncertainty %}
+          {{ uncertainty }}
+        {% endif %}
+		{% if comment %}
+        <comment xml:lang="en">{{ comment }}</comment>
+		{% endif %}
+        </property>
+		

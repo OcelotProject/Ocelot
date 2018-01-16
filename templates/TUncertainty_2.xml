@@ -1,0 +1,22 @@
+<{{ field }}>
+            <{{ type }} 
+		    {% if meanValue is number%}meanValue="{{ meanValue }}" {% endif %}
+		    {% if minValue is number%}minValue="{{ minValue }}" {% endif %}
+		    {% if mostLikelyValue is number%}mostLikelyValue="{{ mostLikelyValue }}" {% endif %}
+		    {% if maxValue is number%}maxValue="{{ maxValue }}" {% endif %}
+	  	    {% if mu is number %}mu="{{ mu }}" {% endif %}
+		    {% if variance is number%}variance="{{ variance }}" {% endif %}
+		    {% if varianceWithPedigreeUncertainty is number%}varianceWithPedigreeUncertainty="{{ varianceWithPedigreeUncertainty }}" {% endif %}
+			{% if standardDeviation95 is number%}standardDeviation95="{{ standardDeviation95 }}" {% endif %}/>
+            {% if pedigreeMatrix %}
+			<pedigreeMatrix 
+				reliability="{{ pedigreeMatrix[0] }}" 
+				completeness="{{ pedigreeMatrix[1] }}" 
+				temporalCorrelation="{{ pedigreeMatrix[2] }}" 
+				geographicalCorrelation="{{ pedigreeMatrix[3] }}" 
+				furtherTechnologyCorrelation="{{ pedigreeMatrix[4] }}"/>
+			{% endif %}
+		    {% if comment %}
+            <comment xml:lang="en">{{ comment[0] }}</comment>{% endif %}
+			
+        </{{ field }}>

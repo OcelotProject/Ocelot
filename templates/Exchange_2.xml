@@ -1,0 +1,66 @@
+<{{ exchangeType }} id="{{ id }}" 
+	  unitId="{{ unitId }}" 
+	  {% if casNumber %}casNumber="{{ casNumber }}" {% endif %}
+	  amount="{{ amount }}" 
+	  {% if intermediateExchangeId %}intermediateExchangeId="{{ intermediateExchangeId }}" {% endif %}
+	  {% if intermediateExchangeContextId %}intermediateExchangeContextId="{{ intermediateExchangeContextId }}" {% endif %}
+	  {% if activityLinkId %}activityLinkId="{{ activityLinkId }}" {% endif %}
+	  {% if activityLinkContextId %}activityLinkContextId="{{ activityLinkContextId }}" {% endif %}
+	  {% if activityLinkIdOverwrittenByChild %}activityLinkIdOverwrittenByChild="{{ activityLinkIdOverwrittenByChild }}" {% endif %}
+	  {% if elementaryExchangeId %}elementaryExchangeId="{{ elementaryExchangeId }}" {% endif %}
+	  {% if elementaryExchangeContextId %}elementaryExchangeContextId="{{ elementaryExchangeContextId }}" {% endif %}
+	  {% if formula %}formula="{{ formula }}" {% endif %}
+	  {% if productionVolumeAmount %}productionVolumeAmount="{{ productionVolumeAmount }}" {% endif %}
+	  {% if productionVolumeVariableName %}productionVolumeVariableName="{{ productionVolumeVariableName }}" {% endif %}
+	  {% if productionVolumeMathematicalRelation is string %}productionVolumeMathematicalRelation="{{ productionVolumeMathematicalRelation }}" {% endif %}
+	  {% if productionVolumeSourceIdOverwrittenByChild %}productionVolumeSourceIdOverwrittenByChild="{{ productionVolumeSourceIdOverwrittenByChild }}" {% endif %}
+	  {% if productionVolumeSourceId %}productionVolumeSourceId="{{ productionVolumeSourceId }}" {% endif %}
+	  {% if productionVolumeSourceContextId %}productionVolumeSourceContextId="{{ productionVolumeSourceContextId }}" {% endif %}
+	  {% if productionVolumeSourceYear %}productionVolumeSourceYear="{{ productionVolumeSourceYear }}" {% endif %}
+	  {% if productionVolumeSourceFirstAuthor %}productionVolumeSourceFirstAuthor="{{ productionVolumeSourceFirstAuthor }}" {% endif %}
+	  {% if unitContextId %}unitContextId="{{ unitContextId }}" {% endif %}
+	  {% if mathematicalRelation is string %}mathematicalRelation="{{ mathematicalRelation }}" {% endif %}
+	  {% if variableName %}variableName="{{ variableName }}" {% endif %}
+	  {% if isCalculatedAmount %}isCalculatedAmount="{{ isCalculatedAmount }}" {% endif %}
+	  {% if sourceId %}sourceId="{{ sourceId }}" {% endif %}
+	  {% if sourceContextId %}sourceContextId="{{ sourceContextId }}" {% endif %}
+	  {% if sourceIdOverwrittenByChild %}sourceIdOverwrittenByChild="{{ sourceIdOverwrittenByChild }}" {% endif %}
+	  {% if sourceYear %}sourceYear="{{ sourceYear }}" {% endif %}
+	  {% if sourceFirstAuthor %}sourceFirstAuthor="{{ sourceFirstAuthor }}" {% endif %}
+	  {% if pageNumbers %}pageNumbers="{{ pageNumbers }}" {% endif %}
+	  {% if specificAllocationPropertyId %}specificAllocationPropertyId="{{ specificAllocationPropertyId }}" {% endif %}
+	  {% if specificAllocationPropertyContextId %}specificAllocationPropertyContextId="{{ specificAllocationPropertyContextId }}" {% endif %}
+	  {% if specificAllocationPropertyIdOverwrittenByChild %}specificAllocationPropertyIdOverwrittenByChild="{{ specificAllocationPropertyIdOverwrittenByChild }}" {% endif %}
+	  >
+        <name xml:lang="en">{{ name }}</name>
+        <unitName xml:lang="en">{{ unitName }}</unitName>
+		{% if comment %}
+		<comment xml:lang="en">{{ comment }}</comment>{% endif %}
+		
+		{% if uncertainty %}
+        {{ uncertainty }}
+		{% endif %}
+		{% if properties %}{% for p in properties %}
+		{{ p }}{% endfor %}
+		{% endif %}
+		{% if productionVolumeComment %}
+		<productionVolumeComment xml:lang="en">{{ productionVolumeComment }}</productionVolumeComment>
+		{% endif %}
+		{% if productionVolumeUncertainty %}
+        {{ productionVolumeUncertainty }}
+        {% endif %}
+		{% if tag %}{% for t in tag %}
+		<tag>{{ t }}</tag>
+		{% endfor %}{% endif %}
+		{% if classifications %}{% for c in classifications %}
+		{{ c }}
+	    {% endfor %}{% endif %}
+		{% if compartment %}
+		<compartment subcompartmentId="{{ subcompartmentId }}">
+          <compartment xml:lang="en">{{ compartment }}</compartment>
+          <subcompartment xml:lang="en">{{ subcompartment }}</subcompartment>
+        </compartment>
+		{% endif %}
+	  <{{ groupType }}>{{ groupCode }}</{{ groupType }}>
+    </{{ exchangeType }}>
+	

@@ -1,0 +1,18 @@
+<modellingAndValidation>
+      <representativeness 
+	  systemModelId="{{ systemModelId }}"
+	  {% if systemModelContextId %}systemModelContextId="{{ systemModelContextId }}" {% endif %}
+	  {% if percent %}percent="{{ percent }}" {% endif %}
+	  >
+        <systemModelName xml:lang="en">{{ systemModelName }}</systemModelName>
+		{% if samplingProcedure %}
+        <samplingProcedure xml:lang="en">{{ samplingProcedure }}</samplingProcedure>
+		{% endif %}
+		{% if extrapolations %}
+        <extrapolations xml:lang="en">{{ extrapolations }}</extrapolations>
+		{% endif %}
+      </representativeness>
+	  {% if reviews %}{% for r in reviews %}
+      {{ r }}
+	  {% endfor %}{% endif %}
+    </modellingAndValidation>

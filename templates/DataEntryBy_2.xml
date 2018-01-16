@@ -1,0 +1,2 @@
+<dataEntryBy personId="{{ personId }}"{% if personContextId %} personContextId="{{ personContextId }}"{% endif %}{% if isActiveAuthor %} isActiveAuthor="{{ isActiveAuthor }}"{% endif %} personName="{{ personName }}" personEmail="{{ personEmail }}"/>
+      

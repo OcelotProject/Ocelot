@@ -1,0 +1,10 @@
+<source id="{{ id }}" sourceType="{{ sourceType }}" year="{{ year }}" firstAuthor="{{ firstAuthor }}" 
+	{% if  %}additionalAuthors="{{ additionalAuthors }}" {% endif %}
+	title="{{ title }}" 
+	{% if placeOfPublications %}placeOfPublications="{{ placeOfPublications }}" {% endif %}
+	{% if journal %}journal="{{ journal }}" {% endif %}
+	{% if namesOfEditors %}namesOfEditors="{{ namesOfEditors }}" {% endif %}
+	{% if pageNumbers %}pageNumbers="{{ pageNumbers }}" {% endif %}
+	{% if publishers %}publishers="{{ publishers }}" {% endif %}
+	{% if titleOfAnthology %}titleOfAnthology="{{ titleOfAnthology }}" {% endif %}
+	{% if volumeNo %}volumeNo="{{ volumeNo }}"{% endif %}/>

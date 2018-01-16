@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold02">
+  <{{ activityDataset }}>
+    <activityDescription>
+	  <activity id="{{ id }}" 
+	  activityNameId="{{ activityNameId }}" 
+	  inheritanceDepth="{{ inheritanceDepth }}" 
+	  {% if parentActivityId %}parentActivityId="{{ parentActivityId }}" {% endif %}
+	  {% if parentActivityContextId %}parentActivityContextId="{{ parentActivityContextId }}" {% endif %}
+	  type="{{ type }}" 
+	  specialActivityType="{{ specialActivityType }}" 
+	  {% if energyValues %}energyValues="{{ energyValues }}" {% endif %}
+	  {% if masterAllocationPropertyId %}masterAllocationPropertyId="{{ masterAllocationPropertyId }}" {% endif %}
+	  {% if masterAllocationPropertyIdOverwrittenByChild %}masterAllocationPropertyIdOverwrittenByChild="{{ masterAllocationPropertyIdOverwrittenByChild }}" {% endif %}
+	  {% if activityNameContextId %}activityNameContextId="{{ activityNameContextId }}" {% endif %}>
+        <activityName xml:lang="en">{{ activityName }}</activityName>
+		{% if synonyms %}{% for s in synonyms %}
+		<synonym xml:lang="en">{{ s }}</synonym>
+		{% endfor %}{% endif %}
+		{% if includedActivitiesStart %}
+        <includedActivitiesStart xml:lang="en">{{ includedActivitiesStart }}</includedActivitiesStart>
+		{% endif %}
+		{% if includedActivitiesEnd %}
+        <includedActivitiesEnd xml:lang="en">{{ includedActivitiesEnd }}</includedActivitiesEnd>
+		{% endif %}
+		{% if allocationComment %}
+		<allocationComment>
+        {{ allocationComment }}
+    	</allocationComment>
+		{% endif %}
+		{% if generalComment %}
+		<generalComment>
+			{% for e in generalComment %}
+			{{ e }}
+        	{% endfor %}
+		</generalComment>
+		{% endif %}
+		{% if tags %}{% for t in tags %}
+		<tag>{{ t }}</tag>
+		{% endfor %}{% endif %}
+      </activity>
+	  {% if classifications %}{% for c in classifications %}
+	  {{ c }}
+	  {% endfor %}{% endif %}
+      <geography geographyId="{{ geographyId }}" 
+	  {% if geographyContextId %}geographyContextId = "{{ geographyContextId }}"{% endif %}>
+        <shortname xml:lang="en">{{ geography }}</shortname>
+		{% if geographyComment %}
+		<comment>
+        {{ geographyComment }}
+		</comment>
+		{% endif %}
+      </geography>
+      <technology {% if technologyLevel %} technologyLevel="{{ technologyLevel }}"{% endif %}>
+        {% if technologyComment %}
+		<comment>
+        {{ technologyComment }}
+		</comment>
+		{% endif %}
+      </technology>
+      <timePeriod startDate="{{ startDate }}" endDate="{{ endDate }}" isDataValidForEntirePeriod="{{ isDataValidForEntirePeriod }}">
+      {% if timePeriodComment %}
+		<comment>
+        {{ timePeriodComment }}
+		</comment>
+		{% endif %}
+	  </timePeriod>
+	  <macroEconomicScenario macroEconomicScenarioId="{{ macroEconomicScenarioId }}"
+	  {% if macroEconomicScenarioContextId %} macroEconomicScenarioContextId="{{ macroEconomicScenarioContextId }}"{% endif %}>
+        <name xml:lang="en">{{ macroEconomicScenarioName }}</name>
+		{% if macroEconomicScenarioComment %}<comment xml:lang="en">{{ macroEconomicScenarioComment }}</comment>{% endif %}
+      </macroEconomicScenario>
+    </activityDescription>
+	<flowData>
+	{% for exc in exchanges %}
+	{{ exc }}{% endfor %}
+	{% if parameters %}{% for p in parameters %}
+	{{ p }}{% endfor %}
+	{% endif %}
+	</flowData>
+	{{ modellingAndValidation }}
+	<administrativeInformation>
+	{{ dataEntryBy }}
+	{{ dataGeneratorAndPublication }}
+	{{ fileAttributes }}
+	</administrativeInformation>
+{% if originalActivityDataset %}
+<originalActivityDataset xmlns='http://www.EcoInvent.org/EcoSpold02Child/Inheritance'>
+	{{ originalActivityDataset }}
+</originalActivityDataset>
+{% endif %}
+</{{ activityDataset }}>
+	{% if has_userMD %}
+<usedUserMasterData xmlns:es="http://www.EcoInvent.org/EcoSpold02" xmlns="http://www.EcoInvent.org/UsedUserMasterData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.EcoInvent.org/UsedUserMasterData file:///C:/svn/ecospold2/trunk/Schemas/Extensions/UsedUserMasterData.xsd">
+{% if ActivityNames %}{% for entry in ActivityNames %}
+{{ entry }}
+{% endfor %}{% endif %}
+{% if Persons %}{% for entry in Persons %}
+{{ entry }}
+{% endfor %}{% endif %}
+{% if Sources %}{% for entry in Sources %}
+{{ entry }}
+{% endfor %}{% endif %}
+{% if Parameters %}{% for entry in Parameters %}
+{{ entry }}
+{% endfor %}{% endif %}
+{% if ElementaryExchanges %}{% for entry in ElementaryExchanges %}
+{{ entry }}
+{% endfor %}{% endif %}
+{% if IntermediateExchanges %}{% for entry in IntermediateExchanges %}
+{{ entry }}
+{% endfor %}{% endif %}
+{% if ActivityIndex %}{% for entry in ActivityIndex %}
+{{ entry }}
+{% endfor %}{% endif %}
+	</usedUserMasterData>{% endif %}
+</ecoSpold>
