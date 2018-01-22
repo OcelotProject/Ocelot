@@ -17,6 +17,6 @@
 				furtherTechnologyCorrelation="{{ pedigreeMatrix[4] }}"/>
 			{% endif %}
 		    {% if comment %}
-            <comment xml:lang="en">{{ comment[0] }}</comment>{% endif %}
+            <comment xml:lang="en">{{ comment }}</comment>{% endif %}
 			
         </{{ field }}>

@@ -41,15 +41,14 @@
         {{ uncertainty }}
 		{% endif %}
 		{% if properties %}{% for p in properties %}
-		{{ p }}{% endfor %}
-		{% endif %}
+		{{ p }}{% endfor %}{% endif %}
 		{% if productionVolumeComment %}
 		<productionVolumeComment xml:lang="en">{{ productionVolumeComment }}</productionVolumeComment>
 		{% endif %}
 		{% if productionVolumeUncertainty %}
         {{ productionVolumeUncertainty }}
         {% endif %}
-		{% if tag %}{% for t in tag %}
+		{% if tag %}{% for t in tags %}
 		<tag>{{ t }}</tag>
 		{% endfor %}{% endif %}
 		{% if classifications %}{% for c in classifications %}

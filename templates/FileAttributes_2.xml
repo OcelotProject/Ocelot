@@ -5,7 +5,7 @@
 	  minorRevision="{{ minorRevision }}" 
 	  {% if internalSchemaVersion %}internalSchemaVersion="{{ internalSchemaVersion }}" {% endif %}
 	  {% if defaultLanguage %}defaultLanguage="{{ defaultLanguage }}" {% endif %}
-	  {% if creationTimest %}creationTimestamp="{{ creationTimestamp }}" {% endif %}
+	  {% if creationTimestamp %}creationTimestamp="{{ creationTimestamp }}" {% endif %}
 	  {% if lastEditTimestamp %}lastEditTimestamp="{{ lastEditTimestamp }}" {% endif %}
 	  {% if fileGenerator %}fileGenerator="{{ fileGenerator }}" {% endif %}
 	  {% if fileTimestamp %}fileTimestamp="{{ fileTimestamp }}" {% endif %}

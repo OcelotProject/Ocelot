@@ -30,9 +30,7 @@
 		{% endif %}
 		{% if generalComment %}
 		<generalComment>
-			{% for e in generalComment %}
-			{{ e }}
-        	{% endfor %}
+			{{ generalComment }}
 		</generalComment>
 		{% endif %}
 		{% if tags %}{% for t in tags %}
@@ -72,11 +70,8 @@
       </macroEconomicScenario>
     </activityDescription>
 	<flowData>
-	{% for exc in exchanges %}
-	{{ exc }}{% endfor %}
-	{% if parameters %}{% for p in parameters %}
-	{{ p }}{% endfor %}
-	{% endif %}
+	{% for e in flowData %}
+	{{ e }}{% endfor %}
 	</flowData>
 	{{ modellingAndValidation }}
 	<administrativeInformation>
