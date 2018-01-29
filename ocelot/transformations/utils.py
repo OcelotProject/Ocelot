@@ -3,6 +3,7 @@ from ..errors import InvalidMultioutputDataset, ZeroProduction
 from .uncertainty import scale_exchange, remove_exchange_uncertainty
 from copy import deepcopy
 from pprint import pformat
+import copy
 import hashlib
 import pandas as pd
 import wrapt
@@ -10,6 +11,14 @@ import logging
 
 logger = logging.getLogger('ocelot')
 
+
+def copy_original_exchange_id(data):
+    """Copy each exchange id to the field ``original id`` for use in writing
+    ecospold2 files later."""
+    for ds in data:
+        for exc in ds['exchanges']:
+            exc['original id'] = copy.copy(exc['id'])
+    return data
 
 ### Activity identifiers
 
