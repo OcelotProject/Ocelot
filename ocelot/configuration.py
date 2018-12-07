@@ -18,6 +18,7 @@ from .transformations.consequential import (
     split_combined_production,
 )
 from .transformations.cutoff import (
+    adjust_market_signs_for_allocatable_products,
     cleanup_activity_links,
     cutoff_allocation,
     handle_waste_outputs,
@@ -53,6 +54,7 @@ cutoff_config = Collection(
     rename_recycled_content_products_after_linking,
     # extrapolate to database reference year
     TransformationWrapper(normalize_reference_production_amount),
+    adjust_market_signs_for_allocatable_products,
     # final output processing
 )
 

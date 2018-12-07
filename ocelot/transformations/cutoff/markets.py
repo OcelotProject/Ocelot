@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from ..utils import nonreference_product
+from ..utils import nonreference_product, get_single_reference_product
+from ..uncertainty import scale_exchange
 import logging
 
 logger = logging.getLogger('ocelot')
@@ -28,4 +29,31 @@ def constrained_market_allocation(dataset):
 constrained_market_allocation.__table__ = {
     'title': 'Zero out conditional exchanges in cutoff model',
     'columns': ["Activity name", "Flow"]
+}
+
+
+def adjust_market_signs_for_allocatable_products(data):
+    """If all exchanges (inputs and production) are negative, and the reference product is an ``allocatable product``, then flip signs to be positive.
+
+    Only waste treatment activities should have negative reference products. Needed for consistency with published ecoinvent results.
+
+    Some markets had their signs manually flipped, but their reference product is not ``waste``."""
+    all_negative = lambda ds: all(exc['amount'] <= 0 for exc in ds['exchanges'])
+
+    for ds in data:
+        if (ds['type'] == 'market activity' and
+            get_single_reference_product(ds)['byproduct classification'] == 'allocatable product' and
+            all_negative(ds)):
+            logger.info({
+                'type': 'table element',
+                'data': [ds['name'], ds['location']],
+            })
+            for exc in ds['exchanges']:
+                scale_exchange(exc, -1)
+
+    return data
+
+adjust_market_signs_for_allocatable_products.__table__ = {
+    'title': 'Flip signs for negative non-waste markets',
+    'columns': ["Activity name", "Location"]
 }
