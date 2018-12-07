@@ -42,6 +42,20 @@ def test_adjust_market_signs_for_allocatable_products_one():
             'name': 'exchange 2',
             'amount': .5,
             'type': 'something else',
+        }],
+    }, {
+        'name': 'a name 4',
+        'location': 'somewhere',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'exchange 1',
+            'amount': -1,
+            'type': 'reference product',
+            'byproduct classification': 'recyclable',
+        }, {
+            'name': 'exchange 2',
+            'amount': -.5,
+            'type': 'something else',
         }]
     }]
     expected = [{
@@ -81,6 +95,20 @@ def test_adjust_market_signs_for_allocatable_products_one():
             'amount': -1,
             'type': 'reference product',
             'byproduct classification': 'allocatable product',
+        }, {
+            'name': 'exchange 2',
+            'amount': .5,
+            'type': 'something else',
+        }]
+    }, {
+        'name': 'a name 4',
+        'location': 'somewhere',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'exchange 1',
+            'amount': 1,
+            'type': 'reference product',
+            'byproduct classification': 'recyclable',
         }, {
             'name': 'exchange 2',
             'amount': .5,

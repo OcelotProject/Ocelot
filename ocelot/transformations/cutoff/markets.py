@@ -42,7 +42,7 @@ def adjust_market_signs_for_allocatable_products(data):
 
     for ds in data:
         if (ds['type'] == 'market activity' and
-            get_single_reference_product(ds)['byproduct classification'] == 'allocatable product' and
+            get_single_reference_product(ds)['byproduct classification'] != 'waste' and
             all_negative(ds)):
             logger.info({
                 'type': 'table element',
