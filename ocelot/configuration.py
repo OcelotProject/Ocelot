@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from .collection import Collection
 from .transformations import (
+    copy_original_exchange_id,
     ensure_ids_are_unique,
-    pv_cleanup,
     ensure_mandatory_properties,
     fix_ecoinvent_parameters,
     manage_activity_links,
     normalize_reference_production_amount,
+    pv_cleanup,
     validate_markets,
     variable_names_are_unique,
 )
@@ -37,6 +38,7 @@ from .wrapper import TransformationWrapper
 cutoff_config = Collection(
     'Ecoinvent 3 cutoff by classification system model',
     ensure_ids_are_unique,
+    copy_original_exchange_id,
     variable_names_are_unique,
     # There are a *lot* of missing mandatory properties
     # No point adding them to this report
@@ -61,6 +63,7 @@ cutoff_config = Collection(
 consequential_config = Collection(
     'Ecoinvent 3 consequential long-term system model',
     ensure_ids_are_unique,
+    copy_original_exchange_id,
     variable_names_are_unique,
     validate_markets,
     fix_ecoinvent_parameters,
