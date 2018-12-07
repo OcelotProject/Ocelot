@@ -13,3 +13,4 @@ notebooks/.ipynb_checkpoints
 .coverage
 ~*.*
 .DS_Store
+.pytest_cache
