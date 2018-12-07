@@ -9,6 +9,7 @@ __all__ = (
 
 from .extract_ecospold2 import extract_ecospold2_directory
 from ..filesystem import check_cache_directory, get_from_cache, cache_data
+import os
 
 
 def extract_directory(data_path, use_cache=True, use_mp=True):
@@ -17,6 +18,7 @@ def extract_directory(data_path, use_cache=True, use_mp=True):
     Uses and writes to cache if ``use_cache`` is ``True``.
 
     Returns datasets in Ocelot internal format."""
+    data_path = os.path.abspath(data_path)
     if not use_cache:
         return extract_ecospold2_directory(data_path, use_mp)
     elif check_cache_directory(data_path):
