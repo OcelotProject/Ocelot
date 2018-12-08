@@ -45,12 +45,13 @@ def test_directory_structure():
         assert base in output
 
 @pytest.fixture
-def fake_output_dir(monkeypatch, tmpdir):
-    monkeypatch.setattr(
-        'ocelot.filesystem.get_base_directory',
-        lambda: os.path.abspath(tmpdir)
-    )
-    return os.path.abspath(tmpdir)
+def fake_output_dir(monkeypatch):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        monkeypatch.setattr(
+            'ocelot.filesystem.get_base_directory',
+            lambda: os.path.abspath(tmpdir)
+        )
+        yield tmpdir
 
 def test_fake_output_dir_fixture(fake_output_dir):
     assert "Ocelot" not in get_cache_directory()
