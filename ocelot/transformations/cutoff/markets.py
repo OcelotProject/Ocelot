@@ -50,6 +50,18 @@ def adjust_market_signs_for_allocatable_products(data):
             })
             for exc in ds['exchanges']:
                 scale_exchange(exc, -1)
+        # Sometimes just the reference product has a negative amount. Who knows why?
+        # E.g. `market for 2,3-dimethylbutan`
+        # We flip this because ecoinvent does. The world is a confusing place.
+        elif (ds['type'] == 'market activity' and
+            get_single_reference_product(ds)['byproduct classification'] != 'waste' and
+            get_single_reference_product(ds)['amount'] < 0):
+            logger.info({
+                'type': 'table element',
+                'data': [ds['name'], ds['location']],
+            })
+            exc = get_single_reference_product(ds)
+            scale_exchange(exc, -1)
 
     return data
 

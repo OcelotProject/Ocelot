@@ -92,7 +92,7 @@ def test_adjust_market_signs_for_allocatable_products_one():
         'type': 'market activity',
         'exchanges': [{
             'name': 'exchange 1',
-            'amount': -1,
+            'amount': 1,
             'type': 'reference product',
             'byproduct classification': 'allocatable product',
         }, {
