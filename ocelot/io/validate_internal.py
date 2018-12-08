@@ -174,6 +174,7 @@ dataset_schema = Schema({
     'end date': str, # Starting and ending dates for dataset validity, in format '2015-12-31'
     'filepath': str,
     'id': str,  # Imported UUID. May not be unique due to allocation.
+    'parent': Any(None, str),
     # Guaranteed unique hash code based on dataset attributes like name, location, type, etc.
     Optional("code"): str,
     'location': str, # ecospold2 field 410: shortname

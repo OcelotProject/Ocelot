@@ -2,7 +2,7 @@
 <ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold02">
   <childActivityDataset>
     <activityDescription>
-      <activity id="basic-process" specialActivityType="0">
+      <activity id="basic-process" specialActivityType="0" parentActivityId="some uuid">
         <activityName>Miss Morgan Wolf</activityName>
       </activity>
       <classification>
