@@ -44,49 +44,30 @@ def test_directory_structure():
     if "model-runs" in output:
         assert base in output
 
-
-class TempDir(object):
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.dp = tempfile.mkdtemp()
-
-    def __call__(self):
-        return self.dp
-
-tempdir = TempDir()
-
-
 @pytest.fixture
-def fake_output_dir(monkeypatch):
+def fake_output_dir(monkeypatch, tmpdir):
     monkeypatch.setattr(
         'ocelot.filesystem.get_base_directory',
-        tempdir
+        lambda: os.path.abspath(tmpdir)
     )
-
+    return os.path.abspath(tmpdir)
 
 def test_fake_output_dir_fixture(fake_output_dir):
-    tempdir.reset()
     assert "Ocelot" not in get_cache_directory()
 
 def test_cache_loading(fake_output_dir):
-    tempdir.reset()
     random_data = {k: random.randint(0, 10) for k in "abcdefghijklmnop"}
     fp = os.path.abspath(__file__)
     cache_data(random_data, fp)
     assert random_data == get_from_cache(fp)
 
 def test_cache_expiration(fake_output_dir):
-    tempdir.reset()
-    new_dp = tempfile.mkdtemp()
-    new_file = os.path.join(new_dp, "test.file")
+    new_file = os.path.join(fake_output_dir, "test.file")
     with open(new_file, "w") as f:
         f.write("foo")
     random_data = {k: random.randint(0, 10) for k in "abcdefghijklmnop"}
-    cache_data(random_data, new_dp)
+    cache_data(random_data, fake_output_dir)
     time.sleep(0.5)
     with open(new_file, "w") as f:
         f.write("bar")
-    assert not check_cache_directory(new_dp)
-
+    assert not check_cache_directory(fake_output_dir)

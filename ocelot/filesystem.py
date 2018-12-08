@@ -97,7 +97,13 @@ def check_cache_directory(data_path):
     if not os.path.exists(cache_fp):
         return False
     cache_time = os.stat(cache_fp).st_mtime
-    source_time = os.stat(data_path).st_mtime
+    source_time = max([
+        os.stat(data_path).st_mtime,
+        max(
+            os.stat(os.path.join(data_path, fn)).st_mtime for fn in
+            filter(lambda x: not x.startswith("."), os.listdir(data_path))
+        )
+    ])
     return cache_time > source_time
 
 
