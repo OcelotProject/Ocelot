@@ -57,6 +57,24 @@ def test_adjust_market_signs_for_allocatable_products_one():
             'amount': -.5,
             'type': 'something else',
         }]
+    }, {
+        'name': 'a name 5',
+        'location': 'somewhere',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'lollipop',
+            'amount': -1,
+            'type': 'reference product',
+            'byproduct classification': 'recyclable',
+        }, {
+            'name': 'exchange 2',
+            'amount': .5,
+            'type': 'something else',
+        }, {
+            'name': 'lollipop',
+            'amount': -.5,
+            'type': 'something else',
+        }]
     }]
     expected = [{
         'name': 'a name',
@@ -111,6 +129,24 @@ def test_adjust_market_signs_for_allocatable_products_one():
             'byproduct classification': 'recyclable',
         }, {
             'name': 'exchange 2',
+            'amount': .5,
+            'type': 'something else',
+        }]
+    }, {
+        'name': 'a name 5',
+        'location': 'somewhere',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'lollipop',
+            'amount': 1,
+            'type': 'reference product',
+            'byproduct classification': 'recyclable',
+        }, {
+            'name': 'exchange 2',
+            'amount': .5,
+            'type': 'something else',
+        }, {
+            'name': 'lollipop',
             'amount': .5,
             'type': 'something else',
         }]

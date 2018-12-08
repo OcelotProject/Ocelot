@@ -60,8 +60,10 @@ def adjust_market_signs_for_allocatable_products(data):
                 'type': 'table element',
                 'data': [ds['name'], ds['location']],
             })
-            exc = get_single_reference_product(ds)
-            scale_exchange(exc, -1)
+            rp = get_single_reference_product(ds)
+            for exc in ds['exchanges']:
+                if exc['name'] == rp['name']:
+                    scale_exchange(exc, -1)
 
     return data
 
