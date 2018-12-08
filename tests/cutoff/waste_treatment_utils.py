@@ -145,16 +145,26 @@ def test_create_recycled_content_datasets(monkeypatch):
     assert {'name': 'henrietta'} in result
 
 def test_rename_recycled_content_products_after_linking():
-    given = [{'exchanges': [{
-        'name': 'foo',
-    }, {
-        'name': 'bar, Recycled Content cut-off'
-    }]}]
-    expected = [{'exchanges': [{
-        'name': 'foo',
-    }, {
-        'name': 'bar'
-    }]}]
+    given = [{
+        'name': 'baz, Recycled Content cut-off',
+        'location': '',
+        'exchanges': [{
+            'name': 'foo',
+        }, {
+            'name': 'bar, Recycled Content cut-off',
+            'type': '',
+        }]
+    }]
+    expected = [{
+        'name': 'baz, Recycled Content cut-off',
+        'location': '',
+        'exchanges': [{
+            'name': 'foo',
+        }, {
+            'name': 'bar',
+            'type': '',
+        }]
+    }]
     assert rename_recycled_content_products_after_linking(given) == expected
 
 def test_rename_recyclable_content_exchanges():

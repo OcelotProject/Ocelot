@@ -85,12 +85,26 @@ def rename_recycled_content_products_after_linking(data):
     """Change the name of recycled content products (but not activities).
 
     In the release version of ecoinvent, the activities have ``Recycled Content cut-off``, but the flow names don't. We can remove this suffix safely after linking."""
-    exchange_iterator = (exc
-                         for ds in data
-                         for exc in ds['exchanges'])
-    for exc in exchange_iterator:
-        exc['name'] = exc['name'].replace(RC_STRING, "")
+    for ds in data:
+        for exc in ds['exchanges']:
+            if exc['name'].endswith(RC_STRING):
+                exc['name'] = exc['name'].replace(RC_STRING, "")
+                logger.info({
+                    'type': 'table element',
+                    'data': [ds['name'], exc['name'], exc['type'], ds['location']],
+                })
+        if ds.get('reference product', '').endswith(RC_STRING):
+            ds['reference product'] = ds['reference product'].replace(RC_STRING, "")
+            logger.info({
+                'type': 'table element',
+                'data': [ds['name'], ds['reference product'], 'RP label', ds['location']],
+            })
     return data
+
+rename_recycled_content_products_after_linking.__table__ = {
+    'title': 'Remove `Recycle Content cut-off` from flow names',
+    'columns': ["Activity name", "Flow", "Type", "Location"]
+}
 
 
 def create_new_recycled_content_dataset(ds, exc):
