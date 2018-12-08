@@ -156,9 +156,12 @@ def allocate_suppliers(dataset):
                    for o in dataset['suppliers'])
 
     if not total_pv:
-        # TODO: Raise error here
-        print("Skipping zero total PV with multiple inputs:\n\t{}/{} ({}, {} suppliers)".format(dataset['name'], rp['name'], dataset['location'], len(dataset['suppliers'])))
-        return
+        if len(dataset['suppliers']) != 1:
+            # TODO: Raise error here
+            print("Skipping zero total PV with multiple inputs:\n\t{}/{} ({}, {} suppliers)".format(dataset['name'], rp['name'], dataset['location'], len(dataset['suppliers'])))
+            return
+        else:
+            total_pv = dataset['suppliers'][0]['production volume']['amount'] = 4321
 
     for supply_exc in dataset['suppliers']:
         amount = supply_exc['production volume']['amount'] / total_pv * scale_factor

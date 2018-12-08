@@ -795,6 +795,48 @@ def test_delete_allowed_zero_pv_market_datsets():
     }]
     assert delete_allowed_zero_pv_market_datsets(given) == expected
 
+def test_allocate_suppliers_no_production_volume_single_supplier():
+    given = {
+        'name': '',
+        'location': '',
+        'exchanges': [{
+            'type': 'reference product',
+            'name': '',
+            'amount': 1,
+        }],
+        'suppliers': [{
+            'production volume': {'amount': 0},
+            'name': 'a',
+            'unit': 'b',
+            'code': 'foo',
+            'location': '',
+        }]
+    }
+    expected = {
+        'name': '',
+        'location': '',
+        'exchanges': [{
+            'type': 'reference product',
+            'name': '',
+            'amount': 1,
+        }, {
+            'amount': 1,
+            'name': 'a',
+            'unit': 'b',
+            'code': 'foo',
+            'type': 'from technosphere',
+            'tag': 'intermediateExchange',
+        }],
+        'suppliers': [{
+            'production volume': {'amount': 4321},
+            'name': 'a',
+            'unit': 'b',
+            'code': 'foo',
+            'location': '',
+        }]
+    }
+    assert allocate_suppliers(given) == expected
+
 def test_allocate_suppliers_no_production_volume():
     given = {
         'name': '',
@@ -805,6 +847,8 @@ def test_allocate_suppliers_no_production_volume():
             'amount': 1,
         }],
         'suppliers': [{
+            'production volume': {'amount': 0}
+        }, {
             'production volume': {'amount': 0}
         }]
     }
