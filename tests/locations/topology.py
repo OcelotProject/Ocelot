@@ -124,3 +124,6 @@ def test_topology_tree_glo():
     ]
     expected = {'GLO': {'CA': {}}}
     assert topology.tree(given) == expected
+
+def test_topology_subtract():
+    assert topology.contained('RER', subtract=('Europe without Switzerland',)) == {'CH'}

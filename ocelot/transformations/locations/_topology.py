@@ -31,18 +31,23 @@ class Topology(object):
             self.data[old] = self.data[fixed]
 
     @functools.lru_cache(maxsize=512)
-    def contained(self, location, exclude_self=False):
+    def contained(self, location, exclude_self=False, subtract=None):
         if location in ('GLO', 'RoW'):
             return set()
         faces = self(location)
+        if subtract:
+            faces = faces.difference(set.union(*[self(place) for place in subtract]))
         return {key
                 for key, value in self.data.items()
                 if not value.difference(faces)
                 and not (key == location and exclude_self)}
 
-    def contains(self, parent, child):
+    def contains(self, parent, child, subtract=None):
         """Return boolean of whether ``parent`` contains ``child``"""
-        return child in self.contained(parent)
+        return child in self.contained(
+            parent,
+            tuple(subtract) if subtract else None
+        )
 
     def tree(self, datasets):
         """Construct a tree of containing geographic relationships.
