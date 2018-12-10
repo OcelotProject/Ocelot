@@ -12,6 +12,9 @@ from .economic import economic_allocation
 from .validation import valid_merge_datasets
 from .wastes import waste_treatment_allocation, recycling_allocation
 from copy import deepcopy
+import logging
+
+logger = logging.getLogger('ocelot')
 
 
 ###
@@ -41,7 +44,7 @@ def selected_product(exc):
     return remove_exchange_uncertainty(exc)
 
 
-def combined_production(dataset):
+def combined_production(dataset, plain=True):
     """Perform subdivision of combined production activities.
 
     Combined production activities can vary the production of several reference products. As such, subdivision can be performed, and no allocation is needed. However, allocation may be needed for the resulting datasets, which may have byproducts.
@@ -72,7 +75,17 @@ def combined_production(dataset):
             [deepcopy(obj) for obj in dataset['exchanges']
              if obj['type'] != 'reference product']
         new_datasets.append(recalculate(new_ds))
+        if plain:
+            logger.info({
+                'type': 'table element',
+                'data': (dataset['name'], rp['name'], dataset['location']),
+            })
     return new_datasets
+
+combined_production.__table__ = {
+    'title': 'Combined production datasets created',
+    'columns': ["Name", "Product", "Location"],
+}
 
 
 def handle_split_dataset(ds):
@@ -120,7 +133,7 @@ def combined_production_without_products(dataset):
 
     """
     return [ds
-            for obj in combined_production(dataset)
+            for obj in combined_production(dataset, False)
             for ds in handle_split_dataset(obj)]
 
 
@@ -171,6 +184,6 @@ def combined_production_with_byproducts(dataset):
 
     Returns a list of new datasets."""
     new_datasets = [ds
-                    for subdivided in combined_production(dataset)
+                    for subdivided in combined_production(dataset, False)
                     for ds in economic_allocation(subdivided)]
     return list(merge_byproducts(new_datasets))
