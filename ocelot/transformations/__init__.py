@@ -4,6 +4,7 @@ from .activity_links import (
     check_activity_link_validity,
     add_hard_linked_production_volumes,
     manage_activity_links,
+    update_activity_link_parent_child,
 )
 from .cleanup import ensure_all_datasets_have_production_volume
 from .parameterization import (

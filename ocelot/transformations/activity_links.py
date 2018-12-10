@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 from ..collection import Collection
 from ..errors import UnresolvableActivityLink
-from .utils import allocatable_production, get_biggest_pv_to_exchange_ratio
+from .utils import (
+    allocatable_production,
+    get_biggest_pv_to_exchange_ratio,
+    nonproduction_exchanges,
+)
 from pprint import pformat
+import logging
+
+logger = logging.getLogger('ocelot')
 
 
 def check_activity_link_validity(data):
@@ -120,3 +127,34 @@ manage_activity_links = Collection(
     check_activity_link_validity,
     add_hard_linked_production_volumes,
 )
+
+
+def update_activity_link_parent_child(data):
+    """Update exchange activity links from parent to child (i.e. the current) dataset.
+
+    Correct an error in ecoinvent master data production.
+
+    In a few cases, an exchange in a child dataset includes an ``activityLink``
+    to the parent dataset, from which the dataset is derived. For example, the
+    parent global dataset ``market for medium voltage electricity`` has a child
+    dataset actualized for Iceland (IS). The input for losses due to voltage
+    conversion and transmission still had an ``activityLink`` to the global
+    dataset, however. This function redirects that activity link to the child
+    dataset."""
+    for ds in data:
+        parent = ds['parent']
+        if not parent:
+            continue
+        for exc in nonproduction_exchanges(ds):
+            if exc.get('activity link') == parent:
+                exc['activity link'] = ds['id']
+                logger.info({
+                    'type': 'table element',
+                    'data': (ds['name'], ds['location'], exc['amount']),
+                })
+    return data
+
+update_activity_link_parent_child.__table__ = {
+    'title': 'Switch activity links to child dataset',
+    'columns': ['Name', 'Location', 'Amount']
+}

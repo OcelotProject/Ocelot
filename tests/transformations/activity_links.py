@@ -3,9 +3,15 @@ from ocelot.errors import UnresolvableActivityLink
 from ocelot.transformations.activity_links import (
     add_hard_linked_production_volumes,
     check_activity_link_validity,
+    update_activity_link_parent_child,
 )
 import pytest
 
+
+def test_update_activity_link_parent_child():
+    given = []
+    expected = []
+    assert update_activity_link_parent_child(given) == expected
 
 def test_check_activity_link_validity_ref_product():
     ref_prod = [{
