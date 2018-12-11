@@ -176,6 +176,7 @@ def extract_ecospold2_dataset(elem, filepath):
     data = {
         'filepath': filepath,
         'id': elem.activityDescription.activity.get('id'),
+        'parent': elem.activityDescription.activity.get('parentActivityId'),
         'name': elem.activityDescription.activity.activityName.text,
         'location': elem.activityDescription.geography.shortname.text,
         'type': SPECIAL_ACTIVITY_TYPE[elem.activityDescription.activity.get('specialActivityType')],

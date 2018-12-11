@@ -1,0 +1,69 @@
+package:
+  name: ocelot-dev
+  version: {{ environ['VERSION'] }}
+
+source:
+  path: ..
+
+build:
+  noarch_python: True
+  number: 0
+  script: python setup.py install --single-version-externally-managed --record record.txt
+  script_env:
+   - VERSION
+   - CONDA_BLD_PATH
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - appdirs
+    - arrow
+    - bw2parameters
+    - docopt
+    - docutils
+    - jinja2
+    - lxml
+    - numpy
+    - pandas
+    - psutil
+    - pyprind
+    - pytest
+    - pytest-cov
+    - coveralls
+    - stats_arrays
+    - toolz
+    - cytoolz
+    - voluptuous
+    - wrapt
+  run:
+    - python
+    - appdirs
+    - arrow
+    - bw2parameters
+    - docopt
+    - docutils
+    - jinja2
+    - lxml
+    - numpy
+    - pandas
+    - psutil
+    - pyprind
+    - pytest
+    - pytest-cov
+    - coveralls
+    - stats_arrays
+    - toolz
+    - cytoolz
+    - voluptuous
+    - wrapt
+
+test:
+  imports:
+    - ocelot
+
+about:
+  home: https://github.com/OcelotProject/Ocelot
+  license: BSD License
+  summary: 'Ocelot is open-source linking for life cycle assessment'
+license_family: BSD

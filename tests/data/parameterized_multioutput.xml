@@ -2,7 +2,7 @@
 <ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold02">
   <activityDataset>
     <activityDescription>
-      <activity id="multioutput-process" specialActivityType="0">
+      <activity id="multioutput-process" specialActivityType="0" parentActivityId="some uuid">
         <activityName>Aliana Price</activityName>
       </activity>
       <classification>

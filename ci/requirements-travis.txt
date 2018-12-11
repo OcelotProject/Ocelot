@@ -14,5 +14,6 @@ pytest-cov
 python-coveralls
 stats_arrays
 toolz
+cytoolz
 voluptuous
 wrapt
