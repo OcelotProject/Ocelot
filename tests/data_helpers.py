@@ -28,6 +28,7 @@ def test_production_volume_no_amount():
         }
     ]}
     assert production_volume(dataset) is None
+    assert production_volume(dataset, 2) is 2
 
 def test_production_volume_keyerror():
     dataset = {'exchanges': [
@@ -36,6 +37,7 @@ def test_production_volume_keyerror():
         }
     ]}
     assert production_volume(dataset) is None
+    assert production_volume(dataset, 1) is 1
 
 def test_production_volume():
     dataset = {'exchanges': [
