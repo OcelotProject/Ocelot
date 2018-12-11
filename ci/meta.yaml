@@ -18,9 +18,46 @@ requirements:
   build:
     - python
     - setuptools
-
+    - appdirs
+    - arrow
+    - bw2parameters
+    - docopt
+    - docutils
+    - jinja2
+    - lxml
+    - numpy
+    - pandas
+    - psutil
+    - pyprind
+    - pytest
+    - pytest-cov
+    - coveralls
+    - stats_arrays
+    - toolz
+    - cytoolz
+    - voluptuous
+    - wrapt
   run:
     - python
+    - appdirs
+    - arrow
+    - bw2parameters
+    - docopt
+    - docutils
+    - jinja2
+    - lxml
+    - numpy
+    - pandas
+    - psutil
+    - pyprind
+    - pytest
+    - pytest-cov
+    - coveralls
+    - stats_arrays
+    - toolz
+    - cytoolz
+    - voluptuous
+    - wrapt
 
 test:
   imports:
