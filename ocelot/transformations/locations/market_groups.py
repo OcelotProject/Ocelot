@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from . import topology
 from ... import toolz
+from ...data_helpers import production_volume
 from ...errors import MarketGroupError
+from ..uncertainty import scale_exchange
 from ..utils import get_single_reference_product
 from .markets import allocate_suppliers, annotate_exchange
 import copy
@@ -10,6 +12,7 @@ import logging
 import numpy as np
 
 logger = logging.getLogger('ocelot')
+detailed = logging.getLogger('ocelot-detailed')
 
 
 def link_market_group_suppliers(data):
@@ -36,6 +39,9 @@ def link_market_group_suppliers(data):
         location_lookup.update({x['location']: x for x in groups})
 
         tree = topology.tree(itertools.chain(suppliers, groups))
+
+        # Note: The following works, and is tested, but we now raise an error
+        # for market groups in `RoW`, as they are tricky to link to afterwards
 
         if [1 for x in groups if x['location'] == 'RoW']:
             # Handling RoW is a little tricky. The RoW market group can contain
@@ -156,13 +162,114 @@ def check_markets_only_supply_one_market_group(data):
     return data
 
 
-def create_flow_array_from_dataset_and_dict(flow, ds, dct):
-    """"""
-    ds_dict = {exc}
-    return np.array([])
+def check_no_row_market_groups(data):
+    """Market groups are not allowed for ``RoW`` locations"""
+    for ds in (o for o in data if o['type'] == "market group"):
+        if ds['location'] == "RoW":
+            raise MarketGroupError("Market groups can't be in `RoW`")
+    return data
+
+
+def get_next_biggest_candidate(location, candidates, subtract=None):
+    if not candidates:
+        return
+
+    _ = lambda x: tuple(x) if x else None
+    contained = topology.contained(location, subtract=_(subtract))
+    possibles = sorted([
+        (len(topology(candidate['location'])), candidate)
+        for candidate in candidates
+        if candidate['location'] in contained
+    ], reverse=True)
+    if possibles:
+        return possibles[0][1]
+
+
+def allocate_replacements(replacements):
+    """Split ``amount`` among ``replacements`` by production volume.
+
+    Also deletes key 'production volume' from exchanges."""
+    total_pv = sum([o['production volume'] for o in replacements])
+    if not total_pv:
+        # Special case when missing production volumes.
+        # Assume equal distribution
+        total_pv = len(replacements)
+        for obj in replacements:
+            obj['production volume'] = 1
+
+    for obj in replacements:
+        scale_exchange(obj, obj['production volume'] / total_pv)
+        del obj['production volume']
+
+    return replacements
 
 
 def link_market_group_consumers(data):
-    filter_func = lambda x: x['type'] != "market group"
-    for ds in reduce(filter_func, data):
-        pass
+    """Link consumers to market groups, allocating by production volumes. Market groups must be contained by the consuming activity.
+
+    Assumes there is never a market group for ``RoW``.
+
+    """
+    market_groups = toolz.groupby(
+        'reference product',
+        (o for o in data if o['type'] == "market group")
+    )
+
+    codes = {o['code']: o for o in data}
+    market_inputs = lambda ds: (exc for exc in ds['exchanges']
+                                if exc['type'] == 'from technosphere'
+                                and exc.get('code') and exc['amount']
+                                and codes[exc['code']]['type'] == "market activity"
+                                and 'activity link' not in exc)
+
+    message = "Replaced market input {0} with market group: {1:.4f} fraction {2} to {3}"
+
+    for ds in (o for o in data if o['type'] != "market group"):
+        ds_replacements, purge = [], []
+        for exc in market_inputs(ds):
+            exc_replacements = []
+            while True:
+                mg = get_next_biggest_candidate(
+                    ds['location'],
+                    market_groups.get(exc['name']),
+                    [o['location'] for o in exc_replacements]
+                )
+                if not mg:
+                    break
+
+                new_exc = annotate_exchange(exc, mg)
+                new_exc['production volume'] = production_volume(mg, 0)
+                exc_replacements.append(new_exc)
+
+            if exc_replacements:
+                purge.append(exc)
+                allocate_replacements(exc_replacements)
+                for obj in exc_replacements:
+                    detailed.info({
+                        'ds': ds,
+                        'message': message.format(
+                            obj['name'],
+                            obj['amount'] / exc['amount'],
+                            codes[exc['code']]['location'],
+                            obj['location'],
+                        ),
+                        'function': 'link_market_group_consumers'
+                    })
+                ds_replacements.extend(exc_replacements)
+
+        if ds_replacements:
+            ds['exchanges'] = (
+                [exc for exc in ds['exchanges'] if exc not in purge] +
+                ds_replacements
+            )
+            logger.info({
+                'type': 'table element',
+                'data': (ds['name'], ds['reference product'], ds['location'])
+            })
+
+    return data
+
+link_market_group_consumers.__table__ = {
+    'title': "Substituted market group inputs",
+    'columns': ["Name", "Flow", "Location"]
+}
