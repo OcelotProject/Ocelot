@@ -56,7 +56,7 @@ after_success:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
       coveralls;
       if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        conda install conda-build anaconda-client;
+        conda install conda-build anaconda-client conda-verify;
         bash ci/conda_upload.sh;
       fi
     fi
