@@ -14,6 +14,26 @@ from copy import deepcopy
 import pytest
 
 
+@pytest.fixture(scope='function')
+def no_recalculate(monkeypatch):
+    monkeypatch.setattr(
+        'ocelot.transformations.cutoff.combined.recalculate',
+        lambda x: x
+    )
+
+
+@pytest.fixture(scope='function')
+def no_combined_production(monkeypatch):
+    monkeypatch.setattr(
+        'ocelot.transformations.cutoff.combined.combined_production',
+        lambda x, plain: x
+    )
+    monkeypatch.setattr(
+        'ocelot.transformations.cutoff.combined.economic_allocation',
+        lambda x: [x]
+    )
+
+
 def test_nonzero_reference_product_exchanges():
     given = {'exchanges': [{
         'type': 'reference product',
@@ -42,13 +62,6 @@ def test_selected_product():
     given = {'formula': 'delete me', 'amount': 42}
     expected = {'amount': 42}
     assert selected_product(given) == expected
-
-@pytest.fixture(scope='function')
-def no_recalculate(monkeypatch):
-    monkeypatch.setattr(
-        'ocelot.transformations.cutoff.combined.recalculate',
-        lambda x: x
-    )
 
 def test_combined_production(no_recalculate):
     given = {
@@ -296,17 +309,6 @@ def test_merge_byproducts():
     for obj in merge_byproducts(given):
         assert any(obj == ds for ds in expected)
 
-@pytest.fixture(scope='function')
-def no_combined_production(monkeypatch):
-    monkeypatch.setattr(
-        'ocelot.transformations.cutoff.combined.combined_production',
-        lambda x: x
-    )
-    monkeypatch.setattr(
-        'ocelot.transformations.cutoff.combined.economic_allocation',
-        lambda x: [x]
-    )
-
 def test_combined_production_with_byproducts(no_combined_production):
     given = [{
         'name': 'first',
@@ -391,7 +393,7 @@ def test_handle_split_dataset(monkeypatch):
 def test_combined_production_without_products(monkeypatch):
     monkeypatch.setattr(
         'ocelot.transformations.cutoff.combined.combined_production',
-        lambda x: x
+        lambda x, plain: x
     )
     monkeypatch.setattr(
         'ocelot.transformations.cutoff.combined.handle_split_dataset',
