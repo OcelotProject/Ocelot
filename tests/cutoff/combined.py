@@ -51,99 +51,136 @@ def no_recalculate(monkeypatch):
     )
 
 def test_combined_production(no_recalculate):
-    given = {'exchanges': [
-        {
-            'type': 'reference product',
-            'amount': 2,
-            'variable': "first",
-        }, {
-            'type': 'reference product',
-            'amount': 3,
-            'variable': 'second'
-        },
-        {'type': 'from technosphere'},
-        {'type': 'to environment'}
-    ]}
-    expected = [{'exchanges': [
-        {
-            'type': 'reference product',
-            'amount': 2,
-            'variable': 'first',
-        }, {
-            'type': 'dropped product',
-            'amount': 0,
-            'variable': 'second',
-        },
-        {'type': 'from technosphere'},
-        {'type': 'to environment'}
-    ]}, {
+    given = {
+        'name': 'a',
+        'location': 'b',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'amount': 2,
+                'variable': "first",
+                'name': 'foo',
+            }, {
+                'type': 'reference product',
+                'amount': 3,
+                'variable': 'second',
+                'name': 'bar',
+            },
+            {'type': 'from technosphere'},
+            {'type': 'to environment'}
+        ]
+    }
+    expected = [{
+        'name': 'a',
+        'location': 'b',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'amount': 2,
+                'variable': 'first',
+                'name': 'foo',
+            }, {
+                'type': 'dropped product',
+                'amount': 0,
+                'variable': 'second',
+                'name': 'bar',
+            },
+            {'type': 'from technosphere'},
+            {'type': 'to environment'}
+        ]
+    }, {
+        'name': 'a',
+        'location': 'b',
         'exchanges': [{
-            'type': 'reference product',
-            'amount': 3,
-            'variable': 'second',
-        }, {
-            'type': 'dropped product',
-            'amount': 0,
-            'variable': 'first',
-        },
-        {'type': 'from technosphere'},
-        {'type': 'to environment'}
-    ]}]
+                'type': 'reference product',
+                'amount': 3,
+                'variable': 'second',
+                'name': 'bar',
+            }, {
+                'type': 'dropped product',
+                'amount': 0,
+                'variable': 'first',
+                'name': 'foo',
+            },
+            {'type': 'from technosphere'},
+            {'type': 'to environment'}
+        ]
+    }]
     original = deepcopy(given)
     assert combined_production(given) == expected
     assert original == given
 
 def test_combined_production_zero_exchanges(no_recalculate):
-    given = {'exchanges': [
-        {
-            'type': 'reference product',
-            'amount': 2,
-            'variable': "first",
-        }, {
-            'type': 'reference product',
-            'amount': 3,
-            'variable': 'second'
-        }, {
-            'type': 'reference product',
-            'amount': 0,
-            'variable': 'third',
-        },
-        {'type': 'from technosphere'},
-        {'type': 'to environment'}
-    ]}
-    expected = [{'exchanges': [
-        {
-            'type': 'reference product',
-            'amount': 2,
-            'variable': 'first',
-        }, {
-            'type': 'dropped product',
-            'amount': 0,
-            'variable': 'second',
-        }, {
-            'type': 'dropped product',
-            'amount': 0,
-            'variable': 'third',
-        },
-        {'type': 'from technosphere'},
-        {'type': 'to environment'}
-    ]}, {
+    given = {
+        'name': 'a',
+        'location': 'b',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'amount': 2,
+                'variable': "first",
+                'name': 'foo',
+            }, {
+                'type': 'reference product',
+                'amount': 3,
+                'variable': 'second',
+                'name': 'bar',
+            }, {
+                'type': 'reference product',
+                'amount': 0,
+                'variable': 'third',
+                'name': 'baz',
+            },
+            {'type': 'from technosphere'},
+            {'type': 'to environment'}
+        ]
+    }
+    expected = [{
+        'name': 'a',
+        'location': 'b',
+        'exchanges': [
+            {
+                'type': 'reference product',
+                'amount': 2,
+                'variable': 'first',
+                'name': 'foo',
+            }, {
+                'type': 'dropped product',
+                'amount': 0,
+                'variable': 'second',
+                'name': 'bar',
+            }, {
+                'type': 'dropped product',
+                'amount': 0,
+                'variable': 'third',
+                'name': 'baz',
+            },
+            {'type': 'from technosphere'},
+            {'type': 'to environment'}
+        ]
+    }, {
+        'name': 'a',
+        'location': 'b',
         'exchanges': [{
-            'type': 'reference product',
-            'amount': 3,
-            'variable': 'second',
-        }, {
-            'type': 'dropped product',
-            'amount': 0,
-            'variable': 'first',
-        }, {
-            'type': 'dropped product',
-            'amount': 0,
-            'variable': 'third',
-        },
-        {'type': 'from technosphere'},
-        {'type': 'to environment'}
-    ]}]
+                'type': 'reference product',
+                'amount': 3,
+                'variable': 'second',
+                'name': 'bar',
+            }, {
+                'type': 'dropped product',
+                'amount': 0,
+                'variable': 'first',
+                'name': 'foo',
+            }, {
+                'type': 'dropped product',
+                'amount': 0,
+                'variable': 'third',
+                'name': 'baz',
+            },
+            {'type': 'from technosphere'},
+            {'type': 'to environment'}
+        ]
+    }]
     original = deepcopy(given)
     assert combined_production(given) == expected
     assert original == given

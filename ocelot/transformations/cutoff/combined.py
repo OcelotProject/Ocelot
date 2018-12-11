@@ -133,7 +133,7 @@ def combined_production_without_products(dataset):
 
     """
     return [ds
-            for obj in combined_production(dataset, False)
+            for obj in combined_production(dataset, plain=False)
             for ds in handle_split_dataset(obj)]
 
 
@@ -184,6 +184,6 @@ def combined_production_with_byproducts(dataset):
 
     Returns a list of new datasets."""
     new_datasets = [ds
-                    for subdivided in combined_production(dataset, False)
+                    for subdivided in combined_production(dataset, plain=False)
                     for ds in economic_allocation(subdivided)]
     return list(merge_byproducts(new_datasets))
