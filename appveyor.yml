@@ -7,22 +7,21 @@ environment:
   PYTHONIOENCODING: "UTF-8"
 
   matrix:
-    - PYTHON_VERSION: "3.5"
+    - PYTHON_VERSION: "3.6"
       PYTHON_ARCH: "32"
-      CONDA_PY: "35"
-      CONDA_INSTALL_LOCN: "C:\\Miniconda35"
+      CONDA_PY: "36"
+      CONDA_INSTALL_LOCN: "C:\\Miniconda36"
 
-    - PYTHON_VERSION: "3.5"
+    - PYTHON_VERSION: "3.6"
       PYTHON_ARCH: "64"
-      CONDA_PY: "35"
-      CONDA_INSTALL_LOCN: "C:\\Miniconda35-x64"
+      CONDA_PY: "36"
+      CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
 
 install:
     # Use the pre-installed Miniconda for the desired arch
     - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
     - cmd: conda update -y -q conda
-    - cmd: conda install -y -q -c cmutel -c conda-forge bw2parameters
-    - cmd: conda install -y -q -c conda-forge numpy scipy psutil bw2parameters appdirs arrow docopt docutils jinja2 lxml pandas pyprind pytest cytoolz wrapt voluptuous
+    - cmd: conda install -y -q -c cmutel -c conda-forge bw2parameters stats_arrays numpy scipy psutil bw2parameters appdirs arrow docopt docutils jinja2 lxml pandas pyprind pytest cytoolz wrapt voluptuous
     - cmd: pip install stats_arrays
 
 test_script:

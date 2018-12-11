@@ -4,37 +4,45 @@ from copy import deepcopy
 
 
 cp_dataset = {
+    'name': 'a',
+    'location': 'b',
     'exchanges': [{
         'type': 'reference product',
         'amount': 2,
         'variable': "first",
+        'name': '',
     }, {
         'type': 'reference product',
         'amount': 3,
-        'variable': 'second'
+        'variable': 'second',
+        'name': '',
     }, {
         'type': 'from technosphere',
-        'formula': 'some_parameter * 2'
+        'formula': 'some_parameter * 2',
     }, {
         'type': 'to environment',
-        'formula': 'some_parameter / 2'
+        'formula': 'some_parameter / 2',
     }],
     'parameters': [{
         'variable': 'some_parameter',
-        'formula': '(first + second) * 10'
+        'formula': '(first + second) * 10',
     }]
 }
 
 def test_combined_production_without_byproducts():
     expected = [{
+        'name': 'a',
+        'location': 'b',
         'exchanges': [{
             'type': 'reference product',
             'amount': 2,
             'variable': 'first',
+            'name': '',
         }, {
             'type': 'dropped product',
             'amount': 0.0,
             'variable': 'second',
+            'name': '',
         }, {
             'amount': ((2 + 0) * 10) * 2,
             'formula': 'some_parameter * 2',
@@ -50,14 +58,18 @@ def test_combined_production_without_byproducts():
             'variable': 'some_parameter',
         }]
     }, {
+        'name': 'a',
+        'location': 'b',
         'exchanges': [{
             'type': 'reference product',
             'amount': 3,
             'variable': 'second',
+            'name': '',
         }, {
             'type': 'dropped product',
             'amount': 0.0,
             'variable': 'first',
+            'name': '',
         }, {
             'amount': ((0 + 3) * 10) * 2,
             'formula': 'some_parameter * 2',
@@ -79,9 +91,12 @@ def test_combined_production_without_byproducts():
 
 def test_combined_production_repair_distributions():
     original = {
+        'name': 'a',
+        'location': 'b',
         'exchanges': [{
             'amount': 1,
             'type': 'reference product',
+            'name': '',
         }, {
             'type': 'to environment',
             'amount': 1.0,
@@ -98,9 +113,12 @@ def test_combined_production_repair_distributions():
         }]
     }
     expected = [{
+        'name': 'a',
+        'location': 'b',
         'exchanges': [{
             'amount': 1,
             'type': 'reference product',
+            'name': '',
         }, {
             'type': 'to environment',
             'amount': 0,
