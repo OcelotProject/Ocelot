@@ -5,20 +5,58 @@ matrix:
       python: 3.5
       os: osx
       env: pyver=3.5.1 pydist=macpython
+    - python: 3.6
+      os: linux
 python:
-  - "3.5"
+  - "3.6"
 before_install:
-  - if [ $TRAVIS_OS_NAME == "osx" ]; then echo "Running on OS X"; else echo "Running on Linux"; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then git clone https://github.com/gappleto97/terryfy; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then source terryfy/travis_tools.sh; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then get_python_environment $pydist $pyver; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then $PIP_CMD install virtualenv; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then virtualenv -p $PYTHON_EXE venv; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then source venv/bin/activate; fi
+  - if [ $TRAVIS_OS_NAME == "osx" ]; then
+      echo "Running on OS X";
+      git clone https://github.com/gappleto97/terryfy;
+      source terryfy/travis_tools.sh;
+      get_python_environment $pydist $pyver;
+      $PIP_CMD install virtualenv;
+      virtualenv -p $PYTHON_EXE venv;
+      source venv/bin/activate;
+    else
+      echo "Running on Linux";
+      sudo apt-get update;
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;;
+      bash miniconda.sh -b -p $HOME/miniconda;
+      export PATH="$HOME/miniconda/bin:$PATH";
+      hash -r;
+      conda config --set always_yes yes --set changeps1 no;
+      conda config --append channels conda-forge;
+      conda config --append channels cmutel;
+      conda update -q conda;
+      conda info -a;
+    fi
   - echo $(python --version)
-install: "pip install -r ci/requirements-travis.txt"
+install:
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION appdirs arrow bw2parameters docopt docutils jinja2 lxml numpy pandas psutil pyprind pytest pytest-cov python-coveralls stats_arrays toolz voluptuous wrapt;
+      source activate test-environment;
+      python setup.py install;
+    else
+      pip install -r ci/requirements-travis.txt;
+    fi
 script:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pwd; ls; py.test --cov=ocelot; python setup.py install &> ignore.this; python tests/manual/run_all_ci.py; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then py.test tests; python3 setup.py install &> ignore.this; python3 tests/manual/run_all_ci.py; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+      pwd;
+      ls;
+      pytest --cov=ocelot;
+      python setup.py install &> ignore.this;
+      python tests/manual/run_all_ci.py;
+    else
+      pytest;
+      python3 setup.py install &> ignore.this;
+      python3 tests/manual/run_all_ci.py;
+    fi
 after_success:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then coveralls; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+      coveralls;
+      if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
+        conda install conda-build anaconda-client;
+        bash ci/conda_upload.sh;
+      fi
+    fi
