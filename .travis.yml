@@ -34,7 +34,7 @@ before_install:
   - echo $(python --version)
 install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION appdirs arrow bw2parameters docopt docutils jinja2 lxml numpy pandas psutil pyprind pytest pytest-cov python-coveralls stats_arrays toolz voluptuous wrapt;
+      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION appdirs arrow bw2parameters docopt docutils jinja2 lxml numpy pandas psutil pyprind pytest pytest-cov coveralls stats_arrays toolz cytoolz voluptuous wrapt;
       source activate test-environment;
       python setup.py install;
     else
