@@ -147,11 +147,13 @@ def test_link_market_group_suppliers(group_fixture):
         'reference product': 'foo',
         'suppliers': [{'code': '2',
                        'location': 'M2',
-                       'name': 'market for foo',
+                       'name': 'foo',
+                       'activity': 'market for foo',
                        'type': 'reference product'},
                       {'code': '4',
                        'location': 'G2',
-                       'name': 'market group for foo',
+                       'name': 'foo',
+                       'activity': 'market group for foo',
                        'type': 'reference product'},
                       ],
         'exchanges': [{
@@ -166,7 +168,8 @@ def test_link_market_group_suppliers(group_fixture):
         'reference product': 'foo',
         'suppliers': [{'code': '1',
                        'location': 'M1',
-                       'name': 'market for foo',
+                       'name': 'foo',
+                       'activity': 'market for foo',
                        'type': 'reference product'}],
         'exchanges': [{
             'type': 'reference product',
@@ -280,11 +283,13 @@ def test_row_and_glo(monkeypatch):
         'reference product': 'foo',
         'suppliers': [{'code': '6',
                        'location': 'RER',
-                       'name': 'market group for foo',
+                       'name': 'foo',
+                       'activity': 'market group for foo',
                        'type': 'reference product'},
                       {'code': '8',
                        'location': 'RoW',
-                       'name': 'market group for foo',
+                       'name': 'foo',
+                       'activity': 'market group for foo',
                        'type': 'reference product'}],
         'exchanges': [{'type': 'reference product', 'name': 'foo'}]
     }, {
@@ -295,11 +300,13 @@ def test_row_and_glo(monkeypatch):
         'reference product': 'foo',
         'suppliers': [{'code': '4',
                        'location': 'NO',
-                       'name': 'market for foo',
+                       'name': 'foo',
+                       'activity': 'market for foo',
                        'type': 'reference product'},
                       {'code': '9',
                        'location': 'WEU',
-                       'name': 'market group for foo',
+                       'name': 'foo',
+                       'activity': 'market group for foo',
                        'type': 'reference product'}],
         'exchanges': [{'type': 'reference product', 'name': 'foo'}]
     }, {
@@ -310,11 +317,13 @@ def test_row_and_glo(monkeypatch):
         'reference product': 'foo',
         'suppliers': [{'code': '1',
                        'location': 'RoW',
-                       'name': 'market for foo',
+                       'name': 'foo',
+                       'activity': 'market for foo',
                        'type': 'reference product'},
                       {'code': '2',
                        'location': 'CA',
-                       'name': 'market for foo',
+                       'name': 'foo',
+                       'activity': 'market for foo',
                        'type': 'reference product'}],
         'exchanges': [{'type': 'reference product', 'name': 'foo'}]
     }, {
@@ -325,7 +334,8 @@ def test_row_and_glo(monkeypatch):
         'reference product': 'foo',
         'suppliers': [{'code': '3',
                        'location': 'FR',
-                       'name': 'market for foo',
+                       'name': 'foo',
+                       'activity': 'market for foo',
                        'type': 'reference product'}],
         'exchanges': [{'type': 'reference product', 'name': 'foo'}]
     }]
@@ -387,11 +397,13 @@ def test_glo_includes_missing_activities(monkeypatch):
         'reference product': 'foo',
         'suppliers': [{'code': '1',
                        'location': 'CA',
-                       'name': 'market for foo',
+                       'name': 'foo',
+                       'activity': 'market for foo',
                        'type': 'reference product'},
                       {'code': '6',
                        'location': 'RER',
-                       'name': 'market group for foo',
+                       'name': 'foo',
+                       'activity': 'market group for foo',
                        'type': 'reference product'}],
         'exchanges': [{'type': 'reference product', 'name': 'foo'}]
     }, {
@@ -402,7 +414,8 @@ def test_glo_includes_missing_activities(monkeypatch):
         'reference product': 'foo',
         'suppliers': [{'code': '3',
                        'location': 'FR',
-                       'name': 'market for foo',
+                       'name': 'foo',
+                       'activity': 'market for foo',
                        'type': 'reference product'}],
         'exchanges': [{'type': 'reference product', 'name': 'foo'}]
     }]
@@ -457,11 +470,13 @@ def test_row_includes_row(monkeypatch):
         'reference product': 'foo',
         'suppliers': [{'code': '1',
                        'location': 'CA',
-                       'name': 'market for foo',
+                       'name': 'foo',
+                       'activity': 'market for foo',
                        'type': 'reference product'},
                       {'code': '3',
                        'location': 'RoW',
-                       'name': 'market for foo',
+                       'name': 'foo',
+                       'activity': 'market for foo',
                        'type': 'reference product'}],
         'exchanges': [{'type': 'reference product', 'name': 'foo'}]
     }]
@@ -502,7 +517,8 @@ def test_same_location_market_group_market(monkeypatch):
         'reference product': 'foo',
         'suppliers': [{'code': '1',
                        'location': 'CA',
-                       'name': 'market for foo',
+                       'activity': 'market for foo',
+                       'name': 'foo',
                        'type': 'reference product'}],
         'exchanges': [{'type': 'reference product', 'name': 'foo'}]
     }]
@@ -557,11 +573,13 @@ def test_row_only_supply_no_market_group(monkeypatch):
         'reference product': 'foo',
         'suppliers': [{'code': '1',
                        'location': 'RoW',
-                       'name': 'market for foo',
+                       'name': 'foo',
+                       'activity': 'market for foo',
                        'type': 'reference product'},
                       {'code': '2',
                        'location': 'RER',
-                       'name': 'market for foo',
+                       'name': 'foo',
+                       'activity': 'market for foo',
                        'type': 'reference product'}],
         'exchanges': [{'type': 'reference product', 'name': 'foo'}]
     }]

@@ -58,7 +58,7 @@ def test_apportion_suppliers_to_consumers():
             'location': 'DE',
             'technology level': 'current',
             'code': 'DEfoobar',
-            'name': 'foo',
+            'activity': 'foo',
         }]
     }, {
         'code': 'RUfoobar',
@@ -71,7 +71,7 @@ def test_apportion_suppliers_to_consumers():
             'location': 'Russia (Asia)',
             'code': 'Russia (Asia)foobar',
             'technology level': 'current',
-            'name': 'foo'
+            'activity': 'foo',
         }]
     }, {
         'code': 'RoWfoobar',
@@ -85,13 +85,13 @@ def test_apportion_suppliers_to_consumers():
                 'location': 'FR',
                 'technology level': 'current',
                 'code': 'FRfoobar',
-                'name': 'foo',
+                'activity': 'foo',
             }, {
                 'type': 'reference product',
                 'location': 'MY',
                 'technology level': 'current',
                 'code': 'MYfoobar',
-                'name': 'foo',
+                'activity': 'foo',
             }
         ]
     }]
@@ -121,25 +121,25 @@ def test_apportion_suppliers_to_consumers_global_group():
             'location': 'DE',
             'code': 'DEfoobar',
             'technology level': 'current',
-            'name': 'foo',
+            'activity': 'foo',
         }, {
             'type': 'reference product',
             'location': 'FR',
             'code': 'FRfoobar',
             'technology level': 'current',
-            'name': 'foo',
+            'activity': 'foo',
         }, {
             'type': 'reference product',
             'location': 'MY',
             'code': 'MYfoobar',
             'technology level': 'current',
-            'name': 'foo',
+            'activity': 'foo',
         }, {
             'type': 'reference product',
             'location': 'Russia (Asia)',
             'code': 'Russia (Asia)foobar',
             'technology level': 'current',
-            'name': 'foo'
+            'activity': 'foo'
         }]
     }]
     apportion_suppliers_to_consumers(consumers, suppliers)
@@ -180,7 +180,7 @@ def test_apportion_suppliers_to_consumers_global_supplier_excluded():
             'type': 'reference product',
             'location': 'MX',
             'code': 'b',
-            'name': 'second',
+            'activity': 'second',
         }]
     }]
     apportion_suppliers_to_consumers(consumers, suppliers)
@@ -221,12 +221,12 @@ def test_apportion_suppliers_to_consumers_global_supplier_included():
             'type': 'reference product',
             'location': 'GLO',
             'code': 'a',
-            'name': 'first',
+            'activity': 'first',
         }, {
             'type': 'reference product',
             'location': 'MX',
             'code': 'b',
-            'name': 'second',
+            'activity': 'second',
         }]
     }]
     apportion_suppliers_to_consumers(consumers, suppliers)
@@ -513,13 +513,13 @@ def test_add_suppliers_to_markets():
                 'code': 'cCA',
                 'location': 'CA',
                 'type': 'reference product',
-                'name': '',
+                'activity': '',
             },
             {
                 'code': 'cMX',
                 'location': 'MX',
                 'type': 'reference product',
-                'name': ''
+                'activity': ''
             }
         ]
     }, {
@@ -532,7 +532,7 @@ def test_add_suppliers_to_markets():
             'code': 'cFR',
             'type': 'reference product',
             'location': 'FR',
-            'name': ''
+            'activity': ''
         }]
     }, {
         'type': 'transforming activity',
@@ -558,12 +558,12 @@ def test_add_suppliers_to_markets():
             'code': 'cDE',
             'location': 'DE',
             'type': 'reference product',
-            'name': '',
+            'activity': '',
         }, {
             'code': 'cZA',
             'location': 'ZA',
             'type': 'reference product',
-            'name': '',
+            'activity': '',
         }]
     }]
     assert add_suppliers_to_markets(given) == expected
@@ -991,13 +991,13 @@ def test_add_recycled_content_suppliers_to_markets():
                 'code': 'cCA',
                 'location': 'CA',
                 'type': 'reference product',
-                'name': '',
+                'activity': '',
             },
             {
                 'code': 'cMX',
                 'location': 'MX',
                 'type': 'reference product',
-                'name': ''
+                'activity': ''
             }
         ]
     }, {
@@ -1010,7 +1010,7 @@ def test_add_recycled_content_suppliers_to_markets():
             'code': 'cFR',
             'type': 'reference product',
             'location': 'FR',
-            'name': ''
+            'activity': ''
         }]
     }, {
         'type': 'transforming activity',
