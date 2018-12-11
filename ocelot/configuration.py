@@ -8,6 +8,7 @@ from .transformations import (
     manage_activity_links,
     normalize_reference_production_amount,
     pv_cleanup,
+    update_activity_link_parent_child,
     validate_markets,
     variable_names_are_unique,
 )
@@ -48,6 +49,7 @@ cutoff_config = Collection(
     pv_cleanup,
     remove_consequential_exchanges,
     cleanup_activity_links,
+    update_activity_link_parent_child,
     manage_activity_links,
     handle_waste_outputs,
     cutoff_allocation,

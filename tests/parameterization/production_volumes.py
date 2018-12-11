@@ -10,6 +10,7 @@ def test_create_pv_parameters_format():
         'end date': '',
         'filepath': '',
         'id': '',
+        'parent': '',
         'location': '',
         'start date': '',
         'type': 'transforming activity',

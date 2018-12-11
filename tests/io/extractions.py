@@ -14,6 +14,7 @@ BASIC_REFERENCE = [{
     'economic scenario': 'Business-as-Usual',
     'parameters': [],
     'id': 'basic-process',
+    'parent': 'some uuid',
     'exchanges': [{
         'amount': -0.99,
         'conditional exchange': False,
@@ -138,6 +139,7 @@ PROD_VOLUME_REFERENCE = [{
     'technology level': 'modern',
     'parameters': [],
     'id': 'production-volume',
+    'parent': None,
     'access restricted': 'licensees',
     'dataset author': "Fred",
     'data entry': "Wilma",
@@ -218,6 +220,7 @@ MULTIOUTPUT_REFERENCE = [{
     ],
     'location': 'GLO',
     'id': 'multioutput-process',
+    'parent': 'some uuid',
     'name': 'Aliana Price',
     'parameters': [{
         'amount': 42.0,
