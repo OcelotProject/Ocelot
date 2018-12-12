@@ -134,6 +134,44 @@ def test_mark_zero_pv_datasets():
     }]
     assert mark_zero_pv_datasets(given) == expected
 
+def test_mark_zero_pv_datasets_row():
+    given = [{
+        'reference product': 'foo',
+        'type': 'transforming activity',
+        'location': 'somewhere',
+        'exchanges': [{
+            'type': 'reference product',
+            'production volume': {'amount': 0}
+        }]
+    }, {
+        'reference product': 'foo',
+        'type': 'transforming activity',
+        'location': 'RoW',
+        'exchanges': [{
+            'type': 'reference product',
+            'production volume': {'amount': 0}
+        }]
+    }]
+    expected = [{
+        'reference product': 'foo',
+        'type': 'transforming activity',
+        'location': 'somewhere',
+        'exchanges': [{
+            'type': 'reference product',
+            'production volume': {'amount': 0}
+        }]
+    }, {
+        'reference product': 'foo',
+        'type': 'transforming activity',
+        'zero pv': True,
+        'location': 'RoW',
+        'exchanges': [{
+            'type': 'reference product',
+            'production volume': {'amount': 0}
+        }]
+    }]
+    assert mark_zero_pv_datasets(given) == expected
+
 def test_mark_zero_pv_datasets_skip_only_one():
     given = [{
         'reference product': 'foo',

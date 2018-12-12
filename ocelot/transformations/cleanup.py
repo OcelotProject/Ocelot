@@ -47,7 +47,12 @@ def mark_zero_pv_datasets(data, kind="transforming activity"):
             continue
         zero_pv = [ds for ds in group if not production_volume(ds)]
         if len(zero_pv) == len(group):
-            print("All {} datasets have no production volumes".format(rp))
+            locations = {o['location'] for o in group}
+            if 'RoW' in locations and len(locations) > 1:
+                for ds in (o for o in group if o['location'] == 'RoW'):
+                    ds['zero pv'] = True
+            else:
+                print("All {} datasets have no production volumes".format(rp))
         elif zero_pv:
             for ds in zero_pv:
                 ds['zero pv'] = True
