@@ -12,6 +12,7 @@ from .transformations import (
     validate_markets,
     variable_names_are_unique,
 )
+from .transformations.cleanup import delete_all_zero_pv
 from .transformations.consequential import (
     delete_activity_links_to_constrained_markets,
     ensure_byproducts_have_alternative_production,
@@ -56,6 +57,7 @@ cutoff_config = Collection(
     drop_rp_activity_links,
     link_markets_by_pv,
     rename_recycled_content_products_after_linking,
+    delete_all_zero_pv,
     # extrapolate to database reference year
     TransformationWrapper(normalize_reference_production_amount),
     adjust_market_signs_for_allocatable_products,
