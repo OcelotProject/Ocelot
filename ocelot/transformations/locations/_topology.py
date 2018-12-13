@@ -30,11 +30,22 @@ class Topology(object):
         for old, fixed in self.compatibility:
             self.data[old] = self.data[fixed]
 
+    def resolve_row(self, others):
+        """Resolve a ``RoW`` against specific regions"""
+        return self("__all__").difference(
+            set.union(*[self(place) for place in others])
+        )
+
     @functools.lru_cache(maxsize=512)
-    def contained(self, location, exclude_self=False, subtract=None):
-        if location in ('GLO', 'RoW'):
+    def contained(self, location, exclude_self=False, subtract=None,
+            resolved_row=None):
+        if location == 'RoW' and not resolved_row:
             return set()
-        faces = self(location)
+        elif location == 'RoW':
+            faces = resolved_row
+        else:
+            faces = self(location)
+
         if subtract:
             faces = faces.difference(set.union(*[self(place) for place in subtract]))
         return {key
@@ -49,6 +60,14 @@ class Topology(object):
             tuple(subtract) if subtract else None
         )
 
+    def ordered_dependencies(self, datasets):
+        locations = {ds['location'] for ds in datasets}
+        contained = {loc: self.contained(loc, exclude_self=True).intersection(locations)
+                     for loc in locations}
+        print("contained", contained)
+        ordered = sorted(contained, key=lambda k: (len(contained[k]), k), reverse=True)
+        return ordered
+
     def tree(self, datasets):
         """Construct a tree of containing geographic relationships.
 
@@ -59,10 +78,12 @@ class Topology(object):
             .. code-block:: python
 
             {
-                "Europe": {
-                    "Western Europe": {
-                        "France": {},
-                        "Belgium": {}
+                "GLO": {
+                    "Europe": {
+                        "Western Europe": {
+                            "France": {},
+                            "Belgium": {}
+                        }
                     }
                 }
             }
@@ -72,9 +93,15 @@ class Topology(object):
         Behavior is not defined if the provided locations make a "diamond" shape where "A" contains "B" and "C", which each contain "D".
 
         """
+        for ds in datasets:
+            loc = ds['location']
+            contained = self.contained(loc, True)
+
         locations = {x['location'] for x in datasets}
         filtered = lambda lst: {x for x in lst if x in locations}
         contained = {loc: filtered(self.contained(loc, True)) for loc in locations}
+
+        print(locations)
 
         # Remove redundant links, e.g. A contains B contains C; don't need A -> C.
         for parent, children in contained.items():
@@ -96,10 +123,8 @@ class Topology(object):
             return {key: add_children(contained[key]) for key in keys}
 
         tree = add_children(parents)
-        if 'GLO' in locations:
-            tree = {'GLO': tree}
-            if 'RoW' in locations:
-                tree['GLO']['RoW'] = {}
+        if 'GLO' and 'RoW' in locations:
+            tree['GLO']['RoW'] = {}
         elif 'RoW' in locations:
             tree['RoW'] = {}
 
@@ -127,6 +152,9 @@ class Topology(object):
         return len([o for f in faces for o in f]) != len(set.union(*faces))
 
     def __call__(self, location):
-        if location in ('GLO', 'RoW'):
+        if location == 'GLO':
+            return self.data['__all__']
+        elif location == 'RoW':
             return set()
-        return self.data[location]
+        else:
+            return self.data[location]

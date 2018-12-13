@@ -8,7 +8,7 @@ def test_topology_loading():
 
 def test_topology_contained():
     assert topology.contained('RU') == {'Russia (Asia)', 'Russia (Europe)', 'RU'}
-    assert topology.contained('GLO') == set()
+    assert topology.contained('GLO')
     assert topology.contained('RoW') == set()
     # Test compatibility labels
     assert topology.contained('IAI Area 8')
@@ -54,9 +54,8 @@ def test_topology_contains():
     assert topology.contains('NAFTA', 'US')
     assert topology.contains('UN-ASIA', 'Cyprus No Mans Area')
 
-def test_topology_tree():
+def test_topology_ordered_dependencies():
     given = [
-        # market group for electricity, low voltage, ecoinvent 3.3
         {'location': 'GLO'},
         {'location': 'CA'},
         {'location': 'Canada without Quebec'},
@@ -71,59 +70,83 @@ def test_topology_tree():
         {'location': 'RAS'},
         {'location': 'RLA'},
         {'location': 'RME'},
-    ]
-    expected = {
-        'GLO': {
-            'RNA': {
-                'CA': {'Canada without Quebec': {}},
-                'US': {}
-            },
-            'RAF': {},
-            'RAS': {
-                "CN": {},
-                "RME": {}
-            },
-            'RLA': {},
-            'RER': {
-                'ENTSO-E': {
-                    'UCTE': {}
-                },
-                'Europe without Switzerland': {}
-            }
-        }
-    }
-    assert topology.tree(given) == expected
-
-def test_topology_tree_row():
-    given = [
-        {'location': 'CA'},
-        {'location': 'GLO'},
         {'location': 'RoW'},
     ]
-    expected = {
-        'GLO': {
-            'CA': {},
-            'RoW': {}
-        }
-    }
-    assert topology.tree(given) == expected
-    given = [
-        {'location': 'CA'},
-        {'location': 'RoW'},
-    ]
-    expected = {
-        'CA': {},
-        'RoW': {}
-    }
-    assert topology.tree(given) == expected
+    expected = ['GLO', 'RNA', 'RER', 'RAS', 'ENTSO-E', 'CA', 'US', 'UCTE',
+                'RoW', 'RME', 'RLA', 'RAF', 'Europe without Switzerland',
+                'Canada without Quebec', 'CN']
+    assert topology.ordered_dependencies(given) == expected
 
-def test_topology_tree_glo():
-    given = [
-        {'location': 'CA'},
-        {'location': 'GLO'},
-    ]
-    expected = {'GLO': {'CA': {}}}
-    assert topology.tree(given) == expected
+# def test_topology_tree():
+#     given = [
+#         # market group for electricity, low voltage, ecoinvent 3.3
+#         {'location': 'GLO'},
+#         {'location': 'CA'},
+#         {'location': 'Canada without Quebec'},
+#         {'location': 'RNA'},
+#         {'location': 'US'},
+#         {'location': 'CN'},
+#         {'location': 'ENTSO-E'},
+#         {'location': 'Europe without Switzerland'},
+#         {'location': 'RER'},
+#         {'location': 'UCTE'},
+#         {'location': 'RAF'},
+#         {'location': 'RAS'},
+#         {'location': 'RLA'},
+#         {'location': 'RME'},
+#     ]
+#     expected = {
+#         'GLO': {
+#             'RNA': {
+#                 'CA': {'Canada without Quebec': {}},
+#                 'US': {}
+#             },
+#             'RAF': {},
+#             'RAS': {
+#                 "CN": {},
+#                 "RME": {}
+#             },
+#             'RLA': {},
+#             'RER': {
+#                 'ENTSO-E': {
+#                     'UCTE': {}
+#                 },
+#                 'Europe without Switzerland': {}
+#             }
+#         }
+#     }
+#     assert topology.tree(given) == expected
+
+# def test_topology_tree_row():
+#     given = [
+#         {'location': 'CA'},
+#         {'location': 'GLO'},
+#         {'location': 'RoW'},
+#     ]
+#     expected = {
+#         'GLO': {
+#             'CA': {},
+#             'RoW': {}
+#         }
+#     }
+#     assert topology.tree(given) == expected
+#     given = [
+#         {'location': 'CA'},
+#         {'location': 'RoW'},
+#     ]
+#     expected = {
+#         'CA': {},
+#         'RoW': {}
+#     }
+#     assert topology.tree(given) == expected
+
+# def test_topology_tree_glo():
+#     given = [
+#         {'location': 'CA'},
+#         {'location': 'GLO'},
+#     ]
+#     expected = {'GLO': {'CA': {}}}
+#     assert topology.tree(given) == expected
 
 def test_topology_subtract():
     assert topology.contained('RER', subtract=('Europe without Switzerland',)) == {'CH'}

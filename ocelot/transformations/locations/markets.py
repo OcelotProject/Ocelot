@@ -139,13 +139,13 @@ add_suppliers_to_markets.__table__ = {
 }
 
 
-def allocate_all_market_suppliers(data):
+def allocate_all_market_suppliers(data, kind="market activity"):
     """Allocate all market activity suppliers.
 
     Uses the function ``allocate_suppliers``, which modifies data in place.
 
     """
-    for ds in (o for o in data if o['type'] == "market activity"):
+    for ds in (o for o in data if o['type'] == kind):
         allocate_suppliers(ds)
     return data
 

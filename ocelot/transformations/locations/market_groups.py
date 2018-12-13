@@ -5,7 +5,11 @@ from ...data_helpers import production_volume
 from ...errors import MarketGroupError
 from ..uncertainty import scale_exchange
 from ..utils import get_single_reference_product
-from .markets import allocate_suppliers, annotate_exchange
+from .markets import (
+    allocate_suppliers,
+    annotate_exchange,
+    update_market_production_volumes,
+)
 import copy
 import itertools
 import logging
@@ -28,10 +32,34 @@ def link_market_group_suppliers(data):
         if not len({ds['name'] for ds in group}) == 1:
             raise MarketGroupError("Inconsistent activity names in market group")
 
-    for ref_product, groups in market_groups.items():
-        suppliers = [ds for ds in data
+    for ref_product, group in market_groups.items():
+        suppliers = {ds['location']: ds for ds in data
                      if ds['type'] == 'market activity'
-                     and ds['reference product'] == ref_product]
+                     and ds['reference product'] == ref_product}
+        mg_by_location = {ds['location']: ds for ds in group}
+        seen_m, seen_mg = set(), set()
+        ordered_group_locations = list(reversed())
+
+        if 'RoW' in suppliers:
+            resolved_row = topology.resolved_row(suppliers)
+        else:
+            resolved_row = None
+
+        for loc in reversed(topology.ordered_dependencies(group)):
+            m = topology.contained(
+                loc, suppliers, exclude_self=True, resolved_row=resolved_row
+            ).difference(seen_m)
+            mg = topology.contained(
+                loc, group, exclude_self=True
+            ).difference(seen_mg)
+            seen_m.update(m)
+            seen_mg.update(mg)
+            mg_by_location[loc]['suppliers'] = (
+                [suppliers[o] for o in m] +
+                [mg_by_location[o] for o in mg]
+            )
+
+        # Now production volume, Allocation
 
         # Put groups second so that if there are duplicates, the group will be retrieved
         location_lookup = {x['location']: x for x in suppliers}
@@ -40,29 +68,29 @@ def link_market_group_suppliers(data):
 
         tree = topology.tree(itertools.chain(suppliers, groups))
 
-        # Note: The following works, and is tested, but we now raise an error
-        # for market groups in `RoW`, as they are tricky to link to afterwards
+        # # Note: The following works, and is tested, but we now raise an error
+        # # for market groups in `RoW`, as they are tricky to link to afterwards
 
-        if [1 for x in groups if x['location'] == 'RoW']:
-            # Handling RoW is a little tricky. The RoW market group can contain
-            # markets which are not covered by other market groups. So we have
-            # to resolve what RoW means in each context.
-            row_faces = topology('__all__').difference(
-                set.union(*[topology(x['location']) for x in groups])
-            )
-            # This will include RoW, if present, but not GLO
-            row_activities = [x for x in suppliers
-                              if not topology(x['location']).difference(row_faces)
-                              and x['location'] != 'GLO']
+        # if [1 for x in groups if x['location'] == 'RoW']:
+        #     # Handling RoW is a little tricky. The RoW market group can contain
+        #     # markets which are not covered by other market groups. So we have
+        #     # to resolve what RoW means in each context.
+        #     row_faces = topology('__all__').difference(
+        #         set.union(*[topology(x['location']) for x in groups])
+        #     )
+        #     # This will include RoW, if present, but not GLO
+        #     row_activities = [x for x in suppliers
+        #                       if not topology(x['location']).difference(row_faces)
+        #                       and x['location'] != 'GLO']
 
-            # RoW suppliers need to be removed from GLO suppliers
-            if 'GLO' in tree:
-                for obj in row_activities:
-                    if (obj['location'] != 'RoW'
-                        and obj['location'] in tree['GLO']):
-                        del tree['GLO'][obj['location']]
-        else:
-            row_activities = []
+        #     # RoW suppliers need to be removed from GLO suppliers
+        #     if 'GLO' in tree:
+        #         for obj in row_activities:
+        #             if (obj['location'] != 'RoW'
+        #                 and obj['location'] in tree['GLO']):
+        #                 del tree['GLO'][obj['location']]
+        # else:
+        #     row_activities = []
 
         # Turn `tree` from nested dictionaries to flat list of key, values.
         # Breadth first search
@@ -73,6 +101,8 @@ def link_market_group_suppliers(data):
                 if value:
                     lst = unroll(lst, value)
             return lst
+
+        print(tree)
 
         flat = unroll([], tree)
 
