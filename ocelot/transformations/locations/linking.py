@@ -99,9 +99,9 @@ def link_consumers_to_regional_markets(data):
         for exc in filter(unlinked, ds['exchanges']):
             try:
                 contained = [
-                    market
-                    for market in market_mapping[exc['name']]
-                    if topology.contains(market['location'], ds['location'])]
+                    market for market in market_mapping[exc['name']]
+                    if (topology.contains(ds['location'], market['location']) or
+                        topology.contains(market['location'], ds['location']))]
                 assert contained
             except (KeyError, AssertionError):
                 continue
