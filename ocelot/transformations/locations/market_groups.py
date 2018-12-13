@@ -278,3 +278,11 @@ link_market_group_consumers.__table__ = {
     'title': "Substituted market group inputs",
     'columns': ["Name", "Flow", "Location"]
 }
+
+
+def no_row_market_groups(data):
+    """Market groups can overlap, so there ``RoW`` is not allowed."""
+    error_func = lambda ds: ds['type'] == "market group" and ds['location'] == 'RoW'
+    if any(filter(error_func, data)):
+        raise MarketGroupError("Market groups can't have location `RoW`")
+    return data

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ocelot.transformations.locations.market_groups import *
+from ocelot.errors import MarketGroupError
 import pytest
 
 
@@ -975,3 +976,11 @@ def test_allocate_replacements_some_missing_pv():
         {'amount': 4},
     ]
     assert allocate_replacements(given) == expected
+
+def test_no_row_market_groups():
+    given = [{
+        'location': 'RoW',
+        'type': 'market group',
+    }]
+    with pytest.raises(MarketGroupError):
+        no_row_market_groups(given)

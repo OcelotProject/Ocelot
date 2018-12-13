@@ -28,6 +28,7 @@ from .market_groups import (
     check_no_row_market_groups,
     link_market_group_consumers,
     link_market_group_suppliers,
+    no_row_market_groups,
 )
 from .rest_of_world import relabel_global_to_row, drop_zero_pv_row_datasets
 from functools import partial
@@ -39,6 +40,7 @@ link_markets_by_pv = Collection(
     delete_allowed_zero_pv_market_datsets,
     assign_fake_pv_to_confidential_datasets,
     relabel_global_to_row,
+    no_row_market_groups,
     add_unique_codes,
     actualize_activity_links,
     add_recycled_content_suppliers_to_markets,

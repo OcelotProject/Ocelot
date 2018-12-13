@@ -127,6 +127,7 @@ def add_suppliers_to_markets(data, from_type="transforming activity",
         if not consumers:
             continue
         if to_type == 'market activity':
+            # Markets can't overlap
             no_overlaps(consumers)
         apportion_suppliers_to_consumers(consumers, suppliers,
             topo_func=topo_func or topology.contains)
@@ -201,7 +202,7 @@ def update_market_production_volumes(data, kind="market activity"):
 
     Activity link amounts are added by ``add_hard_linked_production_volumes`` and are currently given in ``rp_exchange['production volume']['subtracted activity link volume']``.
 
-    Production volume is set to zero is the net production volume is negative."""
+    Production volume is set to zero if the net production volume is negative."""
     for ds in (o for o in data if o['type'] == kind):
         rp = get_single_reference_product(ds)
         total_pv = sum(o['production volume']['amount']
