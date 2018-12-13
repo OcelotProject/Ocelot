@@ -205,11 +205,16 @@ def allocate_replacements(replacements):
 
 
 def link_market_group_consumers(data):
-    """Link consumers to market groups, allocating by production volumes. Market groups must be contained by the consuming activity.
+    """Link consumers to market groups, allocating by production volumes.
+    Market groups must be contained by the consuming activity.
+
+    This can't be done during market linking, because market groups haven't
+    been linked to markets yet, and so have no production volumes.
 
     Assumes there is never a market group for ``RoW``.
 
-    """
+    Market groups contained within a given activity location will by definition
+    be only made up of markets also contained within the activity location."""
     market_groups = toolz.groupby(
         'reference product',
         (o for o in data if o['type'] == "market group")
