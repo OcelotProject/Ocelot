@@ -36,7 +36,7 @@ class Topology(object):
             set.union(*[self(place) for place in others])
         )
 
-    @functools.lru_cache(maxsize=512)
+    # @functools.lru_cache(maxsize=512)
     def contained(self, location, exclude_self=False, subtract=None,
             resolved_row=None):
         if location == 'RoW' and not resolved_row:

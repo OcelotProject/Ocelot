@@ -38,113 +38,38 @@ def link_market_group_suppliers(data):
                      and ds['reference product'] == ref_product}
         mg_by_location = {ds['location']: ds for ds in group}
         seen_m, seen_mg = set(), set()
-        ordered_group_locations = list(reversed())
 
         if 'RoW' in suppliers:
-            resolved_row = topology.resolved_row(suppliers)
+            resolved_row = topology.resolve_row(suppliers)
         else:
             resolved_row = None
 
         for loc in reversed(topology.ordered_dependencies(group)):
             m = topology.contained(
-                loc, suppliers, exclude_self=True, resolved_row=resolved_row
-            ).difference(seen_m)
+                loc,
+                exclude_self=True,
+                resolved_row=resolved_row
+            ).intersection(set(suppliers)).difference(seen_m)
             mg = topology.contained(
-                loc, group, exclude_self=True
-            ).difference(seen_mg)
+                loc, exclude_self=True
+            ).intersection(set(mg_by_location)).difference(seen_mg)
             seen_m.update(m)
             seen_mg.update(mg)
-            mg_by_location[loc]['suppliers'] = (
+            ds = mg_by_location[loc]
+            ds['suppliers'] = sorted(
                 [suppliers[o] for o in m] +
-                [mg_by_location[o] for o in mg]
+                [mg_by_location[o] for o in mg],
+                key=lambda x: x['code']
             )
-
-        # Now production volume, Allocation
-
-        # Put groups second so that if there are duplicates, the group will be retrieved
-        location_lookup = {x['location']: x for x in suppliers}
-        supplier_lookup = copy.deepcopy(location_lookup)
-        location_lookup.update({x['location']: x for x in groups})
-
-        tree = topology.tree(itertools.chain(suppliers, groups))
-
-        # # Note: The following works, and is tested, but we now raise an error
-        # # for market groups in `RoW`, as they are tricky to link to afterwards
-
-        # if [1 for x in groups if x['location'] == 'RoW']:
-        #     # Handling RoW is a little tricky. The RoW market group can contain
-        #     # markets which are not covered by other market groups. So we have
-        #     # to resolve what RoW means in each context.
-        #     row_faces = topology('__all__').difference(
-        #         set.union(*[topology(x['location']) for x in groups])
-        #     )
-        #     # This will include RoW, if present, but not GLO
-        #     row_activities = [x for x in suppliers
-        #                       if not topology(x['location']).difference(row_faces)
-        #                       and x['location'] != 'GLO']
-
-        #     # RoW suppliers need to be removed from GLO suppliers
-        #     if 'GLO' in tree:
-        #         for obj in row_activities:
-        #             if (obj['location'] != 'RoW'
-        #                 and obj['location'] in tree['GLO']):
-        #                 del tree['GLO'][obj['location']]
-        # else:
-        #     row_activities = []
-
-        # Turn `tree` from nested dictionaries to flat list of key, values.
-        # Breadth first search
-        def unroll(lst, dct):
-            for key, value in dct.items():
-                lst.append((key, value))
-            for value in dct.values():
-                if value:
-                    lst = unroll(lst, value)
-            return lst
-
-        print(tree)
-
-        flat = unroll([], tree)
-
-        # Shouldn't exist - means that markets overlap
-        for loc, children in flat:
-            if children and not location_lookup[loc]['type'] == 'market group':
-                raise MarketGroupError
-
-        def translate(obj):
-            return annotate_exchange(get_single_reference_product(obj), obj)
-
-        for parent, children in flat[::-1]:
-            # Special case RoW
-            if parent == 'RoW':
-                obj = location_lookup[parent]
-                obj['suppliers'] = [translate(act) for act in row_activities]
-            else:
-                obj = location_lookup[parent]
-                obj['suppliers'] = [translate(location_lookup[child])
-                                    for child in children]
-
-            # Also add supplier if market and market group have same location
-            if (parent in supplier_lookup
-                and location_lookup[parent]['type'] == 'market group'
-                and parent != 'RoW'):
-                obj['suppliers'].append(translate(supplier_lookup[parent]))
-
-            # For consistency in testing
-            obj['suppliers'].sort(key=lambda x: x['code'])
-
-            for exc in obj['suppliers']:
-                logger.info({
-                    'type': 'table element',
-                    'data': (obj['name'], obj['location'], exc['location'])
-                })
-
-            if not obj['suppliers']:
-                del obj['suppliers']
+            if not ds['suppliers']:
+                del ds['suppliers']
                 continue
 
-            allocate_suppliers(obj)
-
+            for exc in ds['suppliers']:
+                logger.info({
+                    'type': 'table element',
+                    'data': (ds['name'], ds['location'], exc['location'])
+                })
     return data
 
 link_market_group_suppliers.__table__ = {
@@ -241,7 +166,8 @@ def link_market_group_consumers(data):
     This can't be done during market linking, because market groups haven't
     been linked to markets yet, and so have no production volumes.
 
-    Assumes there is never a market group for ``RoW``.
+    Assumes there is never a market group for ``RoW``. This is tested
+    explicitly earlier.
 
     Market groups contained within a given activity location will by definition
     be only made up of markets also contained within the activity location."""
