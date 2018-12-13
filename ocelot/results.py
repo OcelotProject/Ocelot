@@ -28,7 +28,7 @@ class SaveStrategy(object):
         False
 
     """
-    DEFAULT = 5
+    DEFAULT = 1000
 
     def __init__(self, arg=None):
         self.func = self.parse(arg)
