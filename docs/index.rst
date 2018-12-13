@@ -20,6 +20,7 @@ Contents:
 
    installation
    cli
+   accepted_differences
    cutoff
    space
    data_format
