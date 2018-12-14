@@ -10,49 +10,53 @@ detailed = logging.getLogger('ocelot-detailed')
 
 
 def relabel_global_to_row(data):
-    """Change ``GLO`` locations to ``RoW`` if there are region-specific datasets in the activity group."""
-    processed = []
-    for key, datasets in toolz.groupby(activity_grouper, data).items():
-        if datasets and datasets[0]["type"] == "market group":
-            processed.extend(datasets)
+    """Change ``GLO`` locations to ``RoW`` if there are region-specific datasets in the activity group.
+
+    Skips market groups, where overlaps are allowed and ``RoW`` is forbidden.
+
+    In addition to relabeling the location field, adjust the production production volume of the ``RoW`` activity by subtracting region-specific production volumes."""
+    # Group by (activity name, sorted list of products)
+    for key, group in toolz.groupby(activity_grouper, data).items():
+        if group and group[0]["type"] == "market group":
             continue
-        if len(datasets) > 1:
-            check_single_global_dataset(datasets)
+        elif len(group) > 1 and any(ds['location'] == 'GLO' for ds in group):
+            check_single_global_dataset(group)
+            glo = next(ds for ds in group if ds['location'] == 'GLO')
+            region_specific_pv = sum(
+                production_volume(obj, 0)
+                for obj in group
+                if obj != glo
+            )
+            rp = get_single_reference_product(glo)
+            original = production_volume(glo)
+            rp['production volume']['amount'] = max(
+                rp['production volume']['amount'] - region_specific_pv,
+                0
+            )
+            glo['location'] = 'RoW'
 
-            for ds in datasets:
-                if ds['location'] == 'GLO':
-                    # Need to adjust production volume by subtracting the region-specific
-                    # production volumes. We assume that each dataset has a single reference
-                    # product with a production volume.
-                    region_specific_pv = sum(
-                        get_single_reference_product(obj)['production volume']['amount']
-                        for obj in datasets
-                        if obj != ds
-                    )
-                    rp = get_single_reference_product(ds)
-                    rp['production volume']['amount'] = max(rp['production volume']['amount'] - region_specific_pv,0)
-
-                    ds['location'] = 'RoW'
-                    logger.info({
-                        'type': 'table element',
-                        # key is activity name and list of reference products
-                        'data': (key[0], "; ".join(sorted(key[1])))
-                    })
-                    message = "Created RoW dataset '{}' with PV {:.4g} {}"
-                    detailed.info({
-                        'ds': ds,
-                        'message': message.format(
-                            ds['name'],
-                            rp['production volume']['amount'],
-                            rp['unit'],
-                        ),
-                        'function': 'relabel_global_to_row'
-                    })
-
-                processed.append(ds)
+            logger.info({
+                'type': 'table element',
+                # key is activity name and list of reference products
+                'data': (key[0], "; ".join(sorted(key[1])))
+            })
+            message = ("Created RoW dataset '{}' with PV {:.4g} {} "
+                       "(Originally: {:.4g}, minus region-specific: {:.4g})")
+            detailed.info({
+                'ds': glo,
+                'message': message.format(
+                    glo['name'],
+                    rp['production volume']['amount'],
+                    rp['unit'],
+                    original,
+                    region_specific_pv
+                ),
+                'function': 'relabel_global_to_row'
+            })
         else:
-            processed.extend(datasets)
-    return processed
+            # Single global dataset - do nothing
+            pass
+    return data
 
 relabel_global_to_row.__table__ = {
     'title': 'Activities changed from `GLO` to `RoW`',

@@ -123,6 +123,7 @@ def add_suppliers_to_markets(data, from_type="transforming activity",
         suppliers = [ds for ds in datasets if ds['type'] == from_type]
         consumers = [ds for ds in datasets
                      if ds['type'] == to_type
+                     # Could already have suppliers, e.g. recycled content cut-off
                      and not ds.get('suppliers')]
         if not consumers:
             continue
