@@ -39,7 +39,7 @@ def test_topology_intersects():
 
 def test_topology_calls():
     assert topology('US') == topology.data['US']
-    assert topology('GLO') == set()
+    assert topology('GLO') == topology.data['__all__']
     assert topology('RoW') == set()
 
 def test_topology_overlaps():

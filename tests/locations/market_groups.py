@@ -13,6 +13,19 @@ class FakeTopology:
             }
         }
 
+    def ordered_dependencies(self, datasets):
+        locations = {x['location'] for x in datasets}
+        return [x for x in ['G1', 'G2', 'M1', 'M2'] if x in locations]
+
+    def contained(self, location, exclude_self=False, subtract=None,
+            resolved_row=None):
+        if location == 'G1':
+            return {'G2', 'M1', 'M2'}
+        elif location == 'G2':
+            return {'M1'}
+        else:
+            return set()
+
     def __call__(self, x):
         return set()
 
@@ -84,41 +97,6 @@ def test_inconsistent_names():
     with pytest.raises(MarketGroupError):
         link_market_group_suppliers(data)
 
-def test_overlapping_markets():
-    data = [{
-        'type': 'market activity',
-        'location': 'FR',
-        'code': '1',
-        'name': 'market for foo',
-        'reference product': 'foo',
-        'exchanges': [{
-            'type': 'reference product',
-            'name': 'foo',
-        }]
-    }, {
-        'type': 'market activity',
-        'location': 'RER',
-        'code': '2',
-        'name': 'market for foo',
-        'reference product': 'foo',
-        'exchanges': [{
-            'type': 'reference product',
-            'name': 'foo',
-        }]
-    }, {
-        'type': 'market group',
-        'location': 'GLO',
-        'code': '3',
-        'name': 'market group for foo',
-        'reference product': 'foo',
-        'exchanges': [{
-            'type': 'reference product',
-            'name': 'foo',
-        }]
-    }]
-    with pytest.raises(MarketGroupError):
-        link_market_group_suppliers(data)
-
 def test_link_market_group_suppliers(group_fixture):
     expected = [{
         'type': 'market activity',
@@ -127,8 +105,7 @@ def test_link_market_group_suppliers(group_fixture):
         'name': 'market for foo',
         'reference product': 'foo',
         'exchanges': [{
-            'type': 'reference product',
-            'name': 'foo',
+            'type': 'reference product', 'name': 'foo',
         }]
     }, {
         'type': 'market activity',
@@ -137,45 +114,65 @@ def test_link_market_group_suppliers(group_fixture):
         'name': 'market for foo',
         'reference product': 'foo',
         'exchanges': [{
-            'type': 'reference product',
-            'name': 'foo',
+            'type': 'reference product', 'name': 'foo',
         }]
     }, {
-        'type': 'market group',
-        'location': 'G1',
         'code': '3',
+        'exchanges': [
+            {'name': 'foo', 'type': 'reference product'}
+        ],
+        'location': 'G1',
         'name': 'market group for foo',
         'reference product': 'foo',
-        'suppliers': [{'code': '2',
-                       'location': 'M2',
-                       'name': 'foo',
-                       'activity': 'market for foo',
-                       'type': 'reference product'},
-                      {'code': '4',
-                       'location': 'G2',
-                       'name': 'foo',
-                       'activity': 'market group for foo',
-                       'type': 'reference product'},
-                      ],
-        'exchanges': [{
-            'type': 'reference product',
-            'name': 'foo',
-        }]
+        'suppliers': [{
+            'code': '2',
+             'exchanges': [{
+                'name': 'foo', 'type': 'reference product'
+            }],
+            'location': 'M2',
+            'name': 'market for foo',
+            'reference product': 'foo',
+            'type': 'market activity'
+        }, {
+            'code': '4',
+            'exchanges': [
+                {'name': 'foo', 'type': 'reference product'}
+            ],
+            'location': 'G2',
+            'name': 'market group for foo',
+            'reference product': 'foo',
+            'suppliers': [{
+                'code': '1',
+                'exchanges': [{
+                    'name': 'foo', 'type': 'reference product'
+                }],
+                'location': 'M1',
+                'name': 'market for foo',
+                'reference product': 'foo',
+                'type': 'market activity'
+            }],
+            'type': 'market group'
+        }],
+        'type': 'market group'
     }, {
-        'type': 'market group',
-        'location': 'G2',
         'code': '4',
+        'exchanges': [{
+            'name': 'foo', 'type': 'reference product'
+        }],
+        'location': 'G2',
         'name': 'market group for foo',
         'reference product': 'foo',
-        'suppliers': [{'code': '1',
-                       'location': 'M1',
-                       'name': 'foo',
-                       'activity': 'market for foo',
-                       'type': 'reference product'}],
-        'exchanges': [{
-            'type': 'reference product',
-            'name': 'foo',
-        }]
+        'suppliers': [{
+            'code': '1',
+            'exchanges': [{
+                'name': 'foo', 'type': 'reference product'
+            }],
+            'location': 'M1',
+            'name': 'market for foo',
+            'reference product': 'foo',
+            'type': 'market activity'
+        }],
+        'type': 'market group'
     }]
     assert link_market_group_suppliers(group_fixture) == expected
 
@@ -740,7 +737,7 @@ def test_get_next_biggest_candidate_none():
 def test_get_next_biggest_candidate_no_candidates():
     assert get_next_biggest_candidate("CN", []) is None
 
-def test_link_market_group_consumers():
+def test_substitute_market_group_consumers():
     # Need to test the following:
     # - Already market group
     given = [
@@ -942,7 +939,7 @@ def test_link_market_group_consumers():
             'name': '',
         }
     ]
-    assert link_market_group_consumers(given) == expected
+    assert substitute_market_group_consumers(given) == expected
 
 def test_allocate_replacements():
     given = [

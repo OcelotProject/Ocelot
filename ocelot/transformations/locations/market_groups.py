@@ -33,9 +33,12 @@ def link_market_group_suppliers(data):
             raise MarketGroupError("Inconsistent activity names in market group")
 
     for ref_product, group in market_groups.items():
+        print("Group", group)
         suppliers = {ds['location']: ds for ds in data
                      if ds['type'] == 'market activity'
                      and ds['reference product'] == ref_product}
+
+        print("Suppliers:", suppliers)
         mg_by_location = {ds['location']: ds for ds in group}
         seen_m, seen_mg = set(), set()
 
@@ -44,7 +47,9 @@ def link_market_group_suppliers(data):
         else:
             resolved_row = None
 
+        print("Ordered dependencies:", topology.ordered_dependencies(group))
         for loc in reversed(topology.ordered_dependencies(group)):
+            print("Working on", loc)
             m = topology.contained(
                 loc,
                 exclude_self=True,
@@ -53,6 +58,7 @@ def link_market_group_suppliers(data):
             mg = topology.contained(
                 loc, exclude_self=True
             ).intersection(set(mg_by_location)).difference(seen_mg)
+            print("m", m, "mg", mg)
             seen_m.update(m)
             seen_mg.update(mg)
             ds = mg_by_location[loc]
@@ -159,7 +165,7 @@ def allocate_replacements(replacements):
     return replacements
 
 
-def link_market_group_consumers(data):
+def substitute_market_group_consumers(data):
     """Link consumers to market groups, allocating by production volumes.
     Market groups must be contained by the consuming activity.
 
@@ -214,7 +220,7 @@ def link_market_group_consumers(data):
                             codes[exc['code']]['location'],
                             obj['location'],
                         ),
-                        'function': 'link_market_group_consumers'
+                        'function': 'substitute_market_group_consumers'
                     })
                 ds_replacements.extend(exc_replacements)
 
@@ -230,7 +236,7 @@ def link_market_group_consumers(data):
 
     return data
 
-link_market_group_consumers.__table__ = {
+substitute_market_group_consumers.__table__ = {
     'title': "Substituted market group inputs",
     'columns': ["Name", "Flow", "Location"]
 }

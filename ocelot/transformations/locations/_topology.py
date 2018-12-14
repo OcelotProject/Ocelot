@@ -64,7 +64,6 @@ class Topology(object):
         locations = {ds['location'] for ds in datasets}
         contained = {loc: self.contained(loc, exclude_self=True).intersection(locations)
                      for loc in locations}
-        print("contained", contained)
         ordered = sorted(contained, key=lambda k: (len(contained[k]), k), reverse=True)
         return ordered
 

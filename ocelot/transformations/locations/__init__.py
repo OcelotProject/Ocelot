@@ -26,7 +26,7 @@ from .markets import (
 from .market_groups import (
     check_markets_only_supply_one_market_group,
     check_no_row_market_groups,
-    link_market_group_consumers,
+    substitute_market_group_consumers,
     link_market_group_suppliers,
     no_row_market_groups,
 )
@@ -57,7 +57,7 @@ link_markets_by_pv = Collection(
     link_consumers_to_recycled_content_activities,
     link_consumers_to_global_markets,
     check_no_row_market_groups,
-    link_market_group_consumers,
+    substitute_market_group_consumers,
     add_reference_product_codes,
     log_and_delete_unlinked_exchanges,
 )
