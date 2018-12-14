@@ -8,8 +8,6 @@ def test_topology_loading():
 
 def test_topology_contained():
     assert topology.contained('RU') == {'Russia (Asia)', 'Russia (Europe)', 'RU'}
-    assert topology.contained('GLO')
-    assert topology.contained('RoW') == set()
     # Test compatibility labels
     assert topology.contained('IAI Area 8')
     with pytest.raises(KeyError):
@@ -17,6 +15,16 @@ def test_topology_contained():
 
 def test_topology_contained_exclude_self():
     assert topology.contained('RU', exclude_self=True) == {'Russia (Asia)', 'Russia (Europe)'}
+
+def test_topology_contained_glo_always_contains_row():
+    assert 'RoW' in topology.contained('GLO')
+    resolved = topology.resolve_row(['CH'])
+    assert 'RoW' in topology.contained('GLO', resolved_row=resolved)
+
+def test_topology_contained_row():
+    assert topology.contained('RoW') == set()
+    resolved = topology.resolve_row(['CH'])
+    assert 'CH' not in topology.contained('RoW', resolved_row=resolved)
 
 def test_topology_intersected():
     assert 'UN-EUROPE' in topology.intersected('DE')
