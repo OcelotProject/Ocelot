@@ -3,10 +3,44 @@
 Linking consumers and suppliers in space
 ****************************************
 
+General principles
+==================
+
+The linking needed to match consumers and suppliers in space can quickly get deep into the details. If you find yourself getting puzzled, remember these general principles:
+
+#. The input master datasets do not link to a specific provider of a good and service - rather, they say that they need product X in location Y. Ocelot needs to find the supplier(s) which can meet this demand.
+
+   #. There is an exception for direct (activity) links, but as these are already resolved in space we just skip them.
+
+#. Transforming activities, market activities, and market groups are all linked following the same general principles.
+
+#. Suppliers are chosen using one of three GIS relationships, in the following order:
+
+   #. Supplier(s) completely contained within the location of the consumer.
+   #. A single regional (i.e. not ``GLO`` or ``RoW``) supplier which completely contains the consumer.
+   #. A ``GLO`` or ``RoW`` supplier.
+
+#. A market is for a *product*, not a *technology*. Markets can't overlap.
+
+#. Multiple transforming activities can produce the same product in the same region using different technologies.
+
+#. A market group is supplied only by other markets and market groups. Market groups can overlap.
+
+#. ``RoW`` locations are resolved in space during linking. ``RoW`` is calculated per technology and reference product for transforming activities, and per product for markets. Market groups can't have the ``RoW`` location.
+
+#. The production volumes of markets and market groups are the sum of the production volumes of their suppliers with the same reference product.
+
+#. The production volumes of ``RoW`` datasets are calculated by subtracting the region-specific production volumes, and subtracting from the global production volume. This value is rounded up to zero if necessary.
+
+These general principles have the following side effects:
+
+*. A potential supplier whose location *partially* overlaps a consumer will not meet any of the three GIS relationships, and so will never be chosen as a supplier.
+*.
+
 Preparation
 ===========
 
-Successful linking of datasets requires that the steps be followed in the right order, as they build upon each other.
+Successful linking of datasets requires that these steps be followed in the right order, as they build upon each other.
 
 First, we add the field ``reference product`` to each dataset.
 
@@ -18,11 +52,15 @@ We also need to clean up the data. There are some specific datasets which we can
 
 .. autofunction:: ocelot.transformations.locations.markets.assign_fake_pv_to_confidential_datasets
 
-Next, we change global datasets to rest-of-world datasets whenever this is necessary, i.e. whenever there is also a region-specific dataset for this reference product. We need to do this before calculating the attribute-specific uniquely identifying hash, as this hash depends on the location field.
+Next, we change global datasets to rest-of-world datasets whenever there is also a region-specific dataset for this reference product. This is only done on transforming and market activity, but not on market groups.
 
 .. autofunction:: ocelot.transformations.locations.rest_of_world.relabel_global_to_row
 
-We then calculate the unique codes from each dataset, which are derived from a number of dataset attributes that together should uniquely identify a dataset.
+Basic data validity check that market groups with ``RoW`` locations are not allowed:
+
+.. autofunction:: ocelot.transformations.market_groups.no_row_market_groups
+
+We then calculate unique codes from each dataset, to identify them easily e.g. when linking. These codes are derived from dataset attributes, including the location field.
 
 .. autofunction:: ocelot.transformations.identifying.add_unique_codes
 
