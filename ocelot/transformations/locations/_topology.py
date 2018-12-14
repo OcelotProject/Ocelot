@@ -31,12 +31,13 @@ class Topology(object):
             self.data[old] = self.data[fixed]
 
     def resolve_row(self, others):
-        """Resolve a ``RoW`` against specific regions"""
+        """Resolve a ``RoW`` against an iterable of specific regions.
+
+        Implicitly ignores ``RoW`` if present in ``others``."""
         return self("__all__").difference(
             set.union(*[self(place) for place in others])
         )
 
-    # @functools.lru_cache(maxsize=512)
     def contained(self, location, exclude_self=False, subtract=None,
             resolved_row=None):
         """Return a set of locations which are contained within ``location``.
@@ -56,6 +57,8 @@ class Topology(object):
             return set()
         elif location == 'RoW':
             faces = resolved_row
+        elif isinstance(location, set):
+            faces = location
         else:
             faces = self(location)
 
@@ -72,12 +75,21 @@ class Topology(object):
             result.add("RoW")
         return result
 
-    def contains(self, parent, child, subtract=None):
+    def contains(self, parent, child, subtract=None, resolved_row=None):
         """Return boolean of whether ``parent`` contains ``child``"""
-        return child in self.contained(
-            parent,
-            tuple(subtract) if subtract else None
-        )
+        if isinstance(child, set):
+            # Resolved RoW
+            if parent == 'RoW':
+                faces = resolved_row or set()
+            else:
+                faces = self(parent)
+            return bool(faces.difference(child))
+        else:
+            return child in self.contained(
+                parent,
+                subtract=subtract,
+                resolved_row=resolved_row
+            )
 
     def ordered_dependencies(self, datasets):
         locations = {ds['location'] for ds in datasets}
@@ -150,6 +162,7 @@ class Topology(object):
 
     @functools.lru_cache(maxsize=512)
     def intersected(self, location, exclude_self=False):
+        """Not used in Ocelot"""
         if location in ('GLO', 'RoW'):
             return set()
         faces = self(location)
@@ -159,15 +172,17 @@ class Topology(object):
                 and not (key == location and exclude_self)}
 
     def intersects(self, parent, child):
-        """Return boolean of whether ``parent`` contains ``child``"""
+        """Return boolean of whether ``parent`` contains ``child``.
+
+        Not used in Ocelot."""
         return child in self.intersected(parent)
 
     def overlaps(self, group):
-        """Return a boolean if any elements in ``group`` overlap each other"""
+        """Return a boolean if any elements in ``group`` overlap each other."""
         if not group:
             return None
         faces = [self(obj) for obj in group]
-        return len([o for f in faces for o in f]) != len(set.union(*faces))
+        return sum(len(o) for o in faces) != len(set.union(*faces))
 
     def __call__(self, location):
         if location == 'GLO':

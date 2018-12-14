@@ -4,34 +4,20 @@ from ocelot.transformations.locations.markets import *
 from copy import deepcopy
 
 
-def generate_dataset(location, name='foo', rp='bar'):
+def generate_dataset(location, name='f', rp='b', kind="market activity"):
     return {
         'name': name,
         'reference product': rp,
         'location': location,
         'code': location + name + rp,
         'technology level': 'current',
+        'exchanges': [{'type': 'reference product'}],
     }
 
-def test_apportion_suppliers_to_consumers_intersections():
-    consumers = [
-        generate_dataset('RU'),
-    ]
-    suppliers = [
-        generate_dataset('RER'),
-        generate_dataset('Russia (Asia)'),
-    ]
-    for s in suppliers:
-        s.update({'exchanges': [{'type': 'reference product'}]})
-    apportion_suppliers_to_consumers(consumers, suppliers)
-    assert len(consumers) == 1
-    assert len(consumers[0]['suppliers']) == 1
-    consumers = [
-        generate_dataset('RU'),
-    ]
-    apportion_suppliers_to_consumers(consumers, suppliers, topo_func=topology.intersects)
-    assert len(consumers) == 1
-    assert len(consumers[0]['suppliers']) == 2
+def reformat_suppliers(result):
+    result_as_dict = {ds['code']: sorted([exc['code'] for exc in ds.get('suppliers', [])])
+                      for ds in result}
+    return {k: v for k, v in result_as_dict.items() if v}
 
 def test_apportion_suppliers_to_consumers():
     consumers = [
@@ -40,63 +26,18 @@ def test_apportion_suppliers_to_consumers():
         generate_dataset('RoW'),
     ]
     suppliers = [
-        generate_dataset('FR'),
-        generate_dataset('Russia (Asia)'),
-        generate_dataset('DE'),
-        generate_dataset('MY'),
+        generate_dataset('FR', kind='transforming activity'),
+        generate_dataset('Russia (Asia)', kind='transforming activity'),
+        generate_dataset('DE', kind='transforming activity'),
+        generate_dataset('MY', kind='transforming activity'),
     ]
-    for s in suppliers:
-        s.update({'exchanges': [{'type': 'reference product'}]})
-    expected = [{
-        'code': 'UCTE without Francefoobar',
-        'reference product': 'bar',
-        'name': 'foo',
-        'technology level': 'current',
-        'location': 'UCTE without France',
-        'suppliers': [{
-            'type': 'reference product',
-            'location': 'DE',
-            'technology level': 'current',
-            'code': 'DEfoobar',
-            'activity': 'foo',
-        }]
-    }, {
-        'code': 'RUfoobar',
-        'reference product': 'bar',
-        'name': 'foo',
-        'technology level': 'current',
-        'location': 'RU',
-        'suppliers': [{
-            'type': 'reference product',
-            'location': 'Russia (Asia)',
-            'code': 'Russia (Asia)foobar',
-            'technology level': 'current',
-            'activity': 'foo',
-        }]
-    }, {
-        'code': 'RoWfoobar',
-        'reference product': 'bar',
-        'name': 'foo',
-        'technology level': 'current',
-        'location': 'RoW',
-        'suppliers': [
-            {
-                'type': 'reference product',
-                'location': 'FR',
-                'technology level': 'current',
-                'code': 'FRfoobar',
-                'activity': 'foo',
-            }, {
-                'type': 'reference product',
-                'location': 'MY',
-                'technology level': 'current',
-                'code': 'MYfoobar',
-                'activity': 'foo',
-            }
-        ]
-    }]
+    expected = {
+        'UCTE without Francefb': ['DEfb'],
+        'RUfb': ['Russia (Asia)fb'],
+        'RoWfb': ['FRfb', 'MYfb']
+    }
     apportion_suppliers_to_consumers(consumers, suppliers)
-    assert consumers == expected
+    assert reformat_suppliers(consumers) == expected
 
 def test_apportion_suppliers_to_consumers_global_group():
     consumers = [
@@ -108,137 +49,31 @@ def test_apportion_suppliers_to_consumers_global_group():
         generate_dataset('DE'),
         generate_dataset('MY'),
     ]
-    for s in suppliers:
-        s.update({'exchanges': [{'type': 'reference product'}]})
-    expected = [{
-        'code': 'GLOfoobar',
-        'reference product': 'bar',
-        'name': 'foo',
-        'location': 'GLO',
-        'technology level': 'current',
-        'suppliers': [{
-            'type': 'reference product',
-            'location': 'DE',
-            'code': 'DEfoobar',
-            'technology level': 'current',
-            'activity': 'foo',
-        }, {
-            'type': 'reference product',
-            'location': 'FR',
-            'code': 'FRfoobar',
-            'technology level': 'current',
-            'activity': 'foo',
-        }, {
-            'type': 'reference product',
-            'location': 'MY',
-            'code': 'MYfoobar',
-            'technology level': 'current',
-            'activity': 'foo',
-        }, {
-            'type': 'reference product',
-            'location': 'Russia (Asia)',
-            'code': 'Russia (Asia)foobar',
-            'technology level': 'current',
-            'activity': 'foo'
-        }]
-    }]
+    expected = {
+        'GLOfb': ['DEfb', 'FRfb', 'MYfb', 'Russia (Asia)fb'],
+    }
     apportion_suppliers_to_consumers(consumers, suppliers)
-    consumers[0]['suppliers'].sort(key = lambda x: x['location'])
-    expected[0]['suppliers'].sort(key = lambda x: x['location'])
-    assert consumers == expected
+    assert reformat_suppliers(consumers) == expected
 
 def test_apportion_suppliers_to_consumers_global_supplier_excluded():
-    suppliers = [{
-        'code': 'a',
-        'type': 'transforming activity',
-        'reference product': 'foo',
-        'name': 'first',
-        'location': 'GLO',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'code': 'b',
-        'type': 'transforming activity',
-        'reference product': 'foo',
-        'name': 'second',
-        'location': 'MX',
-        'exchanges': [{'type': 'reference product'}],
-    }]
-    consumers = [{
-        'code': 'c',
-        'type': 'market activity',
-        'reference product': 'foo',
-        'name': '',
-        'location': 'NAFTA',
-    }]
-    expected = [{
-        'code': 'c',
-        'reference product': 'foo',
-        'type': 'market activity',
-        'name': '',
-        'location': 'NAFTA',
-        'suppliers': [{
-            'type': 'reference product',
-            'location': 'MX',
-            'code': 'b',
-            'activity': 'second',
-        }]
-    }]
+    consumers = [
+        generate_dataset('NAFTA'),
+    ]
+    suppliers = [
+        generate_dataset('GLO'),
+        generate_dataset('MX'),
+    ]
+    expected = {
+        'NAFTAfb': ['MXfb'],
+    }
     apportion_suppliers_to_consumers(consumers, suppliers)
-    consumers[0]['suppliers'].sort(key = lambda x: x['location'])
-    expected[0]['suppliers'].sort(key = lambda x: x['location'])
-    assert consumers == expected
-
-def test_apportion_suppliers_to_consumers_global_supplier_included():
-    suppliers = [{
-        'code': 'a',
-        'type': 'transforming activity',
-        'reference product': 'foo',
-        'name': 'first',
-        'location': 'GLO',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'code': 'b',
-        'type': 'transforming activity',
-        'reference product': 'foo',
-        'name': 'second',
-        'location': 'MX',
-        'exchanges': [{'type': 'reference product'}],
-    }]
-    consumers = [{
-        'code': 'c',
-        'type': 'market activity',
-        'reference product': 'foo',
-        'name': '',
-        'location': 'RoW',
-    }]
-    expected = [{
-        'code': 'c',
-        'reference product': 'foo',
-        'type': 'market activity',
-        'name': '',
-        'location': 'RoW',
-        'suppliers': [{
-            'type': 'reference product',
-            'location': 'GLO',
-            'code': 'a',
-            'activity': 'first',
-        }, {
-            'type': 'reference product',
-            'location': 'MX',
-            'code': 'b',
-            'activity': 'second',
-        }]
-    }]
-    apportion_suppliers_to_consumers(consumers, suppliers)
-    consumers[0]['suppliers'].sort(key = lambda x: x['location'])
-    expected[0]['suppliers'].sort(key = lambda x: x['location'])
-    assert consumers == expected
+    assert reformat_suppliers(consumers) == expected
 
 def test_apportion_suppliers_to_consumers_no_suppliers():
     consumers = [
         generate_dataset('UCTE without France'),
     ]
-    assert apportion_suppliers_to_consumers(consumers, [])
+    apportion_suppliers_to_consumers(consumers, [])
 
 def test_apportion_suppliers_to_consumers_nonlinked_suppliers():
     consumers = [
@@ -246,11 +81,8 @@ def test_apportion_suppliers_to_consumers_nonlinked_suppliers():
     ]
     suppliers = [
         generate_dataset('FR'),
-        generate_dataset('DE'),
     ]
-    for s in suppliers:
-        s.update({'exchanges': [{'type': 'reference product'}]})
-    assert apportion_suppliers_to_consumers(consumers, suppliers)
+    apportion_suppliers_to_consumers(consumers, suppliers)
 
 def test_apportion_suppliers_to_consumers_global_consumer():
     pass

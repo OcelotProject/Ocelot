@@ -26,51 +26,53 @@ def annotate_exchange(exc, ds):
 
 
 @no_geo_duplicates
-def apportion_suppliers_to_consumers(consumers, suppliers, topo_func=topology.contains):
+def apportion_suppliers_to_consumers(consumers, suppliers):
     """Apportion suppliers to consumers based on their geographic relationships.
 
-    A supplier must be completely contained within a consumer, or it is rejected, and the global or RoW activity is chosen.
+    A supplier must be completely contained within a consumer, or completely contain a consumer, or it is rejected and the global or RoW activity is chosen.
 
     Region-specific markets (i.e. those without locations ``GLO`` or ``RoW``) should not consume from global providers.
 
     Modifies in place."""
-    row_excluded_faces = set.union(*[
-        topology(obj['location'])
-        for obj in consumers
+    consumers_row = topology.resolve_row(
+        [obj['location'] for obj in consumers
     ])
 
     for consumer in consumers:
-        contained = []
-        for group in toolz.groupby('name', suppliers).values():
-            if consumer['location'] == 'GLO':
-                candidates = group
-            elif consumer['location'] == 'RoW':
-                candidates = [
-                    ds for ds in group
-                    if (ds['location'] in ('GLO', 'RoW'))
-                    or (not topology(ds['location']).intersection(row_excluded_faces))
-                ]
-            else:
-                candidates = [ds for ds in group
-                              if topo_func(consumer['location'], ds['location'])]
-            # Allow global suppliers only if consumer is also global
-            if not candidates and consumer['location'] in ("GLO", "RoW"):
-                candidates = [ds for ds in group
-                              if ds['location'] in ("GLO", "RoW")]
-            contained.extend(candidates)
+        if 'suppliers' not in consumer:
+            consumer['suppliers'] = []
+        location = consumer['location']
+        if location == 'RoW':
+            location = consumers_row
 
-        consumer['suppliers'] = [annotate_exchange(
-            get_single_reference_product(obj),
-            obj
-        ) for obj in contained]
-        logger.info({
-            'type': 'table element',
-            'data': (consumer['name'],
-                     consumer['reference product'],
-                     consumer['location'],
-                     ";".join([o['location'] for o in contained]))
-        })
-    return True
+        for group in toolz.groupby('name', suppliers).values():
+            # Calculate separately for each technology (activity name)
+            # No overlaps allowed per technology/product combo
+            # no_overlaps(group)
+
+            suppliers_row = topology.resolve_row(
+                [obj['location'] for obj in group
+            ])
+            sd = {o['location']: o for o in group}
+            contained = [sd[key] for key in topology.contained(
+                location, resolved_row=suppliers_row
+            ).intersection(set(sd))]
+
+            if not contained:
+                contained = [ds for key, ds in sd.items()
+                             if topology.contains(key, location, resolved_row=suppliers_row)]
+
+            consumer['suppliers'].extend([annotate_exchange(
+                get_single_reference_product(obj),
+                obj
+            ) for obj in contained])
+            logger.info({
+                'type': 'table element',
+                'data': (consumer['name'],
+                         consumer['reference product'],
+                         consumer['location'],
+                         ";".join([o['location'] for o in contained]))
+            })
 
 
 def add_recycled_content_suppliers_to_markets(data):
@@ -108,7 +110,7 @@ add_recycled_content_suppliers_to_markets.__table__ = {
 
 
 def add_suppliers_to_markets(data, from_type="transforming activity",
-                             to_type="market activity", topo_func=None):
+                             to_type="market activity"):
     """Add references to supplying exchanges to markets in field ``suppliers``.
 
     By default works with inputs to markets, but can be curried to work with market groups.
@@ -130,8 +132,7 @@ def add_suppliers_to_markets(data, from_type="transforming activity",
         if to_type == 'market activity':
             # Markets can't overlap
             no_overlaps(consumers)
-        apportion_suppliers_to_consumers(consumers, suppliers,
-            topo_func=topo_func or topology.contains)
+        apportion_suppliers_to_consumers(consumers, suppliers)
     return data
 
 add_suppliers_to_markets.__table__ = {

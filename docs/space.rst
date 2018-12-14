@@ -22,7 +22,7 @@ The linking needed to match consumers and suppliers in space can quickly get dee
 
 #. A market is for a *product*, not a *technology*. Markets can't overlap.
 
-#. Multiple transforming activities can produce the same product in the same region using different technologies.
+#. Multiple transforming activities can produce the same product in the same region using different technologies. Technologies are identified by the activity name. Transforming activities for a specific technology and product can't overlap.
 
 #. A market group is supplied only by other markets and market groups. Market groups can overlap.
 
