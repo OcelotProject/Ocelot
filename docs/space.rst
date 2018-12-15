@@ -17,8 +17,8 @@ The linking needed to match consumers and suppliers in space can quickly get dee
 #. Suppliers are chosen using one of three GIS relationships, in the following order:
 
    #. Supplier(s) completely contained within the location of the consumer.
-   #. A single regional (i.e. not ``GLO`` or ``RoW``) supplier which completely contains the consumer.
-   #. A ``GLO`` or ``RoW`` supplier.
+   #. A single regional supplier which completely contains the consumer.
+   #. A ``RoW`` supplier (``GLO`` would already have been used in the previous step).
 
 #. A market is for a *product*, not a *technology*. Markets can't overlap.
 
@@ -35,7 +35,7 @@ The linking needed to match consumers and suppliers in space can quickly get dee
 These general principles have the following side effects:
 
 *. A potential supplier whose location *partially* overlaps a consumer will not meet any of the three GIS relationships, and so will never be chosen as a supplier.
-*.
+*. The search for suppliers will stop as soon as at least one supplier is found. That means that a large consuming region can be supplied by a single small supplier, if it is the only supplier whose location is completely inside the consuming region.
 
 Preparation
 ===========
