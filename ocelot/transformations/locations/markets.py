@@ -45,7 +45,7 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
         if location == 'RoW':
             location = consumers_row
 
-        for group in toolz.groupby('name', suppliers).values():
+        for name, group in toolz.groupby('name', suppliers).items():
             # Calculate separately for each technology (activity name)
             # No overlaps allowed per technology/product combo
             # no_overlaps(group)
@@ -59,20 +59,30 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
             ).intersection(set(sd))]
 
             if not contained:
+                # Nothing is inside or equal to this location.
+                # Use an input which contains this location.
                 contained = [ds for key, ds in sd.items()
                              if topology.contains(key, location, resolved_row=suppliers_row)]
 
+            if not contained:
+                # Use RoW as backup (GLO would have already been used)
+                # even if it doesn't actually cover this market
+                contained = [ds for key, ds in sd.items() if key == 'RoW']
+                logger.info({
+                    'type': 'table element',
+                    'data': (consumer['name'],
+                             consumer['location'],
+                             ";".join([o['location'] for o in group]), name)
+                })
             consumer['suppliers'].extend([annotate_exchange(
                 get_single_reference_product(obj),
                 obj
             ) for obj in contained])
-            logger.info({
-                'type': 'table element',
-                'data': (consumer['name'],
-                         consumer['reference product'],
-                         consumer['location'],
-                         ";".join([o['location'] for o in contained]))
-            })
+
+apportion_suppliers_to_consumers.__table__ = {
+    'title': 'Defaulted to ``RoW`` suppliers, even though it fails GIS test.',
+    'columns': ["Market name", "Market location", "Supplier locations", "Supplier name"]
+}
 
 
 def add_recycled_content_suppliers_to_markets(data):

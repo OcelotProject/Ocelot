@@ -10,7 +10,7 @@ def generate_dataset(location, name='f', rp='b', kind="market activity"):
         'reference product': rp,
         'location': location,
         'code': location + name + rp,
-        'technology level': 'current',
+        # 'technology level': 'current',
         'exchanges': [{'type': 'reference product'}],
     }
 
@@ -19,27 +19,59 @@ def reformat_suppliers(result):
                       for ds in result}
     return {k: v for k, v in result_as_dict.items() if v}
 
-def test_apportion_suppliers_to_consumers():
+
+###
+### apportion_suppliers_to_consumers
+###
+
+def test_astc_no_suppliers():
     consumers = [
         generate_dataset('UCTE without France'),
-        generate_dataset('RU'),
-        generate_dataset('RoW'),
+    ]
+    apportion_suppliers_to_consumers(consumers, [])
+
+def test_astc_nonlinked_suppliers():
+    consumers = [
+        generate_dataset('UCTE without France'),
     ]
     suppliers = [
-        generate_dataset('FR', kind='transforming activity'),
-        generate_dataset('Russia (Asia)', kind='transforming activity'),
-        generate_dataset('DE', kind='transforming activity'),
-        generate_dataset('MY', kind='transforming activity'),
+        generate_dataset('FR'),
+    ]
+    apportion_suppliers_to_consumers(consumers, suppliers)
+
+def test_astc_exclude_supplier():
+    consumers = [
+        generate_dataset('NAFTA'),
+    ]
+    suppliers = [
+        generate_dataset('CH'),
+        generate_dataset('MX'),
     ]
     expected = {
-        'UCTE without Francefb': ['DEfb'],
-        'RUfb': ['Russia (Asia)fb'],
-        'RoWfb': ['FRfb', 'MYfb']
+        'NAFTAfb': ['MXfb'],
     }
     apportion_suppliers_to_consumers(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
-def test_apportion_suppliers_to_consumers_global_group():
+def test_astc_plain():
+    consumers = [
+        generate_dataset('UCTE without France'),
+        generate_dataset('RU'),
+    ]
+    suppliers = [
+        generate_dataset('FR'),
+        generate_dataset('Russia (Asia)'),
+        generate_dataset('DE'),
+        generate_dataset('MY'),
+    ]
+    expected = {
+        'UCTE without Francefb': ['DEfb'],
+        'RUfb': ['Russia (Asia)fb'],
+    }
+    apportion_suppliers_to_consumers(consumers, suppliers)
+    assert reformat_suppliers(consumers) == expected
+
+def test_astc_global_consumer():
     consumers = [
         generate_dataset('GLO'),
     ]
@@ -55,12 +87,78 @@ def test_apportion_suppliers_to_consumers_global_group():
     apportion_suppliers_to_consumers(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
-def test_apportion_suppliers_to_consumers_global_supplier_excluded():
+def test_astc_global_consumer_row_supplier():
+    consumers = [
+        generate_dataset('GLO'),
+    ]
+    suppliers = [
+        generate_dataset('FR'),
+        generate_dataset('Russia (Asia)'),
+        generate_dataset('RoW'),
+        generate_dataset('DE'),
+        generate_dataset('MY'),
+    ]
+    expected = {
+        'GLOfb': ['DEfb', 'FRfb', 'MYfb', 'RoWfb', 'Russia (Asia)fb'],
+    }
+    apportion_suppliers_to_consumers(consumers, suppliers)
+    assert reformat_suppliers(consumers) == expected
+
+def test_astc_global_consumer_row_only_supplier():
+    consumers = [
+        generate_dataset('GLO'),
+    ]
+    suppliers = [
+        generate_dataset('RoW'),
+    ]
+    expected = {
+        'GLOfb': ['RoWfb'],
+    }
+    apportion_suppliers_to_consumers(consumers, suppliers)
+    assert reformat_suppliers(consumers) == expected
+
+def test_astc_row_consumer():
+    consumers = [
+        generate_dataset('UCTE without France'),
+        generate_dataset('RU'),
+        generate_dataset('RoW'),
+    ]
+    suppliers = [
+        generate_dataset('FR'),
+        generate_dataset('Russia (Asia)'),
+        generate_dataset('DE'),
+        generate_dataset('MY'),
+    ]
+    expected = {
+        'UCTE without Francefb': ['DEfb'],
+        'RUfb': ['Russia (Asia)fb'],
+        'RoWfb': ['FRfb', 'MYfb']
+    }
+    apportion_suppliers_to_consumers(consumers, suppliers)
+    assert reformat_suppliers(consumers) == expected
+
+def test_astc_row_supplier():
+    consumers = [
+        generate_dataset('UCTE without France'),
+        generate_dataset('RoW'),
+    ]
+    suppliers = [
+        generate_dataset('RER'),
+        generate_dataset('RoW'),
+    ]
+    expected = {
+        'UCTE without Francefb': ['RERfb'],
+        'RoWfb': ['RoWfb']
+    }
+    apportion_suppliers_to_consumers(consumers, suppliers)
+    assert reformat_suppliers(consumers) == expected
+
+def test_astc_row_not_in_smaller_consuming_region():
     consumers = [
         generate_dataset('NAFTA'),
     ]
     suppliers = [
-        generate_dataset('GLO'),
+        generate_dataset('RoW'),
         generate_dataset('MX'),
     ]
     expected = {
@@ -69,190 +167,109 @@ def test_apportion_suppliers_to_consumers_global_supplier_excluded():
     apportion_suppliers_to_consumers(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
-def test_apportion_suppliers_to_consumers_no_suppliers():
+def test_astc_row_supplier_and_consumer_supplier_within_consumer():
     consumers = [
-        generate_dataset('UCTE without France'),
-    ]
-    apportion_suppliers_to_consumers(consumers, [])
-
-def test_apportion_suppliers_to_consumers_nonlinked_suppliers():
-    consumers = [
-        generate_dataset('UCTE without France'),
+        generate_dataset('UCTE'),
+        generate_dataset('RoW'),
     ]
     suppliers = [
-        generate_dataset('FR'),
+        generate_dataset('CH'),
+        generate_dataset('Europe without Switzerland'),
+        generate_dataset('RoW'),
     ]
+    expected = {
+        'UCTEfb': ['CHfb'],
+        'RoWfb': ['RoWfb']
+    }
     apportion_suppliers_to_consumers(consumers, suppliers)
+    assert reformat_suppliers(consumers) == expected
 
-def test_apportion_suppliers_to_consumers_global_consumer():
-    pass
+def test_astc_row_supplier_and_consumer_consumer_within_supplier():
+    consumers = [
+        generate_dataset('RER'),
+        generate_dataset('NAFTA'),
+        generate_dataset('RoW'),
+    ]
+    suppliers = [
+        generate_dataset('CH'),
+        generate_dataset('Europe without Switzerland'),
+        generate_dataset('RoW'),
+    ]
+    expected = {
+        'NAFTAfb': ['RoWfb'], # Fallback
+        'RoWfb': ['RoWfb'],
+        'RERfb': ['CHfb', 'Europe without Switzerlandfb']
+    }
+    apportion_suppliers_to_consumers(consumers, suppliers)
+    assert reformat_suppliers(consumers) == expected
 
-def test_add_suppliers_to_markets():
-    given = [{
-        'type': 'skip me',
-    }, {
-        'code': 'cCA',
-        'type': 'transforming activity',
-        'reference product': 'foo',
-        'technology level': 'current',
-        'name': '',
-        'location': 'CA',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'code': 'cMX',
-        'type': 'transforming activity',
-        'reference product': 'foo',
-        'technology level': 'current',
-        'name': '',
-        'location': 'MX',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'code': 'cFR',
-        'type': 'transforming activity',
-        'reference product': 'foo',
-        'technology level': 'current',
-        'name': '',
-        'location': 'FR',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'code': 'cNAFTA',
-        'type': 'market activity',
-        'reference product': 'foo',
-        'technology level': 'current',
-        'name': '',
-        'location': 'NAFTA',
-    }, {
-        'code': 'cRER',
-        'type': 'market activity',
-        'reference product': 'foo',
-        'technology level': 'current',
-        'name': '',
-        'location': 'RER',
-    }, {
-        'code': 'cDE',
-        'type': 'transforming activity',
-        'reference product': 'bar',
-        'technology level': 'current',
-        'name': '',
-        'location': 'DE',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'code': 'cZA',
-        'type': 'transforming activity',
-        'reference product': 'bar',
-        'technology level': 'current',
-        'name': '',
-        'location': 'ZA',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'code': 'cRoW',
-        'type': 'market activity',
-        'reference product': 'bar',
-        'technology level': 'current',
-        'name': '',
-        'location': 'RoW',
-    }]
-    expected = [{
-        'type': 'skip me',
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'foo',
-        'name': '',
-        'technology level': 'current',
-        'location': 'CA',
-        'code': 'cCA',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'foo',
-        'name': '',
-        'technology level': 'current',
-        'location': 'MX',
-        'code': 'cMX',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'foo',
-        'name': '',
-        'technology level': 'current',
-        'location': 'FR',
-        'code': 'cFR',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'type': 'market activity',
-        'reference product': 'foo',
-        'technology level': 'current',
-        'name': '',
-        'location': 'NAFTA',
-        'code': 'cNAFTA',
-        'suppliers': [
-            {
-                'code': 'cCA',
-                'location': 'CA',
-                'type': 'reference product',
-                'technology level': 'current',
-                'name': '',
-            },
-            {
-                'code': 'cMX',
-                'location': 'MX',
-                'technology level': 'current',
-                'type': 'reference product',
-                'name': ''
-            }
-        ]
-    }, {
-        'type': 'market activity',
-        'reference product': 'foo',
-        'technology level': 'current',
-        'name': '',
-        'location': 'RER',
-        'code': 'cRER',
-        'suppliers': [{
-            'code': 'cFR',
-            'type': 'reference product',
-            'technology level': 'current',
-            'location': 'FR',
-            'name': ''
-        }]
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'bar',
-        'technology level': 'current',
-        'name': '',
-        'location': 'DE',
-        'code': 'cDE',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'bar',
-        'technology level': 'current',
-        'name': '',
-        'location': 'ZA',
-        'code': 'cZA',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'type': 'market activity',
-        'reference product': 'bar',
-        'technology level': 'current',
-        'name': '',
-        'location': 'RoW',
-        'code': 'cRoW',
-        'suppliers': [{
-            'code': 'cDE',
-            'location': 'DE',
-            'technology level': 'current',
-            'type': 'reference product',
-            'name': '',
-        }, {
-            'code': 'cZA',
-            'location': 'ZA',
-            'type': 'reference product',
-            'technology level': 'current',
-            'name': '',
-        }]
-    }]
-    assert add_suppliers_to_markets(given) == expected
+def test_astc_row_supplier_and_consumer_overlap_but_not_contained():
+    consumers = [
+        generate_dataset('NAFTA'),
+        generate_dataset('WEU'),
+        generate_dataset('RoW'),
+    ]
+    suppliers = [
+        generate_dataset('RER'),
+        generate_dataset('RoW'),
+    ]
+    expected = {
+        'NAFTAfb': ['RoWfb'], # Fallback
+        'WEUfb': ['RERfb'], # Contained by
+        'RoWfb': ['RoWfb'],   # Fallback
+    }
+    apportion_suppliers_to_consumers(consumers, suppliers)
+    assert reformat_suppliers(consumers) == expected
+
+def test_astc_row_backup_supplier_row_consumer():
+    consumers = [
+        generate_dataset('WEU'),
+        generate_dataset('RoW'),
+    ]
+    suppliers = [
+        generate_dataset('RER'),
+        generate_dataset('RoW'),
+    ]
+    expected = {
+        'WEUfb': ['RERfb'], # Contained by
+        'RoWfb': ['RoWfb'],   # Fallback
+    }
+    apportion_suppliers_to_consumers(consumers, suppliers)
+    assert reformat_suppliers(consumers) == expected
+
+def test_astc_row_consumer_glo_supplier():
+    consumers = [
+        generate_dataset('WEU'),
+        generate_dataset('RoW'),
+    ]
+    suppliers = [
+        generate_dataset('GLO'),
+    ]
+    expected = {
+        'WEUfb': ['GLOfb'],
+        'RoWfb': ['GLOfb'],
+    }
+    apportion_suppliers_to_consumers(consumers, suppliers)
+    assert reformat_suppliers(consumers) == expected
+
+def test_astc_larger_regional_supplier():
+    consumers = [
+        generate_dataset('WEU'),
+    ]
+    suppliers = [
+        generate_dataset('RoW'),
+        generate_dataset('RER'),
+    ]
+    expected = {
+        'WEUfb': ['RERfb'],
+    }
+    apportion_suppliers_to_consumers(consumers, suppliers)
+    assert reformat_suppliers(consumers) == expected
+
+
+###
+### add_suppliers_to_markets
+###
 
 def test_add_suppliers_to_markets():
     given = [{
@@ -354,10 +371,12 @@ def test_add_suppliers_to_markets_no_consumers():
         'name': '',
         'location': 'RER',
     }]
-    expected = deepcopy(given)
-    expected[3]['suppliers'] = []
-    expected[4]['suppliers'] = []
-    assert add_suppliers_to_markets(given) == expected
+    assert reformat_suppliers(add_suppliers_to_markets(given)) == {}
+
+
+###
+### allocate_all_market_suppliers
+###
 
 def test_allocate_all_market_suppliers():
     given = [{
@@ -436,115 +455,10 @@ def test_allocate_all_market_suppliers_single_supplier():
     }]
     assert allocate_all_market_suppliers(deepcopy(given))[0]['exchanges'] == expected
 
-def test_update_market_production_volumes():
-    given = [{
-        'name': '',
-        'type': 'foo',
-        'location': '',
-        'exchanges': [{
-            'name': '',
-            'type': 'reference product',
-            'production volume': {}
-        }],
-        'suppliers': [
-            {'production volume': {'amount': 10}},
-            {'production volume': {'amount': 20}},
-        ]
-    }]
-    ds = update_market_production_volumes(given, 'foo')[0]
-    assert ds['exchanges'][0]['production volume']['amount'] == 30
 
-def test_update_market_production_volumes_activity_link():
-    given = [{
-        'name': '',
-        'type': 'foo',
-        'location': '',
-        'exchanges': [{
-            'name': '',
-            'type': 'reference product',
-            'production volume': {'subtracted activity link volume': 15}
-        }],
-        'suppliers': [
-            {'production volume': {
-                'amount': 10,
-                'subtracted activity link volume': 8
-            }},
-            {'production volume': {'amount': 20}},
-        ]
-    }]
-    ds = update_market_production_volumes(given, 'foo')[0]
-    assert ds['exchanges'][0]['production volume']['amount'] == 7
-
-def test_update_market_production_volumes_negative_sum():
-    given = [{
-        'name': '',
-        'type': 'foo',
-        'location': '',
-        'exchanges': [{
-            'name': '',
-            'type': 'reference product',
-            'production volume': {'subtracted activity link volume': 40}
-        }],
-        'suppliers': [
-            {'production volume': {'amount': 10}},
-            {'production volume': {'amount': 20}},
-        ]
-    }]
-    ds = update_market_production_volumes(given, 'foo')[0]
-    assert ds['exchanges'][0]['production volume']['amount'] == 0
-
-def test_delete_suppliers_list():
-    given = [{'suppliers': 1}]
-    assert delete_suppliers_list(given) == [{}]
-
-def test_assign_fake_pv_to_confidential_datasets():
-    given = [{
-        'name': "latex production",
-        'type': 'transforming activity',
-        'location': 'GLO',
-        'exchanges': [{
-            'type': 'reference product',
-            'name': '',
-            'production volume': {}
-        }]
-    }]
-    expected = [{
-        'name': "latex production",
-        'type': 'transforming activity',
-        'location': 'GLO',
-        'exchanges': [{
-            'type': 'reference product',
-            'name': '',
-            'production volume': {'amount': 1}
-        }]
-    }]
-    assert assign_fake_pv_to_confidential_datasets(given) == expected
-    del given[0]['exchanges'][0]['production volume']['amount']
-    assert given != expected
-    given[0]['type'] = 'market activity'
-    assert assign_fake_pv_to_confidential_datasets(given) != expected
-    given[0]['type'] = 'transforming activity'
-    assert assign_fake_pv_to_confidential_datasets(given) == expected
-
-def test_delete_allowed_zero_pv_market_datsets():
-    given = [{
-        'type': 'market activity',
-        'name': 'not market for refinery gas',
-        'location': 'GLO',
-        'reference product': '',
-    }, {
-        'type': 'market activity',
-        'name': 'market for refinery gas',
-        'location': 'GLO',
-        'reference product': '',
-    }]
-    expected = [{
-        'type': 'market activity',
-        'name': 'not market for refinery gas',
-        'location': 'GLO',
-        'reference product': '',
-    }]
-    assert delete_allowed_zero_pv_market_datsets(given) == expected
+###
+### allocate_suppliers
+###
 
 def test_allocate_suppliers_no_production_volume_single_supplier():
     given = {
@@ -655,6 +569,11 @@ def test_allocate_suppliers_skip_zero_amount():
     }
     assert allocate_suppliers(given) == expected
 
+
+###
+### add_recycled_content_suppliers_to_markets
+###
+
 def test_add_recycled_content_suppliers_to_markets():
     given = [{
         'code': 'cCA',
@@ -710,78 +629,127 @@ def test_add_recycled_content_suppliers_to_markets():
         'name': '',
         'location': 'RoW',
     }]
-    expected = [{
-        'type': 'transforming activity',
-        'reference product': 'foo, Recycled Content cut-off',
+    expected = {
+        'cNAFTA': ['cCA', 'cMX'],
+        'cRER': ['cFR'],
+    }
+    assert reformat_suppliers(add_recycled_content_suppliers_to_markets(given)) == expected
+
+###
+### production volumes
+###
+
+def test_update_market_production_volumes():
+    given = [{
         'name': '',
-        'location': 'CA',
-        'code': 'cCA',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'foo, Recycled Content cut-off',
-        'name': '',
-        'location': 'MX',
-        'code': 'cMX',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'foo, Recycled Content cut-off',
-        'name': '',
-        'location': 'FR',
-        'code': 'cFR',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'type': 'market activity',
-        'reference product': 'foo',
-        'name': '',
-        'location': 'NAFTA',
-        'code': 'cNAFTA',
-        'suppliers': [
-            {
-                'code': 'cCA',
-                'location': 'CA',
-                'type': 'reference product',
-                'activity': '',
-            },
-            {
-                'code': 'cMX',
-                'location': 'MX',
-                'type': 'reference product',
-                'activity': ''
-            }
-        ]
-    }, {
-        'type': 'market activity',
-        'reference product': 'foo',
-        'name': '',
-        'location': 'RER',
-        'code': 'cRER',
-        'suppliers': [{
-            'code': 'cFR',
+        'type': 'foo',
+        'location': '',
+        'exchanges': [{
+            'name': '',
             'type': 'reference product',
-            'location': 'FR',
-            'activity': ''
+            'production volume': {}
+        }],
+        'suppliers': [
+            {'production volume': {'amount': 10}},
+            {'production volume': {'amount': 20}},
+        ]
+    }]
+    ds = update_market_production_volumes(given, 'foo')[0]
+    assert ds['exchanges'][0]['production volume']['amount'] == 30
+
+def test_update_market_production_volumes_activity_link():
+    given = [{
+        'name': '',
+        'type': 'foo',
+        'location': '',
+        'exchanges': [{
+            'name': '',
+            'type': 'reference product',
+            'production volume': {'subtracted activity link volume': 15}
+        }],
+        'suppliers': [
+            {'production volume': {
+                'amount': 10,
+                'subtracted activity link volume': 8
+            }},
+            {'production volume': {'amount': 20}},
+        ]
+    }]
+    ds = update_market_production_volumes(given, 'foo')[0]
+    assert ds['exchanges'][0]['production volume']['amount'] == 7
+
+def test_update_market_production_volumes_negative_sum():
+    given = [{
+        'name': '',
+        'type': 'foo',
+        'location': '',
+        'exchanges': [{
+            'name': '',
+            'type': 'reference product',
+            'production volume': {'subtracted activity link volume': 40}
+        }],
+        'suppliers': [
+            {'production volume': {'amount': 10}},
+            {'production volume': {'amount': 20}},
+        ]
+    }]
+    ds = update_market_production_volumes(given, 'foo')[0]
+    assert ds['exchanges'][0]['production volume']['amount'] == 0
+
+
+###
+### Utilities
+###
+
+def test_delete_suppliers_list():
+    given = [{'suppliers': 1}]
+    assert delete_suppliers_list(given) == [{}]
+
+def test_assign_fake_pv_to_confidential_datasets():
+    given = [{
+        'name': "latex production",
+        'type': 'transforming activity',
+        'location': 'GLO',
+        'exchanges': [{
+            'type': 'reference product',
+            'name': '',
+            'production volume': {}
         }]
-    }, {
+    }]
+    expected = [{
+        'name': "latex production",
         'type': 'transforming activity',
-        'reference product': 'bar',
-        'name': '',
-        'location': 'DE',
-        'code': 'cDE',
-        'exchanges': [{'type': 'reference product'}],
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'bar',
-        'name': '',
-        'location': 'ZA',
-        'code': 'cZA',
-        'exchanges': [{'type': 'reference product'}],
+        'location': 'GLO',
+        'exchanges': [{
+            'type': 'reference product',
+            'name': '',
+            'production volume': {'amount': 1}
+        }]
+    }]
+    assert assign_fake_pv_to_confidential_datasets(given) == expected
+    del given[0]['exchanges'][0]['production volume']['amount']
+    assert given != expected
+    given[0]['type'] = 'market activity'
+    assert assign_fake_pv_to_confidential_datasets(given) != expected
+    given[0]['type'] = 'transforming activity'
+    assert assign_fake_pv_to_confidential_datasets(given) == expected
+
+def test_delete_allowed_zero_pv_market_datsets():
+    given = [{
+        'type': 'market activity',
+        'name': 'not market for refinery gas',
+        'location': 'GLO',
+        'reference product': '',
     }, {
         'type': 'market activity',
-        'reference product': 'bar',
-        'name': '',
-        'location': 'RoW',
-        'code': 'cRoW',
+        'name': 'market for refinery gas',
+        'location': 'GLO',
+        'reference product': '',
     }]
-    assert add_recycled_content_suppliers_to_markets(given) == expected
+    expected = [{
+        'type': 'market activity',
+        'name': 'not market for refinery gas',
+        'location': 'GLO',
+        'reference product': '',
+    }]
+    assert delete_allowed_zero_pv_market_datsets(given) == expected
