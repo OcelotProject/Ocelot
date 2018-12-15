@@ -5,10 +5,13 @@ import pytest
 
 def test_topology_loading():
     assert len(topology.data) > 400
+    assert '__all__' not in topology.data
+    assert 'GLO' in topology.data
 
 def test_topology_contained():
     assert topology.contained('RU') == {'Russia (Asia)', 'Russia (Europe)', 'RU'}
     # Test compatibility labels
+    assert len(topology.contained('GLO')) > 400
     assert topology.contained('IAI Area 8')
     with pytest.raises(KeyError):
         topology.contained('foo')
@@ -21,10 +24,35 @@ def test_topology_contained_glo_always_contains_row():
     resolved = topology.resolve_row(['CH'])
     assert 'RoW' in topology.contained('GLO', resolved_row=resolved)
 
+def test_topology_contained_glo_exclude_self():
+    assert 'GLO' in topology.contained('GLO', exclude_self=False)
+    assert 'GLO' not in topology.contained('GLO', exclude_self=True)
+
+def test_topology_contained_glo_subtract():
+    assert 'GLO' not in topology.contained('GLO', subtract=['CH'])
+    assert 'CH' not in topology.contained('GLO', subtract=['CH'])
+
+def test_topology_contained_pass_set():
+    faces = set.union(topology('CH'), topology('DE'))
+    assert 'CH' in topology.contained(faces)
+    assert 'CH' in topology.contained(faces, True)
+    assert 'CH' in topology.contained(faces, True, subtract=['DE'])
+
 def test_topology_contained_row():
     assert topology.contained('RoW') == set()
     resolved = topology.resolve_row(['CH'])
     assert 'CH' not in topology.contained('RoW', resolved_row=resolved)
+
+def test_topology_contained_row_in_result():
+    pass
+
+def test_topology_contained_empty_set():
+    assert not topology.contained('RoW', resolved_row=set())
+    assert 'RoW' not in topology.contained('CH', resolved_row=set())
+    assert 'RoW' not in topology.contained('GLO', resolved_row=set())
+    assert not topology.contained("GLO", subtract=['GLO'])
+    assert not topology.contained("CH", subtract=['CH'])
+    assert not topology.contained("RoW", subtract=['CH'])
 
 def test_topology_intersected():
     assert 'UN-EUROPE' in topology.intersected('DE')
@@ -47,7 +75,7 @@ def test_topology_intersects():
 
 def test_topology_calls():
     assert topology('US') == topology.data['US']
-    assert topology('GLO') == topology.data['__all__']
+    assert topology('GLO') == topology.data['GLO']
     assert topology('RoW') == set()
 
 def test_topology_overlaps():
@@ -55,12 +83,67 @@ def test_topology_overlaps():
     assert not topology.overlaps(['US', 'CH'])
     assert topology.overlaps(['US', 'NAFTA'])
 
-def test_topology_contains():
+def test_tc():
     assert topology.contains("RER", "CH")
     assert topology.contains("CH", "CH")
     assert not topology.contains("US", "CH")
     assert topology.contains('NAFTA', 'US')
     assert topology.contains('UN-ASIA', 'Cyprus No Mans Area')
+
+def test_tc_glo():
+    assert topology.contains("GLO", "CH")
+    assert topology.contains("GLO", "GLO")
+
+def test_tc_glo_row():
+    assert topology.contains("GLO", "RoW")
+    assert not topology.contains("GLO", "RoW", subtract=['CH'])
+    assert topology.contains("GLO", "RoW", subtract=[])
+
+def test_tc_row_row():
+    assert not topology.contains("RoW", "RoW")
+
+def test_tc_resolved_row_row():
+    resolved = topology.resolve_row(['DE'])
+    assert not topology.contains("RoW", "RoW", resolved_row=resolved)
+
+def test_tc_row_resolved_row():
+    resolved = topology.resolve_row(['DE'])
+    assert not topology.contains("RoW", resolved)
+
+def test_tc_resolved_row_resolved_row():
+    resolved = topology.resolve_row(['DE'])
+    resolved_two = topology.resolve_row(['WEU'])
+    assert topology.contains("RoW", resolved_two, resolved_row=resolved)
+    assert not topology.contains("RoW", resolved, resolved_row=resolved_two)
+
+def test_tc_parent_row():
+    assert not topology.contains("RoW", "CH")
+
+    resolved = topology.resolve_row(['DE'])
+    assert topology.contains("RoW", "CH", resolved_row=resolved)
+
+def test_tc_child_row():
+    assert topology.contains("GLO", "RoW")
+    assert not topology.contains("WEU", "RoW")
+
+    resolved = topology.resolve_row(['DE', 'FR'])
+    assert not topology.contains("WEU", resolved)
+    assert topology.contains("GLO", resolved)
+
+def test_topology_contains_subtract():
+    assert topology.contains('WEU', 'CH', subtract=['FR'])
+    assert not topology.contains('WEU', 'CH', subtract=['CH'])
+
+def test_tc_empty_set():
+    assert not topology.contains(set(), 'CH')
+    assert not topology.contains('CH', set())
+    assert not topology.contains(set(), 'GLO')
+    assert not topology.contains('GLO', set())
+    assert not topology.contains(set(), 'RoW')
+    assert not topology.contains('RoW', set())
+    resolved = topology.resolve_row(['DE'])
+    assert not topology.contains(set(), 'RoW', resolved_row=resolved)
+    assert not topology.contains('RoW', set(), resolved_row=resolved)
 
 def test_topology_ordered_dependencies():
     given = [
@@ -84,77 +167,6 @@ def test_topology_ordered_dependencies():
                 'RoW', 'RME', 'RLA', 'RAF', 'Europe without Switzerland',
                 'Canada without Quebec', 'CN']
     assert topology.ordered_dependencies(given) == expected
-
-# def test_topology_tree():
-#     given = [
-#         # market group for electricity, low voltage, ecoinvent 3.3
-#         {'location': 'GLO'},
-#         {'location': 'CA'},
-#         {'location': 'Canada without Quebec'},
-#         {'location': 'RNA'},
-#         {'location': 'US'},
-#         {'location': 'CN'},
-#         {'location': 'ENTSO-E'},
-#         {'location': 'Europe without Switzerland'},
-#         {'location': 'RER'},
-#         {'location': 'UCTE'},
-#         {'location': 'RAF'},
-#         {'location': 'RAS'},
-#         {'location': 'RLA'},
-#         {'location': 'RME'},
-#     ]
-#     expected = {
-#         'GLO': {
-#             'RNA': {
-#                 'CA': {'Canada without Quebec': {}},
-#                 'US': {}
-#             },
-#             'RAF': {},
-#             'RAS': {
-#                 "CN": {},
-#                 "RME": {}
-#             },
-#             'RLA': {},
-#             'RER': {
-#                 'ENTSO-E': {
-#                     'UCTE': {}
-#                 },
-#                 'Europe without Switzerland': {}
-#             }
-#         }
-#     }
-#     assert topology.tree(given) == expected
-
-# def test_topology_tree_row():
-#     given = [
-#         {'location': 'CA'},
-#         {'location': 'GLO'},
-#         {'location': 'RoW'},
-#     ]
-#     expected = {
-#         'GLO': {
-#             'CA': {},
-#             'RoW': {}
-#         }
-#     }
-#     assert topology.tree(given) == expected
-#     given = [
-#         {'location': 'CA'},
-#         {'location': 'RoW'},
-#     ]
-#     expected = {
-#         'CA': {},
-#         'RoW': {}
-#     }
-#     assert topology.tree(given) == expected
-
-# def test_topology_tree_glo():
-#     given = [
-#         {'location': 'CA'},
-#         {'location': 'GLO'},
-#     ]
-#     expected = {'GLO': {'CA': {}}}
-#     assert topology.tree(given) == expected
 
 def test_topology_subtract():
     assert topology.contained('RER', subtract=('Europe without Switzerland',)) == {'CH'}
