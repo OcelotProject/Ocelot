@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from ... import toolz
 from ...data_helpers import reference_products_as_string, production_volume
-from ..utils import activity_grouper, get_single_reference_product
+from ..utils import allocatable_production, get_single_reference_product
 from .validation import check_single_global_dataset
 import logging
 
@@ -16,7 +16,18 @@ def relabel_global_to_row(data):
 
     In addition to relabeling the location field, adjust the production production volume of the ``RoW`` activity by subtracting region-specific production volumes."""
     # Group by (activity name, sorted list of products)
-    for key, group in toolz.groupby(activity_grouper, data).items():
+    # Filter out zero-production products
+    def grouper(dataset):
+        return (
+            dataset['name'],
+            tuple(sorted([
+                exc['name']
+                for exc in allocatable_production(dataset)
+                if exc['amount']
+            ]))
+        )
+
+    for key, group in toolz.groupby(grouper, data).items():
         if group and group[0]["type"] == "market group":
             continue
         elif len(group) > 1 and any(ds['location'] == 'GLO' for ds in group):

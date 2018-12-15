@@ -17,7 +17,8 @@ def test_relabel_global_to_row():
             'name': 'a product',
             'unit': '',
             'type': 'reference product',
-            'production volume': {'amount': 0}
+            'production volume': {'amount': 0},
+            'amount': 1,
         }]
     }, {
         'name': 'make something',
@@ -28,6 +29,7 @@ def test_relabel_global_to_row():
             'name': 'a product',
             'unit': '',
             'type': 'reference product',
+            'amount': 1,
             'production volume': {'amount': 0}
         }]
     }, {
@@ -39,6 +41,7 @@ def test_relabel_global_to_row():
             'name': 'a product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume': {'amount': 0}
         }]
     }, {
@@ -50,6 +53,7 @@ def test_relabel_global_to_row():
             'name': 'a product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume': {'amount': 0}
         }]
     }]
@@ -61,6 +65,7 @@ def test_relabel_global_to_row():
             'name': 'a product',
             'unit': '',
             'type': 'reference product',
+            'amount': 1,
             'production volume': {'amount': 0}
         }]
     }, {
@@ -71,6 +76,7 @@ def test_relabel_global_to_row():
             'name': 'a product',
             'unit': '',
             'type': 'reference product',
+            'amount': 1,
             'production volume': {'amount': 0}
         }]
     }, {
@@ -81,6 +87,7 @@ def test_relabel_global_to_row():
             'name': 'another product',
             'unit': '',
             'type': 'reference product',
+            'amount': 1,
             'production volume': {'amount': 0}
         }]
     }, {
@@ -91,12 +98,146 @@ def test_relabel_global_to_row():
             'name': 'another product',
             'unit': '',
             'type': 'reference product',
+            'amount': 1,
             'production volume': {'amount': 0}
         }]
     }]
     # Can't directly compare dictionaries if order has changed
     hashify = lambda x: {(y['name'], y['location']) for y in x}
     assert hashify(relabel_global_to_row(given)) == hashify(expected)
+
+def test_relabel_global_to_row_dropped_products():
+    given = [{
+        'name': 'make something',
+        'location': 'GLO',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'unit': '',
+            'type': 'reference product',
+            'production volume': {'amount': 0},
+            'amount': 1,
+        }, {
+            'name': 'another product',
+            'unit': '',
+            'type': 'byproduct',
+            'byproduct classification': 'allocatable product',
+            'production volume': {'amount': 0},
+            'amount': 1,
+        }]
+    }, {
+        'name': 'make something',
+        'location': 'somewhere else',
+        'unit': '',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'unit': '',
+            'type': 'reference product',
+            'amount': 1,
+            'production volume': {'amount': 0}
+        }]
+    }]
+    expected = [{
+        'name': 'make something',
+        'location': 'RoW',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'unit': '',
+            'type': 'reference product',
+            'amount': 1,
+            'production volume': {'amount': 0}
+        }, {
+            'name': 'another product',
+            'unit': '',
+            'type': 'byproduct',
+            'byproduct classification': 'allocatable product',
+            'production volume': {'amount': 0},
+            'amount': 0,
+        }]
+    }, {
+        'name': 'make something',
+        'location': 'somewhere else',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'unit': '',
+            'type': 'reference product',
+            'amount': 1,
+            'production volume': {'amount': 0}
+        }]
+    }]
+    # Can't directly compare dictionaries if order has changed
+    hashify = lambda x: {(y['name'], y['location']) for y in x}
+    assert hashify(relabel_global_to_row(given)) != hashify(expected)
+
+def test_relabel_global_to_row_ignore_zero_dropped_products():
+    given = [{
+        'name': 'make something',
+        'location': 'GLO',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'unit': '',
+            'type': 'reference product',
+            'production volume': {'amount': 0},
+            'amount': 1,
+        }, {
+            'name': 'another product',
+            'unit': '',
+            'type': 'byproduct',
+            'byproduct classification': 'allocatable product',
+            'production volume': {'amount': 0},
+            'amount': 0,
+        }]
+    }, {
+        'name': 'make something',
+        'location': 'somewhere else',
+        'unit': '',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'unit': '',
+            'type': 'reference product',
+            'amount': 1,
+            'production volume': {'amount': 0}
+        }]
+    }]
+    expected = [{
+        'name': 'make something',
+        'location': 'RoW',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'unit': '',
+            'type': 'reference product',
+            'amount': 1,
+            'production volume': {'amount': 0}
+        }, {
+            'name': 'another product',
+            'unit': '',
+            'type': 'byproduct',
+            'byproduct classification': 'allocatable product',
+            'production volume': {'amount': 0},
+            'amount': 0,
+        }]
+    }, {
+        'name': 'make something',
+        'location': 'somewhere else',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'unit': '',
+            'type': 'reference product',
+            'amount': 1,
+            'production volume': {'amount': 0}
+        }]
+    }]
+    # Can't directly compare dictionaries if order has changed
+    hashify = lambda x: {(y['name'], y['location']) for y in x}
+    assert hashify(relabel_global_to_row(given)) == hashify(expected)
+
 
 def test_relabel_global_to_row_skip_market_groups():
     given = [{
@@ -105,6 +246,7 @@ def test_relabel_global_to_row_skip_market_groups():
         'location': 'GLO',
         'exchanges': [{
             'name': 'a product',
+            'amount': 1,
             'type': 'reference product'
         }]
     }, {
@@ -113,6 +255,7 @@ def test_relabel_global_to_row_skip_market_groups():
         'location': 'CN',
         'exchanges': [{
             'name': 'a product',
+            'amount': 1,
             'type': 'reference product'
         }]
     }]
@@ -126,6 +269,7 @@ def test_relabel_global_to_row_only_single_global():
         'location': 'GLO',
         'exchanges': [{
             'name': 'a product',
+            'amount': 1,
             'type': 'reference product'
         }]
     }]
@@ -139,6 +283,7 @@ def test_relabel_global_to_row_only_single_nonglobal():
         'location': 'somewhere',
         'exchanges': [{
             'name': 'a product',
+            'amount': 1,
             'type': 'reference product'
         }]
     }]
@@ -152,6 +297,7 @@ def test_multiple_global_datasets():
         'location': 'GLO',
         'exchanges': [{
             'name': 'a product',
+            'amount': 1,
             'type': 'reference product'
         }]
     }, {
@@ -160,6 +306,7 @@ def test_multiple_global_datasets():
         'location': 'GLO',
         'exchanges': [{
             'name': 'a product',
+            'amount': 1,
             'type': 'reference product'
         }]
     }]
@@ -242,6 +389,7 @@ def test_relabel_global_to_row_subtract_pv():
             'name': 'a product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':100
             }
@@ -255,6 +403,7 @@ def test_relabel_global_to_row_subtract_pv():
             'name': 'a product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':10
             }
@@ -268,6 +417,7 @@ def test_relabel_global_to_row_subtract_pv():
             'name': 'a product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':100
             }
@@ -281,6 +431,7 @@ def test_relabel_global_to_row_subtract_pv():
             'name': 'a product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':50
             }
@@ -294,6 +445,7 @@ def test_relabel_global_to_row_subtract_pv():
             'name': 'a product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':90
             }
@@ -306,6 +458,7 @@ def test_relabel_global_to_row_subtract_pv():
             'name': 'a product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':10
             }
@@ -318,6 +471,7 @@ def test_relabel_global_to_row_subtract_pv():
             'name': 'another product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':50
             }
@@ -330,6 +484,7 @@ def test_relabel_global_to_row_subtract_pv():
             'name': 'another product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':50
             }
@@ -349,6 +504,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
             'name': 'a product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':100
             }
@@ -362,6 +518,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
             'name': 'a product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':110
             }
@@ -375,6 +532,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
             'name': 'a product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':100
             }
@@ -388,6 +546,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
             'name': 'a product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':150
             }
@@ -401,6 +560,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
             'name': 'a product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':0
             }
@@ -413,6 +573,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
             'name': 'a product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':110
             }
@@ -425,6 +586,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
             'name': 'another product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':0
             }
@@ -437,6 +599,7 @@ def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
             'name': 'another product',
             'type': 'reference product',
             'unit': '',
+            'amount': 1,
             'production volume':{
                 'amount':150
             }
