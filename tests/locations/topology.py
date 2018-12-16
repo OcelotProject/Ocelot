@@ -122,6 +122,13 @@ def test_tc_parent_row():
     resolved = topology.resolve_row(['DE'])
     assert topology.contains("RoW", "CH", resolved_row=resolved)
 
+def test_tc_parent_row_with_subtract():
+    assert not topology.contains(
+        "RoW", "CH",
+        subtract=['RER'],
+        resolved_row=topology.resolve_row(['MY'])
+    )
+
 def test_tc_child_row():
     assert topology.contains("GLO", "RoW")
     assert not topology.contains("WEU", "RoW")

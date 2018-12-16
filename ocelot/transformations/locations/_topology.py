@@ -45,6 +45,8 @@ class Topology(object):
 
         If ``resolved_row`` is ``None``, then ``RoW`` contains nothing, **not even itself** (because without ``resolved_row``, we don't know what is included in the "other" ``RoW``).
 
+        Note that the ``resolved_row`` is in the spatial system of ``location``, not the list of locations to check against!
+
         Args:
 
             * ``exclude_self``: Don't return ``location``
@@ -92,6 +94,8 @@ class Topology(object):
         * ``contains("RoW", "RoW", resolved_row=some_set)``: False. Don't know how to define the second ``RoW``.
         * resolved_row=another_set)``: True or False, depending on input data.
 
+        Note that the ``resolved_row`` is in the spatial system of ``parent``, not ``child``!
+
         If ``child`` or ``resolved_row`` is an empty set (either directly, or as a result of ``subtract``), then that location does not exist in space (no face ids at all), and so cannot either contain or be contained by any other spatially resolved location.
 
         ``GLO`` will contain ``RoW`` (even if ``RoW`` is undefined), as long as ``subtract`` is ``None``.
@@ -122,6 +126,9 @@ class Topology(object):
             )
 
     def ordered_dependencies(self, datasets):
+        """Return a list of locations from ``datasets`` in order from largest to smallest.
+
+        Area calculations are based on the number of intersected topological faces."""
         locations = {ds['location'] for ds in datasets}
         contained = {loc: self.contained(loc, exclude_self=True).intersection(locations)
                      for loc in locations}
