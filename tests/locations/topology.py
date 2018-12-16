@@ -1,6 +1,17 @@
 # -*- coding: utf-8 -*-
+from collections import defaultdict
 from ocelot.transformations.locations import topology
+from ocelot.transformations.locations._topology import Topology
 import pytest
+
+
+SWISS_FACE = list(topology('CH'))[0]
+
+def different_size_proxy(face):
+    if face == SWISS_FACE:
+        return 1e6
+    else:
+        return 1
 
 
 def test_topology_loading():
@@ -24,6 +35,10 @@ def test_topology_contained_glo_always_contains_row():
     resolved = topology.resolve_row(['CH'])
     assert 'RoW' in topology.contained('GLO', resolved_row=resolved)
 
+    assert 'RoW' not in topology.contained('GLO', subtract=['CN'])
+    resolved = topology.resolve_row(['CH'])
+    assert 'RoW' not in topology.contained('GLO', resolved_row=resolved, subtract=['CN'])
+
 def test_topology_contained_glo_exclude_self():
     assert 'GLO' in topology.contained('GLO', exclude_self=False)
     assert 'GLO' not in topology.contained('GLO', exclude_self=True)
@@ -44,7 +59,10 @@ def test_topology_contained_row():
     assert 'CH' not in topology.contained('RoW', resolved_row=resolved)
 
 def test_topology_contained_row_in_result():
-    pass
+    assert 'RoW' in topology.contained('RoW', resolved_row=topology.resolve_row(['CH']))
+    assert 'RoW' not in topology.contained('RoW', resolved_row=topology.resolve_row(['CH']), exclude_self=True)
+    assert 'RoW' not in topology.contained('RoW', resolved_row=set())
+    assert 'RoW' not in topology.contained('RoW')
 
 def test_topology_contained_empty_set():
     assert not topology.contained('RoW', resolved_row=set())
@@ -170,10 +188,49 @@ def test_topology_ordered_dependencies():
         {'location': 'RME'},
         {'location': 'RoW'},
     ]
-    expected = ['GLO', 'RNA', 'RER', 'RAS', 'ENTSO-E', 'CA', 'US', 'UCTE',
-                'RoW', 'RME', 'RLA', 'RAF', 'Europe without Switzerland',
-                'Canada without Quebec', 'CN']
+    expected = ['GLO', 'RAS', 'RER', 'Europe without Switzerland', 'RNA',
+                'ENTSO-E', 'RLA', 'CA', 'US', 'Canada without Quebec', 'UCTE',
+                'RME', 'RAF', 'CN', 'RoW']
     assert topology.ordered_dependencies(given) == expected
+
+def test_topology_ordered_dependencies_row_unresolved():
+    given = [
+        {'location': 'GLO'},
+        {'location': 'CA'},
+        {'location': 'RER'},
+        {'location': 'RoW'},
+    ]
+    expected = ['GLO', 'RER', 'CA', 'RoW']
+    assert topology.ordered_dependencies(given) == expected
+
+def test_topology_ordered_dependencies_row_resolved():
+    resolved = topology.resolve_row(['RAS', 'RNA', 'RER'])
+    given = [
+        {'location': 'GLO'},
+        {'location': 'CA'},
+        {'location': 'RER'},
+        {'location': 'RoW'},
+    ]
+    expected = ['GLO', 'RoW', 'RER', 'CA']
+    assert topology.ordered_dependencies(given, resolved) == expected
+
+def test_topology_ordered_dependencies_different_size_proxy():
+    given = [
+        {'location': 'GLO'},
+        {'location': 'CA'},
+        {'location': 'CH'},
+    ]
+    expected = ['GLO', 'CA', 'CH']
+    assert topology.ordered_dependencies(given) == expected
+
+    t2 = Topology(different_size_proxy)
+    given = [
+        {'location': 'GLO'},
+        {'location': 'CA'},
+        {'location': 'CH'},
+    ]
+    expected = ['GLO', 'CH', 'CA']
+    assert t2.ordered_dependencies(given) == expected
 
 def test_topology_subtract():
     assert topology.contained('RER', subtract=('Europe without Switzerland',)) == {'CH'}

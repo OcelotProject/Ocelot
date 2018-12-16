@@ -24,12 +24,17 @@ class Topology(object):
         ('IAI Area, Africa', 'IAI Area 1, Africa'),
     ]
 
-    def __init__(self):
+    def __init__(self, size_proxy=None):
         self.data = {key: set(value) for key, value in
                      json.load(open(self.fp, encoding='utf-8'))['data']}
         self.data['GLO'] = self.data.pop('__all__')
+        self.size_proxy = size_proxy or self.default_size_proxy
         for old, fixed in self.compatibility:
             self.data[old] = self.data[fixed]
+
+    def default_size_proxy(self, face_id):
+        """Proxy function to allow for better indicators of area or importance than mere number of faces."""
+        return 1
 
     def resolve_row(self, others):
         """Resolve a ``RoW`` against an iterable of specific regions.
@@ -45,7 +50,7 @@ class Topology(object):
 
         If ``resolved_row`` is ``None``, then ``RoW`` contains nothing, **not even itself** (because without ``resolved_row``, we don't know what is included in the "other" ``RoW``).
 
-        Note that the ``resolved_row`` is in the spatial system of ``location``, not the list of locations to check against!
+        ``GLO`` contains ``RoW`` if a) ``RoW`` is resolved, and fits in ``GLO`` (taken ``subtract`` into account); or, b) ``RoW`` is not resolved and there is no ``subtract``.
 
         Args:
 
@@ -75,12 +80,13 @@ class Topology(object):
                   for key, value in self.data.items()
                   if not value.difference(faces)
                   and not (key == location and exclude_self)}
-        if (resolved_row is not None
-            and resolved_row
-            and not resolved_row.difference(faces)):
+        if (resolved_row not in (set(), None)
+            and not resolved_row.difference(faces)
+            and not (location == 'RoW' and exclude_self)):
             result.add("RoW")
-        # Always include RoW under certain circumstances
-        elif location == 'GLO' and resolved_row is None:
+        # Always include RoW for 'GLO' unless ``resolved_row``
+        # (in which case it would already be there if it fit)
+        elif location == 'GLO' and resolved_row is None and not subtract:
             result.add("RoW")
         return result
 
@@ -125,14 +131,16 @@ class Topology(object):
                 resolved_row=resolved_row
             )
 
-    def ordered_dependencies(self, datasets):
+    def ordered_dependencies(self, datasets, resolved_row=None):
         """Return a list of locations from ``datasets`` in order from largest to smallest.
 
-        Area calculations are based on the number of intersected topological faces."""
-        locations = {ds['location'] for ds in datasets}
-        contained = {loc: self.contained(loc, exclude_self=True).intersection(locations)
-                     for loc in locations}
-        ordered = sorted(contained, key=lambda k: (len(contained[k]), k), reverse=True)
+        Area calculations use ``self.size_proxy``, which by default uses number of topological faces."""
+        locations = [ds['location'] for ds in datasets]
+        get_faces = lambda loc: resolved_row if (loc == 'RoW' and resolved_row) else self(loc)
+        size = lambda loc: sum(self.size_proxy(face)
+                               for face in get_faces(loc))
+
+        ordered = sorted(locations, key=lambda k: (size(k), k), reverse=True)
         return ordered
 
     @functools.lru_cache(maxsize=512)
