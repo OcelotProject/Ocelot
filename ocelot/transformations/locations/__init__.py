@@ -6,6 +6,7 @@ from ..cutoff import RC_STRING
 from ...collection import Collection
 from ..utils import label_reference_product
 from ..identifying import add_unique_codes
+from .cleanup import correct_natural_gas_pipeline_location
 from .linking import (
     actualize_activity_links,
     add_reference_product_codes,
@@ -39,6 +40,7 @@ link_markets_by_pv = Collection(
     label_reference_product,
     delete_allowed_zero_pv_market_datsets,
     assign_fake_pv_to_confidential_datasets,
+    correct_natural_gas_pipeline_location,
     relabel_global_to_row,
     no_row_market_groups,
     add_unique_codes,
