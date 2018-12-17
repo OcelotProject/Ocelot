@@ -3,7 +3,9 @@ from . import topology, RC_STRING
 from ... import toolz
 from ...errors import OverlappingMarkets  #, UnresolvableActivityLink
 from ..utils import get_single_reference_product
+from .markets import allocate_suppliers
 import logging
+
 
 logger = logging.getLogger('ocelot')
 detailed = logging.getLogger('ocelot-detailed')
@@ -95,11 +97,16 @@ def link_consumers_to_regional_markets(data):
         'reference product',
         filter(filter_func, data)
     )
-    for ds in data:
-        for exc in filter(unlinked, ds['exchanges']):
+
+    ta_filter = lambda x: x['type'] == "transforming activity"
+    for ds in filter(ta_filter, data):
+        for exc in filter(unlinked, list(ds['exchanges'])):
             try:
                 contained = [
-                    market for market in market_mapping[exc['name']]
+                    market
+                    for market in market_mapping[exc['name']]
+                    # Don't need to test separately because markets
+                    # are geographically exclusive, so both can't be true at once
                     if (topology.contains(ds['location'], market['location']) or
                         topology.contains(market['location'], ds['location']))]
                 assert contained
@@ -109,20 +116,21 @@ def link_consumers_to_regional_markets(data):
                 sup = contained[0]
                 exc['code'] = sup['code']
 
-                message = "Link input of '{}' to '{}' ({})"
+                message = "Link complete input of {} '{}' to '{}' ({})"
+                print(exc)
                 detailed.info({
                     'ds': ds,
-                    'message': message.format(exc['name'], sup['name'], sup['location']),
+                    'message': message.format(
+                        exc['name'],
+                        exc['amount'],
+                        sup['name'],
+                        sup['location']
+                    ),
                     'function': 'link_consumers_to_regional_markets'
                 })
             else:
-                # Shouldn't be possible - markets shouldn't overlap
-                message = "Multiple markets contain {} in {}:\n{}"
-                raise OverlappingMarkets(message.format(
-                    exc['name'],
-                    ds['location'],
-                    [x['location'] for x in contained])
-                )
+                ds['suppliers'] = contained
+                allocate_suppliers(ds, is_market=False, exc=exc)
     return data
 
 
@@ -136,7 +144,8 @@ def link_consumers_to_global_markets(data):
         filter(filter_func, data)
     )
 
-    for ds in data:
+    ta_filter = lambda x: x['type'] == "transforming activity"
+    for ds in filter(ta_filter, data):
         for exc in filter(unlinked, ds['exchanges']):
             try:
                 contributors = [

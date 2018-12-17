@@ -6,6 +6,7 @@ from ..utils import (
     get_single_reference_product,
     remove_exchange_uncertainty,
 )
+from ..uncertainty import scale_exchange
 from .validation import no_overlaps, no_geo_duplicates
 from copy import deepcopy
 import logging
@@ -162,35 +163,60 @@ def allocate_all_market_suppliers(data, kind="market activity"):
     return data
 
 
-def allocate_suppliers(dataset):
+def allocate_suppliers(dataset, is_market=True, exc=None):
     """Allocate suppliers to a market dataset and create input exchanges.
 
-    The sum of the suppliers inputs should add up to the production amount of the market (reference product exchange amount), minus any constrained market links. Constrained market exchanges should already be in the list of dataset exchanges, with the attribute ``constrained``."""
-    rp = get_single_reference_product(dataset)
-    scale_factor = rp['amount']
+    The sum of the suppliers inputs should add up to the production amount of the market (reference product exchange amount), minus any constrained market links. Constrained market exchanges should already be in the list of dataset exchanges, with the attribute ``constrained``.
+
+    ``is_market`` and ``exc`` options tested by ``link_consumers_to_regional_markets`` tests."""
+    if not exc:
+        exc = get_single_reference_product(dataset)
+    scale_factor = exc['amount']
     total_pv = sum(o['production volume']['amount']
                    for o in dataset['suppliers'])
 
     if not total_pv:
         if len(dataset['suppliers']) != 1:
-            # TODO: Raise error here
-            print("Skipping zero total PV with multiple inputs:\n\t{}/{} ({}, {} suppliers)".format(dataset['name'], rp['name'], dataset['location'], len(dataset['suppliers'])))
+            # TODO: Raise error here (or just allocate equally?)
+            print("Skipping zero total PV with multiple inputs:\n\t{}/{} ({}, {} suppliers)".format(dataset['name'], exc['name'], dataset['location'], len(dataset['suppliers'])))
             return
         else:
+            message = ("Assigning default production volume (single supplier, "
+                       "zero PV): {} | {} | {}; supplier {} | {}")
+            detailed.info({
+                'ds': dataset,
+                'message': message.format(
+                    dataset['name'],
+                    dataset['reference product'],
+                    dataset['location'],
+                    dataset['suppliers']['name'],
+                    dataset['suppliers']['location'],
+                ),
+                'function': 'allocate_suppliers'
+            })
             total_pv = dataset['suppliers'][0]['production volume']['amount'] = 4321
 
     for supply_exc in dataset['suppliers']:
         amount = supply_exc['production volume']['amount'] / total_pv * scale_factor
         if not amount:
             continue
-        dataset['exchanges'].append(remove_exchange_uncertainty({
-            'amount': amount,
-            'name': supply_exc['name'],
-            'unit': supply_exc['unit'],
-            'type': 'from technosphere',
-            'tag': 'intermediateExchange',
-            'code': supply_exc['code']
-        }))
+        if not is_market:
+            dataset['exchanges'].append(remove_exchange_uncertainty({
+                'amount': amount,
+                'name': supply_exc['name'],
+                'unit': supply_exc['unit'],
+                'type': 'from technosphere',
+                'tag': 'intermediateExchange',
+                'code': supply_exc['code']
+            }))
+        else:
+            new_exc = scale_exchange(deepcopy(exc), scale_factor)
+            new_exc.update({
+                'type': 'from technosphere',
+                'tag': 'intermediateExchange',
+                'code': supply_exc['code']
+            })
+            dataset['exchanges'].append(new_exc)
 
         message = "Create input exchange of {:.4g} {} for '{}' from '{}' ({})"
         detailed.info({
@@ -198,12 +224,16 @@ def allocate_suppliers(dataset):
             'message': message.format(
                 amount,
                 supply_exc['unit'],
-                rp['name'],
+                exc['name'],
                 supply_exc['name'],
                 supply_exc['location']
             ),
             'function': 'allocate_suppliers'
         })
+
+    if not is_market:
+        dataset['exchanges'] = [x for x in dataset['exchanges'] if x != exc]
+
     return dataset
 
 

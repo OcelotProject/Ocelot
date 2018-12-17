@@ -53,6 +53,7 @@ link_markets_by_pv = Collection(
     check_markets_only_supply_one_market_group,
     partial(update_market_production_volumes, kind='market group'),
     partial(allocate_all_market_suppliers, kind='market group'),
+    # Commented out during development
     # delete_suppliers_list,
     # drop_zero_pv_row_datasets,
     link_consumers_to_regional_markets,

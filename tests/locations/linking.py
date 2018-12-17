@@ -1,4 +1,4 @@
-from ocelot.errors import UnresolvableActivityLink, OverlappingMarkets
+from ocelot.errors import UnresolvableActivityLink
 from ocelot.transformations.locations.linking import (add_reference_product_codes,
     actualize_activity_links,
     link_consumers_to_global_markets,
@@ -147,6 +147,114 @@ def test_link_consumers_to_regional_markets():
         'location': 'DE',
         'exchanges': [{
             'type': 'from technosphere',
+            'name': 'cheese',
+            'amount': 2,
+        }, {
+            'type': 'from technosphere',
+            'name': 'cheese',
+            'code': 'already here',
+        }, {
+            'type': 'something else',
+            'name': 'cheese',
+        }]
+    }]
+    expected = [{
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'name': '',
+        'location': 'RER',
+        'code': 'Made in the EU',
+        'exchanges': [],
+    }, {
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'name': '',
+        'location': 'BR',
+        'code': 'olympics',
+        'exchanges': [],
+    }, {
+        'type': 'market group',
+        'reference product': 'sandwiches',
+        'name': '',
+        'location': 'BR',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese',
+        }]
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': '',
+        'location': 'DE',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese',
+            'amount': 2,
+            'code': 'Made in the EU',
+        }, {
+            'type': 'from technosphere',
+            'name': 'cheese',
+            'code': 'already here',
+        }, {
+            'type': 'something else',
+            'name': 'cheese',
+        }]
+    }]
+    assert link_consumers_to_regional_markets(given) == expected
+
+def test_link_consumers_to_regional_markets_no_market():
+    missing = [{
+        'type': 'market activity',
+        'reference product': 'granola',
+        'name': '',
+        'location': 'UCTE without Germany',
+        'code': '',
+        'exchanges': [],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': '',
+        'location': 'FR',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese'
+        }]
+    }]
+    link_consumers_to_regional_markets(missing)
+
+def test_link_consumers_to_regional_markets_global_activity():
+    return
+    given = [{
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'name': '',
+        'location': 'RER',
+        'code': 'Made in the EU',
+        'exchanges': [],
+    }, {
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'name': '',
+        'location': 'BR',
+        'code': 'olympics',
+        'exchanges': [],
+    }, {
+        'type': 'market group',
+        'reference product': 'sandwiches',
+        'name': '',
+        'location': 'BR',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese'
+        }]
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': '',
+        'location': 'DE',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'amount': 3,
             'name': 'cheese'
         }, {
             'type': 'from technosphere',
@@ -201,53 +309,33 @@ def test_link_consumers_to_regional_markets():
     }]
     assert link_consumers_to_regional_markets(given) == expected
 
-def test_link_consumers_to_regional_markets_no_market():
-    missing = [{
-        'type': 'market activity',
-        'reference product': 'granola',
-        'name': '',
-        'location': 'UCTE without Germany',
-        'code': '',
-        'exchanges': [],
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'crackers',
-        'name': '',
-        'location': 'FR',
-        'exchanges': [{
-            'type': 'from technosphere',
-            'name': 'cheese'
-        }]
-    }]
-    link_consumers_to_regional_markets(missing)
-
-def test_link_consumers_to_regional_markets_overlapping_markets():
-    error = [{
-        'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'RER',
-        'code': '',
-        'exchanges': [],
-    }, {
-        'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'UCTE without Germany',
-        'code': '',
-        'exchanges': [],
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'crackers',
-        'name': '',
-        'location': 'FR',
-        'exchanges': [{
-            'type': 'from technosphere',
-            'name': 'cheese'
-        }]
-    }]
-    with pytest.raises(OverlappingMarkets):
-        link_consumers_to_regional_markets(error)
+# def test_link_consumers_to_regional_markets_overlapping_markets():
+#     error = [{
+#         'type': 'market activity',
+#         'reference product': 'cheese',
+#         'name': '',
+#         'location': 'RER',
+#         'code': '',
+#         'exchanges': [],
+#     }, {
+#         'type': 'market activity',
+#         'reference product': 'cheese',
+#         'name': '',
+#         'location': 'UCTE without Germany',
+#         'code': '',
+#         'exchanges': [],
+#     }, {
+#         'type': 'transforming activity',
+#         'reference product': 'crackers',
+#         'name': '',
+#         'location': 'FR',
+#         'exchanges': [{
+#             'type': 'from technosphere',
+#             'name': 'cheese'
+#         }]
+#     }]
+#     with pytest.raises(OverlappingMarkets):
+#         link_consumers_to_regional_markets(error)
 
 def test_link_consumers_to_global_markets_no_link():
     given = [{

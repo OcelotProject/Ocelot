@@ -1,0 +1,43 @@
+TODO:
+
+2. Fix consumption of market group suppliers
+
+    Need to group by reference product, and substitute more than one exchanges at once
+
+    Also need to ignore direct links (might need to flag this earlier)
+
+3. Profile add_suppliers_to_markets
+
+4. Error with current model run
+
+  File "/Users/cmutel/Code/ocelot/ocelot/transformations/locations/linking.py", line 124, in link_consumers_to_regional_markets
+    [x['location'] for x in contained])
+ocelot.errors.OverlappingMarkets: Multiple markets contain transport, freight train in GLO:
+['CH', 'US', 'CN', 'Europe without Switzerland', 'RoW']
+
+5. Log market groups whose constituent markets don't encompass the market group location (#148)
+
+6. Log partially overlapping market groups (#150)
+
+7. Check for overlapping markets - raise error (#151)
+
+
+Issues to close:
+
+https://github.com/OcelotProject/Ocelot/issues/147
+
+https://github.com/OcelotProject/Ocelot/issues/146
+
+https://github.com/OcelotProject/Ocelot/issues/149
+
+https://github.com/OcelotProject/Ocelot/issues/143
+
+https://github.com/OcelotProject/Ocelot/issues/140
+
+https://github.com/OcelotProject/Ocelot/issues/131
+
+https://github.com/OcelotProject/Ocelot/issues/100
+
+https://github.com/OcelotProject/Ocelot/issues/150
+
+https://github.com/OcelotProject/Ocelot/issues/151
