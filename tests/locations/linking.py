@@ -7,6 +7,7 @@ from ocelot.transformations.locations.linking import (add_reference_product_code
     log_and_delete_unlinked_exchanges,
 )
 import pytest
+from copy import deepcopy
 
 
 def test_add_reference_product_codes():
@@ -223,119 +224,100 @@ def test_link_consumers_to_regional_markets_no_market():
     link_consumers_to_regional_markets(missing)
 
 def test_link_consumers_to_regional_markets_global_activity():
-    return
     given = [{
-        'type': 'market activity',
+        'type': 'transforming activity',
         'reference product': 'cheese',
         'name': '',
-        'location': 'RER',
-        'code': 'Made in the EU',
-        'exchanges': [],
-    }, {
-        'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'BR',
-        'code': 'olympics',
-        'exchanges': [],
-    }, {
-        'type': 'market group',
-        'reference product': 'sandwiches',
-        'name': '',
-        'location': 'BR',
+        'location': 'GLO',
+        'code': 'g',
         'exchanges': [{
             'type': 'from technosphere',
-            'name': 'cheese'
+            'name': 'enzymes',
+            'amount': 2,
+            'unit': 'foo',
+        }],
+    }, {
+        'type': 'market activity',
+        'reference product': 'enzymes',
+        'name': '',
+        'location': 'CH',
+        'code': 'ch',
+        'exchanges': [{
+            'type': 'reference product',
+            'production volume': {'amount': 1},
+            'name': 'special swiss enzymes'
         }]
     }, {
-        'type': 'transforming activity',
-        'reference product': 'crackers',
+        'type': 'market activity',
+        'reference product': 'enzymes',
         'name': '',
-        'location': 'DE',
+        'location': 'US',
+        'code': 'us',
         'exchanges': [{
-            'type': 'from technosphere',
-            'amount': 3,
-            'name': 'cheese'
-        }, {
-            'type': 'from technosphere',
-            'name': 'cheese',
-            'code': 'already here',
-        }, {
-            'type': 'something else',
-            'name': 'cheese',
+            'type': 'reference product',
+            'production volume': {'amount': 2},
+            'name': 'special USA enzymes'
+        }]
+    }, {
+        'type': 'market activity',
+        'reference product': 'enzymes',
+        'name': '',
+        'location': 'RoW',
+        'code': 'row',
+        'exchanges': [{
+            'type': 'reference product',
+            'production volume': {'amount': 3},
+            'name': 'boring enzymes'
+        }]
+    }, {
+        'type': 'market activity',
+        'reference product': 'enzymes',
+        'name': '',
+        'location': 'CN',
+        'code': 'cn',
+        'exchanges': [{
+            'type': 'reference product',
+            'production volume': {'amount': 4},
+            'name': 'special mandarin enzymes'
         }]
     }]
     expected = [{
-        'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'RER',
-        'code': 'Made in the EU',
-        'exchanges': [],
-    }, {
-        'type': 'market activity',
-        'reference product': 'cheese',
-        'name': '',
-        'location': 'BR',
-        'code': 'olympics',
-        'exchanges': [],
-    }, {
-        'type': 'market group',
-        'reference product': 'sandwiches',
-        'name': '',
-        'location': 'BR',
-        'exchanges': [{
-            'type': 'from technosphere',
-            'name': 'cheese',
-            'code': 'olympics',
-        }]
-    }, {
-        'type': 'transforming activity',
-        'reference product': 'crackers',
-        'name': '',
-        'location': 'DE',
-        'exchanges': [{
-            'type': 'from technosphere',
-            'name': 'cheese',
-            'code': 'Made in the EU',
-        }, {
-            'type': 'from technosphere',
-            'name': 'cheese',
-            'code': 'already here',
-        }, {
-            'type': 'something else',
-            'name': 'cheese',
-        }]
+        'amount': 0.2,
+        'code': 'ch',
+        'name': 'enzymes',
+        'tag': 'intermediateExchange',
+        'type': 'from technosphere',
+        'unit': 'foo'
+    },{
+        'amount': 0.4,
+        'code': 'us',
+        'name': 'enzymes',
+        'tag': 'intermediateExchange',
+        'type': 'from technosphere',
+        'unit': 'foo',
+    },{
+        'amount': 0.6,
+        'code': 'row',
+        'name': 'enzymes',
+        'tag': 'intermediateExchange',
+        'type': 'from technosphere',
+        'unit': 'foo',
+    },{
+        'amount': 0.8,
+        'code': 'cn',
+        'name': 'enzymes',
+        'tag': 'intermediateExchange',
+        'type': 'from technosphere',
+        'unit': 'foo'
     }]
-    assert link_consumers_to_regional_markets(given) == expected
-
-# def test_link_consumers_to_regional_markets_overlapping_markets():
-#     error = [{
-#         'type': 'market activity',
-#         'reference product': 'cheese',
-#         'name': '',
-#         'location': 'RER',
-#         'code': '',
-#         'exchanges': [],
-#     }, {
-#         'type': 'market activity',
-#         'reference product': 'cheese',
-#         'name': '',
-#         'location': 'UCTE without Germany',
-#         'code': '',
-#         'exchanges': [],
-#     }, {
-#         'type': 'transforming activity',
-#         'reference product': 'crackers',
-#         'name': '',
-#         'location': 'FR',
-#         'exchanges': [{
-#             'type': 'from technosphere',
-#             'name': 'cheese'
-#         }]
-#     }]
-#     with pytest.raises(OverlappingMarkets):
-#         link_consumers_to_regional_markets(error)
+    assert (
+        link_consumers_to_regional_markets(deepcopy(given))[1:] ==
+        given[1:]
+    )
+    assert (
+        link_consumers_to_regional_markets(deepcopy(given))[0]['exchanges'] ==
+        expected
+    )
 
 def test_link_consumers_to_global_markets_no_link():
     given = [{

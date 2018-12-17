@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from . import topology, RC_STRING
 from ... import toolz
+from ...data_helpers import production_volume
 from ...errors import OverlappingMarkets  #, UnresolvableActivityLink
 from ..utils import get_single_reference_product
-from .markets import allocate_suppliers
+from .markets import allocate_suppliers, annotate_exchange
 import logging
 
 
@@ -98,6 +99,11 @@ def link_consumers_to_regional_markets(data):
         filter(filter_func, data)
     )
 
+    def annotate(exc, ds):
+        exc = annotate_exchange(exc, ds)
+        exc['production volume'] = {'amount': production_volume(ds, 0)}
+        return exc
+
     ta_filter = lambda x: x['type'] == "transforming activity"
     for ds in filter(ta_filter, data):
         for exc in filter(unlinked, list(ds['exchanges'])):
@@ -117,7 +123,6 @@ def link_consumers_to_regional_markets(data):
                 exc['code'] = sup['code']
 
                 message = "Link complete input of {} '{}' to '{}' ({})"
-                print(exc)
                 detailed.info({
                     'ds': ds,
                     'message': message.format(
@@ -129,7 +134,7 @@ def link_consumers_to_regional_markets(data):
                     'function': 'link_consumers_to_regional_markets'
                 })
             else:
-                ds['suppliers'] = contained
+                ds['suppliers'] = [annotate(exc, o) for o in contained]
                 allocate_suppliers(ds, is_market=False, exc=exc)
     return data
 

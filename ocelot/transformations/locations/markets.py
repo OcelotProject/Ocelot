@@ -171,7 +171,6 @@ def allocate_suppliers(dataset, is_market=True, exc=None):
     ``is_market`` and ``exc`` options tested by ``link_consumers_to_regional_markets`` tests."""
     if not exc:
         exc = get_single_reference_product(dataset)
-    scale_factor = exc['amount']
     total_pv = sum(o['production volume']['amount']
                    for o in dataset['suppliers'])
 
@@ -197,12 +196,12 @@ def allocate_suppliers(dataset, is_market=True, exc=None):
             total_pv = dataset['suppliers'][0]['production volume']['amount'] = 4321
 
     for supply_exc in dataset['suppliers']:
-        amount = supply_exc['production volume']['amount'] / total_pv * scale_factor
-        if not amount:
+        scale_factor = supply_exc['production volume']['amount'] / total_pv
+        if not scale_factor:
             continue
         if is_market:
             dataset['exchanges'].append(remove_exchange_uncertainty({
-                'amount': amount,
+                'amount': scale_factor * exc['amount'],
                 'name': supply_exc['name'],
                 'unit': supply_exc['unit'],
                 'type': 'from technosphere',
@@ -214,7 +213,7 @@ def allocate_suppliers(dataset, is_market=True, exc=None):
             new_exc.update({
                 'type': 'from technosphere',
                 'tag': 'intermediateExchange',
-                'code': supply_exc['code']
+                'code': supply_exc['code'],
             })
             dataset['exchanges'].append(new_exc)
 
@@ -222,7 +221,7 @@ def allocate_suppliers(dataset, is_market=True, exc=None):
         detailed.info({
             'ds': dataset,
             'message': message.format(
-                amount,
+                scale_factor * exc['amount'],
                 supply_exc['unit'],
                 exc['name'],
                 supply_exc['name'],

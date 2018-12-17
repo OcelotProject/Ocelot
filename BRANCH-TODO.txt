@@ -8,13 +8,6 @@ TODO:
 
 3. Profile add_suppliers_to_markets
 
-4. Error with current model run
-
-  File "/Users/cmutel/Code/ocelot/ocelot/transformations/locations/linking.py", line 124, in link_consumers_to_regional_markets
-    [x['location'] for x in contained])
-ocelot.errors.OverlappingMarkets: Multiple markets contain transport, freight train in GLO:
-['CH', 'US', 'CN', 'Europe without Switzerland', 'RoW']
-
 5. Log market groups whose constituent markets don't encompass the market group location (#148)
 
 6. Log partially overlapping market groups (#150)
