@@ -113,7 +113,10 @@ def link_consumers_to_markets(data):
             try:
                 candidates = market_mapping[exc['name']]
             except KeyError:
-                raise MissingSupplier("No markets found for product {}".format(exc['name']))
+                if exc['name'] == 'refinery gas':
+                    pass
+                else:
+                    raise MissingSupplier("No markets found for product {}".format(exc['name']))
             found, to_add = [], []
 
             markets = {x['location']: x for x in candidates if x['type'] == 'market activity'}
@@ -186,38 +189,6 @@ link_consumers_to_markets.__table__ = {
     'title': "Link market and market group suppliers to transforming activities.",
     'columns': ["Name", "Location", "Supplier Location"]
 }
-
-# def link_consumers_to_global_markets(data):
-#     """Link technosphere exchange inputs to ``GLO`` or ``RoW`` markets.
-
-#     Add the field ``code`` to each exchange with the code of the linked market activity."""
-#     filter_func = lambda x: x['type'] == "market activity"
-#     market_mapping = toolz.groupby(
-#         'reference product',
-#         filter(filter_func, data)
-#     )
-
-#     ta_filter = lambda x: x['type'] == "transforming activity"
-#     for ds in filter(ta_filter, data):
-#         for exc in filter(unlinked, ds['exchanges']):
-#             try:
-#                 contributors = [
-#                     x for x in market_mapping[exc['name']]
-#                     if x['location'] in ("GLO", "RoW")]
-#                 assert len(contributors) == 1
-#             except (KeyError, AssertionError):
-#                 continue
-
-#             sup = contributors[0]
-#             exc['code'] = sup['code']
-
-#             message = "Link input of '{}' to '{}' ({})"
-#             detailed.info({
-#                 'ds': ds,
-#                 'message': message.format(exc['name'], sup['name'], sup['location']),
-#                 'function': 'link_consumers_to_global_markets'
-#             })
-#     return data
 
 
 def log_and_delete_unlinked_exchanges(data):

@@ -1,19 +1,10 @@
 TODO:
 
-2. Fix consumption of market group suppliers
-
-    Need to group by reference product, and substitute more than one exchanges at once
-
-    Also need to ignore direct links (might need to flag this earlier)
-
-3. Profile add_suppliers_to_markets
-
 5. Log market groups whose constituent markets don't encompass the market group location (#148)
 
 6. Log partially overlapping market groups (#150)
 
 7. Check for overlapping markets - raise error (#151)
-
 
 Issues to close:
 
@@ -34,3 +25,6 @@ https://github.com/OcelotProject/Ocelot/issues/100
 https://github.com/OcelotProject/Ocelot/issues/150
 
 https://github.com/OcelotProject/Ocelot/issues/151
+
+Issues verified closed:
+
