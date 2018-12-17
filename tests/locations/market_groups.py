@@ -26,6 +26,14 @@ class FakeTopology:
         else:
             return set()
 
+    def contains(self, parent, child, subtract=None, resolved_row=None):
+        if parent == 'G1' and child in {'M1', 'M2', 'G2'}:
+            return True
+        elif parent == 'G2' and child == 'M1':
+            return True
+        else:
+            return False
+
     def __call__(self, x):
         return set()
 
@@ -34,57 +42,6 @@ def reformat_suppliers(result):
     result_as_dict = {ds['code']: sorted([exc['code'] for exc in ds.get('suppliers', [])])
                       for ds in result}
     return {k: v for k, v in result_as_dict.items() if v}
-
-
-@pytest.fixture(scope="function")
-def group_fixture(monkeypatch):
-    monkeypatch.setattr(
-        'ocelot.transformations.locations.market_groups.topology',
-        FakeTopology()
-    )
-    data = [{
-        'type': 'market activity',
-        'location': 'M1',
-        'code': '1',
-        'name': 'market for foo',
-        'reference product': 'foo',
-        'exchanges': [{
-            'type': 'reference product',
-            'name': 'foo',
-        }]
-    }, {
-        'type': 'market activity',
-        'location': 'M2',
-        'code': '2',
-        'name': 'market for foo',
-        'reference product': 'foo',
-        'exchanges': [{
-            'type': 'reference product',
-            'name': 'foo',
-        }]
-    }, {
-        'type': 'market group',
-        'location': 'G1',
-        'code': '3',
-        'name': 'market group for foo',
-        'reference product': 'foo',
-        'exchanges': [{
-            'type': 'reference product',
-            'name': 'foo',
-        }]
-    }, {
-        'type': 'market group',
-        'location': 'G2',
-        'code': '4',
-        'name': 'market group for foo',
-        'reference product': 'foo',
-        'exchanges': [{
-            'type': 'reference product',
-            'name': 'foo',
-        }]
-    }]
-    return data
-
 
 def test_inconsistent_names():
     data = [{
@@ -99,91 +56,66 @@ def test_inconsistent_names():
     with pytest.raises(MarketGroupError):
         link_market_group_suppliers(data)
 
-def test_link_market_group_suppliers_format(group_fixture):
-    expected = [{
-        'type': 'market activity',
-        'location': 'M1',
-        'code': '1',
-        'name': 'market for foo',
-        'reference product': 'foo',
-        'exchanges': [{
-            'type': 'reference product', 'name': 'foo',
-        }]
-    }, {
-        'type': 'market activity',
-        'location': 'M2',
-        'code': '2',
-        'name': 'market for foo',
-        'reference product': 'foo',
-        'exchanges': [{
-            'type': 'reference product', 'name': 'foo',
-        }]
-    }, {
-        'code': '3',
-        'exchanges': [
-            {'name': 'foo', 'type': 'reference product'}
-        ],
-        'location': 'G1',
-        'name': 'market group for foo',
-        'reference product': 'foo',
-        'suppliers': [{
-            'code': '2',
-             'exchanges': [{
-                'name': 'foo', 'type': 'reference product'
-            }],
-            'location': 'M2',
-            'name': 'market for foo',
-            'reference product': 'foo',
-            'type': 'market activity'
-        }, {
-            'code': '4',
-            'exchanges': [
-                {'name': 'foo', 'type': 'reference product'}
-            ],
-            'location': 'G2',
-            'name': 'market group for foo',
-            'reference product': 'foo',
-            'suppliers': [{
-                'code': '1',
-                'exchanges': [{
-                    'name': 'foo', 'type': 'reference product'
-                }],
-                'location': 'M1',
-                'name': 'market for foo',
-                'reference product': 'foo',
-                'type': 'market activity'
-            }],
-            'type': 'market group'
-        }],
-        'type': 'market group'
-    }, {
-        'code': '4',
-        'exchanges': [{
-            'name': 'foo', 'type': 'reference product'
-        }],
-        'location': 'G2',
-        'name': 'market group for foo',
-        'reference product': 'foo',
-        'suppliers': [{
-            'code': '1',
-            'exchanges': [{
-                'name': 'foo', 'type': 'reference product'
-            }],
-            'location': 'M1',
-            'name': 'market for foo',
-            'reference product': 'foo',
-            'type': 'market activity'
-        }],
-        'type': 'market group'
-    }]
-    assert link_market_group_suppliers(group_fixture) == expected
-
-def test_link_market_group_suppliers(group_fixture):
+def test_real_locations_including_glo_but_excluding_row():
+    # Markets: RoW, CA, FR, NO
+    # Market groups: GLO, RER, WEU (Western Europe)
     expected = {
-        "3": ["2", "4"],
-        "4": ["1"],
-     }
-    assert reformat_suppliers(link_market_group_suppliers(group_fixture)) == expected
+        "GLO": ['CA', 'RER', 'RoW'],
+        "RER": ['NO', 'WEU'],
+        "WEU": ['FR'],
+
+    }
+    given = [{
+        'type': 'market activity',
+        'location': 'RoW',
+        'code': 'RoW',
+        'name': 'market for foo',
+        'reference product': 'foo',
+        'exchanges': [{'type': 'reference product', 'name': 'foo'}]
+    }, {
+        'type': 'market activity',
+        'location': 'CA',
+        'code': 'CA',
+        'name': 'market for foo',
+        'reference product': 'foo',
+        'exchanges': [{'type': 'reference product', 'name': 'foo'}]
+    }, {
+        'type': 'market activity',
+        'location': 'FR',
+        'code': 'FR',
+        'name': 'market for foo',
+        'reference product': 'foo',
+        'exchanges': [{'type': 'reference product', 'name': 'foo'}]
+    }, {
+        'type': 'market activity',
+        'location': 'NO',
+        'code': 'NO',
+        'name': 'market for foo',
+        'reference product': 'foo',
+        'exchanges': [{'type': 'reference product', 'name': 'foo'}]
+    }, {
+        'type': 'market group',
+        'location': 'GLO',
+        'code': 'GLO',
+        'name': 'market group for foo',
+        'reference product': 'foo',
+        'exchanges': [{'type': 'reference product', 'name': 'foo'}]
+    }, {
+        'type': 'market group',
+        'location': 'RER',
+        'code': 'RER',
+        'name': 'market group for foo',
+        'reference product': 'foo',
+        'exchanges': [{'type': 'reference product', 'name': 'foo'}]
+    }, {
+        'type': 'market group',
+        'location': 'WEU',
+        'code': 'WEU',
+        'name': 'market group for foo',
+        'reference product': 'foo',
+        'exchanges': [{'type': 'reference product', 'name': 'foo'}]
+    }]
+    assert reformat_suppliers(link_market_group_suppliers(given)) == expected
 
 def test_real_locations_including_glo_and_row():
     # Markets: RoW, CA, FR, NO

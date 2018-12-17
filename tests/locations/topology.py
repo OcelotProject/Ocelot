@@ -30,7 +30,7 @@ def test_topology_contained():
 def test_topology_contained_exclude_self():
     assert topology.contained('RU', exclude_self=True) == {'Russia (Asia)', 'Russia (Europe)'}
 
-def test_topology_contained_glo_always_contains_row():
+def test_topology_contained_glo_contains_row():
     assert 'RoW' in topology.contained('GLO')
     resolved = topology.resolve_row(['CH'])
     assert 'RoW' in topology.contained('GLO', resolved_row=resolved)

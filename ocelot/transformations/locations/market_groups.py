@@ -20,7 +20,14 @@ detailed = logging.getLogger('ocelot-detailed')
 
 
 def link_market_group_suppliers(data):
-    """Link suppliers to market groups and populate ``dataset['suppliers']``."""
+    """Link suppliers to market groups and populate ``dataset['suppliers']``.
+
+    Market groups can overlap, so our strategy is to fill up the market groups starting with the largest suppliers contained within the location. We choose between markets and market groups at the same time, preferring markets over market groups if they have the same location (which is normally not allowed). Sorting is done using ``topology.default_size_proxy``, which currently counts the number of topological faces.
+
+    The same market can supply more than one market group, such as individual country mixes supplying the market groups for ENTSO-E and Europe without Switzerland.
+
+    Market group locations can never be ``RoW``, as market groups overlap.
+    """
     filter_func = lambda x: x['type'] == "market group"
     market_groups = dict(toolz.groupby(
         'reference product',
@@ -33,35 +40,46 @@ def link_market_group_suppliers(data):
             raise MarketGroupError("Inconsistent activity names in market group")
 
     for ref_product, group in market_groups.items():
-        suppliers = {ds['location']: ds for ds in data
+        markets = {ds['location']: ds for ds in data
                      if ds['type'] == 'market activity'
                      and ds['reference product'] == ref_product}
-
         mg_by_location = {ds['location']: ds for ds in group}
-        seen_m, seen_mg = set(), set()
 
-        if 'RoW' in suppliers:
-            resolved_row = topology.resolve_row(suppliers)
+        if 'RoW' in markets:
+            resolved_supplier_row = topology.resolve_row(markets)
         else:
-            resolved_row = None
+            resolved_supplier_row = set()
 
-        for loc in reversed(topology.ordered_dependencies(group)):
-            m = topology.contained(
-                loc,
-                exclude_self=False,
-                resolved_row=resolved_row
-            ).intersection(set(suppliers)).difference(seen_m)
-            mg = topology.contained(
-                loc, exclude_self=True
-            ).intersection(set(mg_by_location)).difference(seen_mg)
-            seen_m.update(m)
-            seen_mg.update(mg)
+        together = set(markets).union(set(mg_by_location))
+        ordered = topology.ordered_dependencies(
+            [{'location': l} for l in together],
+            resolved_supplier_row
+        )
+
+        for loc in mg_by_location:
             ds = mg_by_location[loc]
-            ds['suppliers'] = sorted(
-                [suppliers[o] for o in m] +
-                [mg_by_location[o] for o in mg],
-                key=lambda x: x['code']
-            )
+            found, to_add = [], []
+
+            for candidate in ordered:
+                if topology.contains(loc, candidate, subtract=found, resolved_row=resolved_supplier_row):
+                    if candidate in markets:
+                        found.append(candidate)
+                        to_add.append(markets[candidate])
+                    elif candidate != loc:
+                        # Skip our own output
+                        found.append(candidate)
+                        to_add.append(mg_by_location[candidate])
+
+            ds['suppliers'] = [
+                annotate_exchange(
+                    get_single_reference_product(obj),
+                    obj
+                ) for obj in sorted(
+                    to_add,
+                    key=lambda x: x['code']
+                )
+            ]
+
             if not ds['suppliers']:
                 del ds['suppliers']
                 continue

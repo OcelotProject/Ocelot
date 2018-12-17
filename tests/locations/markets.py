@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+from copy import deepcopy
+from ocelot.data_helpers import production_volume
 from ocelot.errors import OverlappingMarkets, MissingSupplier
 from ocelot.transformations.locations.markets import *
-from copy import deepcopy
 
 
 def generate_dataset(location, name='f', rp='b', kind="market activity"):
@@ -695,6 +696,68 @@ def test_update_market_production_volumes_negative_sum():
     }]
     ds = update_market_production_volumes(given, 'foo')[0]
     assert ds['exchanges'][0]['production volume']['amount'] == 0
+
+def test_update_market_production_volumes_recursive():
+    given = [{
+        'name': '',
+        'code': 'a',
+        'type': 'market group',
+        'location': 'GLO',
+        'exchanges': [{
+            'name': '',
+            'type': 'reference product',
+            'production volume': {},
+        }],
+        'suppliers': [
+            {'code': 'b'},
+            {'code': 'd'},
+        ]
+    }, {
+        'name': '',
+        'code': 'b',
+        'type': 'market group',
+        'location': 'NAFTA',
+        'exchanges': [{
+            'name': '',
+            'type': 'reference product',
+            'production volume': {},
+        }],
+        'suppliers': [
+            {'code': 'c'},
+            {'production volume': {'amount': 10}, 'code': 'e'}
+        ]
+    }, {
+        'name': '',
+        'code': 'c',
+        'type': 'market group',
+        'location': 'US',
+        'exchanges': [{
+            'name': '',
+            'type': 'reference product',
+            'production volume': {},
+        }],
+        'suppliers': [
+            {'production volume': {'amount': 20}, 'code': 'f'}
+        ]
+    }, {
+        'name': '',
+        'code': 'd',
+        'type': 'market group',
+        'location': 'CN',
+        'exchanges': [{
+            'name': '',
+            'type': 'reference product',
+            'production volume': {},
+        }],
+        'suppliers': [
+            {'production volume': {'amount': 30}, 'code': 'g'}
+        ]
+    }]
+    update_market_production_volumes(given, 'market group')
+    assert production_volume(given[0]) == 60
+    assert production_volume(given[1]) == 30
+    assert production_volume(given[2]) == 20
+    assert production_volume(given[3]) == 30
 
 
 ###

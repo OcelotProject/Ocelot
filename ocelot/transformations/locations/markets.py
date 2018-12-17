@@ -48,7 +48,7 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
         for name, group in toolz.groupby('name', suppliers).items():
             # Calculate separately for each technology (activity name)
             # No overlaps allowed per technology/product combo
-            # no_overlaps(group)
+            no_overlaps(group)
 
             suppliers_row = topology.resolve_row(
                 [obj['location'] for obj in group
@@ -215,20 +215,44 @@ def update_market_production_volumes(data, kind="market activity"):
     Activity link amounts are added by ``add_hard_linked_production_volumes`` and are currently given in ``rp_exchange['production volume']['subtracted activity link volume']``.
 
     Production volume is set to zero if the net production volume is negative."""
-    for ds in (o for o in data if o['type'] == kind):
+    datasets = [o for o in data if o['type'] == kind]
+
+    if kind == 'market group':
+        # Need to sort in order of increasing size because
+        # groups can be recursive.
+        # RoW not allowed in market groups, so don't resolve
+        flipped = lambda lst: ((y, x) for x, y in lst)
+        ordered = dict(flipped(enumerate(topology.ordered_dependencies(datasets))))
+        datasets.sort(
+            key=lambda x: ordered[x['location']],
+            reverse=True
+        )
+
+    for ds in datasets:
         rp = get_single_reference_product(ds)
         total_pv = sum(o['production volume']['amount']
-                       for o in ds['suppliers'])
+                   for o in ds['suppliers'])
         missing_pv = (
             sum([s['production volume'].get("subtracted activity link volume", 0)
                  for s in ds['suppliers']]) +
             rp['production volume'].get('subtracted activity link volume', 0)
         )
-        rp['production volume']['amount'] = max(total_pv - missing_pv, 0)
+        pv = max(total_pv - missing_pv, 0)
+        rp['production volume']['amount'] = pv
+
+        if kind == 'market group':
+            # Update production volume of other references to this activity
+            for other in datasets:
+                if other == ds:
+                    continue
+                for supplier in other['suppliers']:
+                    if supplier['code'] == ds['code']:
+                        supplier['production volume'] = {'amount': pv}
+
         logger.info({
             'type': 'table element',
-            'data': (ds['name'], rp['name'], ds['location'], total_pv,
-                     missing_pv, rp['production volume']['amount'])
+            'data': (ds['name'], rp['name'], ds['location'],
+                     total_pv, missing_pv, pv)
         })
     return data
 
