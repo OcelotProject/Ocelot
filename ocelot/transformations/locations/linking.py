@@ -2,7 +2,7 @@
 from . import topology, RC_STRING
 from ... import toolz
 from ...data_helpers import production_volume
-from ...errors import OverlappingMarkets  #, UnresolvableActivityLink
+from ...errors import OverlappingMarkets, MissingSupplier
 from ..utils import get_single_reference_product
 from .markets import allocate_suppliers, annotate_exchange
 import logging
@@ -87,40 +87,72 @@ link_consumers_to_recycled_content_activities.__table__ = {
 }
 
 
-def link_consumers_to_regional_markets(data):
-    """Link technosphere exchange inputs to markets.
+def link_consumers_to_markets(data):
+    """Link technosphere exchange inputs to markets and market groups.
 
     Should only be run after ``add_suppliers_to_markets``. Skips hard (activity) links, and exchanges which have already been linked.
 
     Add the field ``code`` to each exchange with the code of the linked market activity."""
-    filter_func = lambda x: x['type'] == "market activity"
-    market_mapping = toolz.groupby(
+    ta_filter = lambda x: x['type'] == "transforming activity"
+    filter_func = lambda x: x['type'] in ("market activity", "market group")
+    market_mapping = dict(toolz.groupby(
         'reference product',
         filter(filter_func, data)
-    )
+    ))
 
     def annotate(exc, ds):
         exc = annotate_exchange(exc, ds)
         exc['production volume'] = {'amount': production_volume(ds, 0)}
         return exc
 
-    ta_filter = lambda x: x['type'] == "transforming activity"
     for ds in filter(ta_filter, data):
-        for exc in filter(unlinked, list(ds['exchanges'])):
+        # Only unlinked (not recycled content or direct linked) technosphere inputs
+        loc = ds['location']
+
+        for exc in list(filter(unlinked, ds['exchanges'])):
             try:
-                contained = [
-                    market
-                    for market in market_mapping[exc['name']]
-                    # Don't need to test separately because markets
-                    # are geographically exclusive, so both can't be true at once
-                    if (topology.contains(ds['location'], market['location']) or
-                        topology.contains(market['location'], ds['location']))]
-                assert contained
-            except (KeyError, AssertionError):
-                continue
-            if len(contained) == 1:
-                sup = contained[0]
-                exc['code'] = sup['code']
+                candidates = market_mapping[exc['name']]
+            except KeyError:
+                raise MissingSupplier("No markets found for product {}".format(exc['name']))
+            found, to_add = [], []
+
+            markets = {x['location']: x for x in candidates if x['type'] == 'market activity'}
+            market_groups = {x['location']: x for x in candidates if x['type'] == 'market group'}
+
+            if 'RoW' in markets:
+                resolved_market_row = topology.resolve_row(markets)
+            else:
+                resolved_market_row = set()
+
+            together = set(markets).union(set(market_groups))
+            ordered = topology.ordered_dependencies(
+                [{'location': l} for l in together],
+                resolved_market_row
+            )
+
+            for candidate in ordered:
+                if topology.contains(loc, candidate, subtract=found, resolved_row=resolved_market_row):
+                    found.append(candidate)
+                    if candidate in markets:
+                        to_add.append(markets[candidate])
+                    else:
+                        to_add.append(market_groups[candidate])
+
+            if not found:
+                # No market or market group within this location -
+                # Find smallest market or market group which contains this activity
+                for candidate in reversed(ordered):
+                    if topology.contains(candidate, loc, resolved_row=resolved_market_row):
+                        found.append(candidate)
+                        if candidate in markets:
+                            to_add.append(markets[candidate])
+                        else:
+                            to_add.append(market_groups[candidate])
+                        break
+
+            if len(to_add) == 1:
+                obj = to_add[0]
+                exc['code'] = obj['code']
 
                 message = "Link complete input of {} '{}' to '{}' ({})"
                 detailed.info({
@@ -128,48 +160,64 @@ def link_consumers_to_regional_markets(data):
                     'message': message.format(
                         exc['name'],
                         exc['amount'],
-                        sup['name'],
-                        sup['location']
+                        obj['name'],
+                        obj['location']
                     ),
-                    'function': 'link_consumers_to_regional_markets'
+                    'function': 'link_consumers_to_markets'
                 })
             else:
-                ds['suppliers'] = [annotate(exc, o) for o in contained]
+                ds['suppliers'] = [annotate(exc, obj) for obj in to_add]
+
+                if not ds['suppliers']:
+                    del ds['suppliers']
+                    continue
+
+                for e in ds['suppliers']:
+                    logger.info({
+                        'type': 'table element',
+                        'data': (ds['name'], ds['location'], e['location'])
+                    })
+
                 allocate_suppliers(ds, is_market=False, exc=exc)
+                del ds['suppliers']
     return data
 
+link_consumers_to_markets.__table__ = {
+    'title': "Link market and market group suppliers to transforming activities.",
+    'columns': ["Name", "Location", "Supplier Location"]
+}
 
-def link_consumers_to_global_markets(data):
-    """Link technosphere exchange inputs to ``GLO`` or ``RoW`` markets.
+# def link_consumers_to_global_markets(data):
+#     """Link technosphere exchange inputs to ``GLO`` or ``RoW`` markets.
 
-    Add the field ``code`` to each exchange with the code of the linked market activity."""
-    filter_func = lambda x: x['type'] == "market activity"
-    market_mapping = toolz.groupby(
-        'reference product',
-        filter(filter_func, data)
-    )
+#     Add the field ``code`` to each exchange with the code of the linked market activity."""
+#     filter_func = lambda x: x['type'] == "market activity"
+#     market_mapping = toolz.groupby(
+#         'reference product',
+#         filter(filter_func, data)
+#     )
 
-    ta_filter = lambda x: x['type'] == "transforming activity"
-    for ds in filter(ta_filter, data):
-        for exc in filter(unlinked, ds['exchanges']):
-            try:
-                contributors = [
-                    x for x in market_mapping[exc['name']]
-                    if x['location'] in ("GLO", "RoW")]
-                assert len(contributors) == 1
-            except (KeyError, AssertionError):
-                continue
+#     ta_filter = lambda x: x['type'] == "transforming activity"
+#     for ds in filter(ta_filter, data):
+#         for exc in filter(unlinked, ds['exchanges']):
+#             try:
+#                 contributors = [
+#                     x for x in market_mapping[exc['name']]
+#                     if x['location'] in ("GLO", "RoW")]
+#                 assert len(contributors) == 1
+#             except (KeyError, AssertionError):
+#                 continue
 
-            sup = contributors[0]
-            exc['code'] = sup['code']
+#             sup = contributors[0]
+#             exc['code'] = sup['code']
 
-            message = "Link input of '{}' to '{}' ({})"
-            detailed.info({
-                'ds': ds,
-                'message': message.format(exc['name'], sup['name'], sup['location']),
-                'function': 'link_consumers_to_global_markets'
-            })
-    return data
+#             message = "Link input of '{}' to '{}' ({})"
+#             detailed.info({
+#                 'ds': ds,
+#                 'message': message.format(exc['name'], sup['name'], sup['location']),
+#                 'function': 'link_consumers_to_global_markets'
+#             })
+#     return data
 
 
 def log_and_delete_unlinked_exchanges(data):

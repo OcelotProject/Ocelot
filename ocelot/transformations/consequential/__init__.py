@@ -8,8 +8,7 @@ from ..locations import (
     assign_fake_pv_to_confidential_datasets,
     delete_allowed_zero_pv_market_datsets,
     delete_suppliers_list,
-    link_consumers_to_global_markets,
-    link_consumers_to_regional_markets,
+    link_consumers_to_markets,
     log_and_delete_unlinked_exchanges,
     relabel_global_to_row,
     update_market_production_volumes,
@@ -42,8 +41,6 @@ link_markets_by_technology_level = Collection(
     allocate_all_market_suppliers,
     delete_suppliers_list,
     # drop_zero_pv_row_datasets,
-    link_consumers_to_regional_markets,
-    link_consumers_to_global_markets,
+    link_consumers_to_markets,
     log_and_delete_unlinked_exchanges,
-    # substitute_market_group_links,  # TODO: Need clever approach
 )

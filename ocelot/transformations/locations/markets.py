@@ -25,7 +25,6 @@ def annotate_exchange(exc, ds):
     exc['activity'] = ds['name']
     return exc
 
-
 @no_geo_duplicates
 def apportion_suppliers_to_consumers(consumers, suppliers):
     """Apportion suppliers to consumers based on their geographic relationships.
@@ -168,7 +167,7 @@ def allocate_suppliers(dataset, is_market=True, exc=None):
 
     The sum of the suppliers inputs should add up to the production amount of the market (reference product exchange amount), minus any constrained market links. Constrained market exchanges should already be in the list of dataset exchanges, with the attribute ``constrained``.
 
-    ``is_market`` and ``exc`` options tested by ``link_consumers_to_regional_markets`` tests."""
+    ``is_market`` and ``exc`` options tested by ``link_consumers_to_markets`` tests."""
     if not exc:
         exc = get_single_reference_product(dataset)
     total_pv = sum(o['production volume']['amount']
