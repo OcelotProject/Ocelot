@@ -189,8 +189,8 @@ def allocate_suppliers(dataset, is_market=True, exc=None):
                     dataset['name'],
                     dataset['reference product'],
                     dataset['location'],
-                    dataset['suppliers']['name'],
-                    dataset['suppliers']['location'],
+                    dataset['suppliers'][0]['name'],
+                    dataset['suppliers'][0]['location'],
                 ),
                 'function': 'allocate_suppliers'
             })
@@ -200,7 +200,7 @@ def allocate_suppliers(dataset, is_market=True, exc=None):
         amount = supply_exc['production volume']['amount'] / total_pv * scale_factor
         if not amount:
             continue
-        if not is_market:
+        if is_market:
             dataset['exchanges'].append(remove_exchange_uncertainty({
                 'amount': amount,
                 'name': supply_exc['name'],

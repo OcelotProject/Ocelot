@@ -388,6 +388,7 @@ def test_allocate_all_market_suppliers():
             'amount': 24,
             'name': 'salad',
             'type': 'reference product',
+            'unit': '',
         }],
         'suppliers': [{
             'code': 'up',
@@ -407,6 +408,7 @@ def test_allocate_all_market_suppliers():
         'amount': 24,
         'name': 'salad',
         'type': 'reference product',
+        'unit': '',
     }, {
         'amount': 2 / 12 * 24,
         'code': 'up',
@@ -422,7 +424,7 @@ def test_allocate_all_market_suppliers():
         'type': 'from technosphere',
         'unit': '',
     }]
-    assert allocate_all_market_suppliers(deepcopy(given))[0]['exchanges'] == expected
+    assert allocate_all_market_suppliers(given)[0]['exchanges'] == expected
 
 def test_allocate_all_market_suppliers_single_supplier():
     given = [{
@@ -465,6 +467,7 @@ def test_allocate_suppliers_no_production_volume_single_supplier():
     given = {
         'name': '',
         'location': '',
+        'reference product': '',
         'exchanges': [{
             'type': 'reference product',
             'name': '',
@@ -481,6 +484,7 @@ def test_allocate_suppliers_no_production_volume_single_supplier():
     expected = {
         'name': '',
         'location': '',
+        'reference product': '',
         'exchanges': [{
             'type': 'reference product',
             'name': '',
