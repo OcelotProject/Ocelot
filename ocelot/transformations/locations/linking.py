@@ -93,7 +93,7 @@ def link_consumers_to_markets(data):
     Should only be run after ``add_suppliers_to_markets``. Skips hard (activity) links, and exchanges which have already been linked.
 
     Add the field ``code`` to each exchange with the code of the linked market activity."""
-    ta_filter = lambda x: x['type'] == "transforming activity"
+    no_mg_filter = lambda x: x['type'] != "market group"
     filter_func = lambda x: x['type'] in ("market activity", "market group")
     market_mapping = dict(toolz.groupby(
         'reference product',
@@ -105,7 +105,7 @@ def link_consumers_to_markets(data):
         exc['production volume'] = {'amount': production_volume(ds, 0)}
         return exc
 
-    for ds in filter(ta_filter, data):
+    for ds in filter(no_mg_filter, data):
         # Only unlinked (not recycled content or direct linked) technosphere inputs
         loc = ds['location']
 
