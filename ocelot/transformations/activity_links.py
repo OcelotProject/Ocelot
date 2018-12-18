@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from ..data_helpers import production_volume
 from ..collection import Collection
 from ..errors import UnresolvableActivityLink
 from .utils import (
@@ -10,6 +11,7 @@ from pprint import pformat
 import logging
 
 logger = logging.getLogger('ocelot')
+detailed = logging.getLogger('ocelot-detailed')
 
 
 def check_activity_link_validity(data):
@@ -106,13 +108,34 @@ def add_hard_linked_production_volumes(data):
     for ds in data:
         for exc in (e for e in ds['exchanges'] if e.get('activity link')):
             target = mapping[exc['activity link']]
+
+            # Find the allocatable production exchange referenced by this
+            # specific hard link. This is before allocation, so there can be
+            # more than one production exchange.
             found = [obj
                      for obj in allocatable_production(target)
                      if obj['name'] == exc['name']]
             assert len(found) == 1
             hard_link = found[0]
 
+            # From the dataset (`ds`) which is the origin of the hard link, we
+            # only have a relative amount. But this datasets could be
+            # multioutput. So to get the absolute amount of PV subtracted, we
+            # need to translate relative to absolute amount. This value does
+            # this in the `ds` frame of reference
             scale = get_biggest_pv_to_exchange_ratio(ds)
+
+            message = "Subtracting activity link: {:.4g} (out of {:.4g}) from {} | {}"
+            detailed.info({
+                'ds': target,
+                'message': message.format(
+                    exc['amount'] * scale,
+                    hard_link['production volume']['amount'],
+                    ds['name'],
+                    ds['location'],
+                ),
+                'function': 'add_hard_linked_production_volumes',
+            })
 
             hard_link['production volume']["subtracted activity link volume"] = (
                 hard_link['production volume'].get(
