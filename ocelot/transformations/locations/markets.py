@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import topology, RC_STRING
 from ... import toolz
+from ...data_helpers import production_volume
 from ...errors import MissingSupplier
 from ..utils import (
     get_single_reference_product,
@@ -388,4 +389,30 @@ def assign_fake_pv_to_confidential_datasets(data):
 assign_fake_pv_to_confidential_datasets.__table__ = {
     'title': 'Split inputs from confidential datasets equally because no production volume is available.',
     'columns': ["Name", "Product", "Production volume"]
+}
+
+
+def delete_global_markets_with_zero_pv_when_regional_market_present(data):
+    """"""
+    purge = []
+    market_filter = lambda x: x['type'] == "market activity"
+    grouped = toolz.groupby("reference product", filter(market_filter, data))
+    for rp, group in grouped.items():
+        if len(group) < 2:
+            continue
+        try:
+            row = next(ds for ds in group if ds['location'] == 'RoW')
+            assert not production_volume(row)
+            purge.append(row)
+            logger.info({
+                'type': 'table element',
+                'data': (row['name'], rp, row['location'])
+            })
+        except (StopIteration, AssertionError):
+            continue
+    return [ds for ds in data if ds not in purge]
+
+delete_global_markets_with_zero_pv_when_regional_market_present.__table__ = {
+    'title': 'Delete global markets with zero production volumes when regional markets are present',
+    'columns': ["Name", "Product", "Location"]
 }

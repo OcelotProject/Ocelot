@@ -17,8 +17,9 @@ from .linking import (
 from .markets import (
     add_recycled_content_suppliers_to_markets,
     add_suppliers_to_markets,
-    assign_fake_pv_to_confidential_datasets,
     allocate_all_market_suppliers,
+    assign_fake_pv_to_confidential_datasets,
+    delete_global_markets_with_zero_pv_when_regional_market_present,
     delete_suppliers_list,
     delete_whitelisted_zero_pv_market_datsets,
     update_market_production_volumes,
@@ -44,6 +45,7 @@ link_markets_by_pv = Collection(
     add_recycled_content_suppliers_to_markets,
     add_suppliers_to_markets,
     update_market_production_volumes,
+    delete_global_markets_with_zero_pv_when_regional_market_present,
     allocate_all_market_suppliers,
     link_market_group_suppliers,
     partial(update_market_production_volumes, kind='market group'),
