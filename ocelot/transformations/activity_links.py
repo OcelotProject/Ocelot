@@ -107,6 +107,21 @@ def add_hard_linked_production_volumes(data):
     mapping = {ds['id']: ds for ds in data}
     for ds in data:
         for exc in (e for e in ds['exchanges'] if e.get('activity link')):
+            if exc['activity link'] == ds['id']:
+                # Market losses, e.g. electivity T&D
+                # ecoinvent assumes that these losses are
+                # already included
+                message = "Ignoring self-consuming activity link: {:.4g} (PV: {:.4g}"
+                detailed.info({
+                    'ds': ds,
+                    'message': message.format(
+                        exc['amount'],
+                        production_volume(ds, 0),
+                    ),
+                    'function': 'add_hard_linked_production_volumes',
+                })
+                continue
+
             target = mapping[exc['activity link']]
 
             # Find the allocatable production exchange referenced by this
