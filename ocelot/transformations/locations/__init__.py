@@ -19,8 +19,8 @@ from .markets import (
     add_suppliers_to_markets,
     assign_fake_pv_to_confidential_datasets,
     allocate_all_market_suppliers,
-    delete_allowed_zero_pv_market_datsets,
     delete_suppliers_list,
+    delete_whitelisted_zero_pv_market_datsets,
     update_market_production_volumes,
 )
 from .market_groups import (
@@ -34,7 +34,7 @@ from functools import partial
 link_markets_by_pv = Collection(
     "Link markets and market groups",
     label_reference_product,
-    delete_allowed_zero_pv_market_datsets,
+    delete_whitelisted_zero_pv_market_datsets,
     assign_fake_pv_to_confidential_datasets,
     correct_natural_gas_pipeline_location,
     relabel_global_to_row,

@@ -317,7 +317,7 @@ def delete_suppliers_list(data):
     return data
 
 
-def delete_allowed_zero_pv_market_datsets(data):
+def delete_whitelisted_zero_pv_market_datsets(data):
     """Remove some (but not all) global markets with zero production volume.
 
     Uses a white list of markets which are not in the ecoinvent 3.2 release."""
@@ -344,7 +344,7 @@ def delete_allowed_zero_pv_market_datsets(data):
         })
     return [ds for ds in data if not delete_me(ds)]
 
-delete_allowed_zero_pv_market_datsets.__table__ = {
+delete_whitelisted_zero_pv_market_datsets.__table__ = {
     'title': 'Delete some global markets with zero production volume',
     'columns': ["Name", "Product"]
 }

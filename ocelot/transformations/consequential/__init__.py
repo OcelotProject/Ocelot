@@ -6,7 +6,7 @@ from ..locations import (
     add_suppliers_to_markets,
     allocate_all_market_suppliers,
     assign_fake_pv_to_confidential_datasets,
-    delete_allowed_zero_pv_market_datsets,
+    delete_whitelisted_zero_pv_market_datsets,
     delete_suppliers_list,
     link_consumers_to_markets,
     log_and_delete_unlinked_exchanges,
@@ -27,7 +27,7 @@ from functools import partial
 link_markets_by_technology_level = Collection(
     "Consequential market linking by technology level",
     label_reference_product,
-    delete_allowed_zero_pv_market_datsets,
+    delete_whitelisted_zero_pv_market_datsets,
     assign_fake_pv_to_confidential_datasets,
     relabel_global_to_row,
     add_unique_codes,

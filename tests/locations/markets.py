@@ -798,7 +798,7 @@ def test_assign_fake_pv_to_confidential_datasets():
     given[0]['type'] = 'transforming activity'
     assert assign_fake_pv_to_confidential_datasets(given) == expected
 
-def test_delete_allowed_zero_pv_market_datsets():
+def test_delete_whitelisted_zero_pv_market_datsets():
     given = [{
         'type': 'market activity',
         'name': 'not market for refinery gas',
@@ -816,4 +816,4 @@ def test_delete_allowed_zero_pv_market_datsets():
         'location': 'GLO',
         'reference product': '',
     }]
-    assert delete_allowed_zero_pv_market_datsets(given) == expected
+    assert delete_whitelisted_zero_pv_market_datsets(given) == expected
