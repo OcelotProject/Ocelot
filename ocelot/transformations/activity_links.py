@@ -21,23 +21,25 @@ def check_activity_link_validity(data):
 
     Raises ``UnresolvableActivityLink`` if an exchange can't be found."""
     mapping = {ds['id']: ds for ds in data}
-    link_iterator = (exc
-                     for ds in data
-                     for exc in ds['exchanges']
-                     if exc.get("activity link"))
-    for link in link_iterator:
-        ds = mapping[link['activity link']]
-        found = [exc
-                 for exc in allocatable_production(ds)
-                 if exc['name'] == link['name']]
-        if len(found) == 1:
-            continue
-        elif len(found) > 1:
-            message = "Found multiple candidates for activity link:\n{}\nTarget dataset:\n{}"
-            raise UnresolvableActivityLink(message.format(pformat(link), ds['filepath']))
-        else:
-            message = "Found no candidates for activity link:\n{}\nTarget dataset:\n{}"
-            raise UnresolvableActivityLink(message.format(pformat(link), ds['filepath']))
+    for original_ds in data:
+        for link in (o for o in original_ds['exchanges']
+                     if o.get("activity link")):
+            try:
+                ds = mapping[link['activity link']]
+            except KeyError:
+                message = "Found no datasets for activity link:\n{}\nOrigin dataset:\n{}"
+                raise UnresolvableActivityLink(message.format(pformat(link), original_ds['filepath']))
+            found = [exc
+                     for exc in allocatable_production(ds)
+                     if exc['name'] == link['name']]
+            if len(found) == 1:
+                continue
+            elif len(found) > 1:
+                message = "Found multiple candidates for activity link:\n{}\nTarget dataset:\n{}"
+                raise UnresolvableActivityLink(message.format(pformat(link), ds['filepath']))
+            else:
+                message = "Found no candidates for activity link:\n{}\nTarget dataset:\n{}"
+                raise UnresolvableActivityLink(message.format(pformat(link), ds['filepath']))
     return data
 
 
@@ -187,14 +189,6 @@ def update_transforming_activity_production_volumes(data):
     return data
 
 
-manage_activity_links = Collection(
-    "Resolve hard (activity) links",
-    check_activity_link_validity,
-    add_hard_linked_production_volumes,
-    update_transforming_activity_production_volumes
-)
-
-
 def update_activity_link_parent_child(data):
     """Update exchange activity links from parent to child (i.e. the current) dataset.
 
@@ -224,3 +218,30 @@ update_activity_link_parent_child.__table__ = {
     'title': 'Switch activity links to child dataset',
     'columns': ['Name', 'Location', 'Amount']
 }
+
+
+def fix_35_activity_links(data):
+    """Remove specific activity link bugs in ecoinvent 3.5 release"""
+    remove_me = {
+        # Was a link to RER, but in 3.5 there is only GLO
+        # so can safely delete
+        '25edb027-d7c0-4756-a051-cab82e4f6248',
+    }
+    link_iterator = (exc
+                     for ds in data
+                     for exc in ds['exchanges']
+                     if exc.get("activity link"))
+    for link in link_iterator:
+        if link['activity link'] in remove_me:
+            del link['activity link']
+
+    return data
+
+
+manage_activity_links = Collection(
+    "Resolve hard (activity) links",
+    fix_35_activity_links,
+    check_activity_link_validity,
+    add_hard_linked_production_volumes,
+    update_transforming_activity_production_volumes
+)

@@ -3,6 +3,7 @@ from ocelot.errors import UnresolvableActivityLink
 from ocelot.transformations.activity_links import (
     add_hard_linked_production_volumes,
     check_activity_link_validity,
+    fix_35_activity_links,
     update_activity_link_parent_child,
 )
 import pytest
@@ -71,23 +72,24 @@ def test_check_activity_link_validity_no_pv():
         check_activity_link_validity(missing)
 
 def test_check_activity_link_validity_technosphere_exchange():
-    missing = [{
-        'id': 1,
+    error = [{
+        'id': '1',
         'filepath': 'somewhere',
         'exchanges': [{
+            # Not allocatable production exchange
             'type': 'from technosphere',
             'name': 'widget',
         }]
     }, {
-        'id': 2,
+        'id': '2',
         'exchanges': [{
             'type': 'from technosphere',
-            'activity link': 1,
+            'activity link': '1',
             'name': 'widget',
         }]
     }]
     with pytest.raises(UnresolvableActivityLink):
-        check_activity_link_validity(missing)
+        check_activity_link_validity(error)
 
 def test_check_activity_link_validity_multiple():
     missing = [{
@@ -133,8 +135,23 @@ def test_check_activity_link_validity_missing():
     with pytest.raises(UnresolvableActivityLink):
         check_activity_link_validity(missing)
 
+def test_check_activity_link_validity_missing_activity():
+    missing = [{
+        'id': '1',
+        'filepath': 'foo',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'activity link': '2',
+            'name': 'widget',
+        }]
+    }]
+    with pytest.raises(UnresolvableActivityLink):
+        check_activity_link_validity(missing)
+
 def test_add_hard_linked_production_volumes_simple():
     given = [{
+        'name': 'foo',
+        'location': 'foo',
         'id': 'link to me',
         'exchanges': [{
             'name': 'François',
@@ -142,6 +159,8 @@ def test_add_hard_linked_production_volumes_simple():
             'type': 'reference product',
         }]
     }, {
+        'name': 'foo',
+        'location': 'foo',
         'id': 'not useful',
         'exchanges': [{
             'activity link': 'link to me',
@@ -157,6 +176,8 @@ def test_add_hard_linked_production_volumes_simple():
         }]
     }]
     expected = [{
+        'name': 'foo',
+        'location': 'foo',
         'id': 'link to me',
         'exchanges': [{
             'name': 'François',
@@ -167,6 +188,8 @@ def test_add_hard_linked_production_volumes_simple():
             'type': 'reference product',
         }],
     }, {
+        'name': 'foo',
+        'location': 'foo',
         'id': 'not useful',
         'exchanges': [{
             'activity link': 'link to me',
@@ -185,6 +208,8 @@ def test_add_hard_linked_production_volumes_simple():
 
 def test_add_hard_linked_production_volumes_choose_scale_value():
     given = [{
+        'name': 'foo',
+        'location': 'foo',
         'id': 'link to me',
         'exchanges': [{
             'name': 'François',
@@ -192,6 +217,8 @@ def test_add_hard_linked_production_volumes_choose_scale_value():
             'type': 'reference product',
         }]
     }, {
+        'name': 'foo',
+        'location': 'foo',
         'id': 'not useful',
         'exchanges': [{
             'activity link': 'link to me',
@@ -216,6 +243,8 @@ def test_add_hard_linked_production_volumes_choose_scale_value():
 
 def test_add_hard_linked_production_volumes_multiple_targets():
     error = [{
+        'name': 'foo',
+        'location': 'foo',
         'id': 'link to me',
         'exchanges': [{
             'name': 'François',
@@ -228,6 +257,8 @@ def test_add_hard_linked_production_volumes_multiple_targets():
             'byproduct classification': 'allocatable product',
         }]
     }, {
+        'name': 'foo',
+        'location': 'foo',
         'id': 'not useful',
         'exchanges': [{
             'activity link': 'link to me',
@@ -239,3 +270,13 @@ def test_add_hard_linked_production_volumes_multiple_targets():
     }]
     with pytest.raises(AssertionError):
         add_hard_linked_production_volumes(error)
+
+def test_fix_35_activity_links():
+    given = [{
+        'exchanges': [{'activity link': '25edb027-d7c0-4756-a051-cab82e4f6248',}]
+    }]
+    expected = [{'exchanges': [{}]}]
+    assert fix_35_activity_links(given) == expected
+
+def test_update_transforming_activity_production_volumes():
+    pass
