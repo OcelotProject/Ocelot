@@ -145,10 +145,38 @@ def add_hard_linked_production_volumes(data):
     return data
 
 
+def update_transforming_activity_production_volumes(data):
+    """Update production volume amounts of transforming activities.
+
+    Market PVs get updated later, after they are populated."""
+    ta = lambda x: x['type'] == 'transforming activity'
+    for ds in filter(ta, data):
+        for exc in allocatable_production(ds):
+            if "subtracted activity link volume" not in exc['production volume']:
+                continue
+
+            message = "Subtracting hard-linked production volumes: {:.4g} from {:.4g}"
+            detailed.info({
+                'ds': ds,
+                'message': message.format(
+                    exc['production volume']['subtracted activity link volume'],
+                    exc['production volume']['amount']
+                ),
+                'function': 'update_transforming_activity_production_volumes',
+            })
+            exc['production volume']['amount'] = max(
+                exc['production volume']['amount'] - \
+                    exc['production volume']['subtracted activity link volume'],
+                0
+            )
+    return data
+
+
 manage_activity_links = Collection(
     "Resolve hard (activity) links",
     check_activity_link_validity,
     add_hard_linked_production_volumes,
+    update_transforming_activity_production_volumes
 )
 
 
