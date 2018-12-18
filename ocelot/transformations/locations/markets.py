@@ -26,12 +26,12 @@ def annotate_exchange(exc, ds):
     return exc
 
 @no_geo_duplicates
-def apportion_suppliers_to_consumers(consumers, suppliers):
+def apportion_market_suppliers_to_consumers(consumers, suppliers):
     """Apportion suppliers to consumers based on their geographic relationships.
 
-    A supplier must be completely contained within a consumer, or completely contain a consumer, or it is rejected and the global or RoW activity is chosen.
+    Used only for reference products (other market inputs are linked by ``link_consumers_to_markets``).
 
-    Region-specific markets (i.e. those without locations ``GLO`` or ``RoW``) should not consume from global providers.
+    A supplier must be completely contained within a consumer. Region-specific markets (i.e. those without locations ``GLO`` or ``RoW``) do not consume from global providers.
 
     Modifies in place."""
     consumers_row = topology.resolve_row(
@@ -58,28 +58,31 @@ def apportion_suppliers_to_consumers(consumers, suppliers):
                 location, resolved_row=suppliers_row
             ).intersection(set(sd))]
 
-            if not contained:
-                # Nothing is inside or equal to this location.
-                # Use an input which contains this location.
-                contained = [ds for key, ds in sd.items()
-                             if topology.contains(key, location, resolved_row=suppliers_row)]
+            # ecoinvent doesn't work like this, unfortunately...
+            # Could have saved myself a lot of trouble.
 
-            if not contained:
-                # Use RoW as backup (GLO would have already been used)
-                # even if it doesn't actually cover this market
-                contained = [ds for key, ds in sd.items() if key == 'RoW']
-                logger.info({
-                    'type': 'table element',
-                    'data': (consumer['name'],
-                             consumer['location'],
-                             ";".join([o['location'] for o in group]), name)
-                })
+            # if not contained:
+            #     # Nothing is inside or equal to this location.
+            #     # Use an input which contains this location.
+            #     contained = [ds for key, ds in sd.items()
+            #                  if topology.contains(key, location, resolved_row=suppliers_row)]
+
+            # if not contained:
+            #     # Use RoW as backup (GLO would have already been used)
+            #     # even if it doesn't actually cover this market
+            #     contained = [ds for key, ds in sd.items() if key == 'RoW']
+            #     logger.info({
+            #         'type': 'table element',
+            #         'data': (consumer['name'],
+            #                  consumer['location'],
+            #                  ";".join([o['location'] for o in group]), name)
+            #     })
             consumer['suppliers'].extend([annotate_exchange(
                 get_single_reference_product(obj),
                 obj
             ) for obj in contained])
 
-apportion_suppliers_to_consumers.__table__ = {
+apportion_market_suppliers_to_consumers.__table__ = {
     'title': 'Defaulted to ``RoW`` suppliers, even though it fails GIS test.',
     'columns': ["Market name", "Market location", "Supplier locations", "Supplier name"]
 }
@@ -110,7 +113,7 @@ def add_recycled_content_suppliers_to_markets(data):
         ]
         no_overlaps(markets)
         if suppliers:
-            apportion_suppliers_to_consumers(markets, suppliers)
+            apportion_market_suppliers_to_consumers(markets, suppliers)
     return data
 
 add_recycled_content_suppliers_to_markets.__table__ = {
@@ -142,7 +145,7 @@ def add_suppliers_to_markets(data, from_type="transforming activity",
         if to_type == 'market activity':
             # Markets can't overlap
             no_overlaps(consumers)
-        apportion_suppliers_to_consumers(consumers, suppliers)
+        apportion_market_suppliers_to_consumers(consumers, suppliers)
     return data
 
 add_suppliers_to_markets.__table__ = {
@@ -260,6 +263,8 @@ def update_market_production_volumes(data, kind="market activity"):
         rp = get_single_reference_product(ds)
         total_pv = sum(o['production volume']['amount']
                    for o in ds['suppliers'])
+        rp['production volume'][
+        'without subtraction']: total_pv
         missing_pv = (
             sum([s['production volume'].get("subtracted activity link volume", 0)
                  for s in ds['suppliers']]) +
