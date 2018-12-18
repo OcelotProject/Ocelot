@@ -173,7 +173,12 @@ class Topology(object):
         """Return a list of locations from ``datasets`` in order from largest to smallest.
 
         Area calculations use ``self.size_proxy``, which by default uses number of topological faces."""
-        locations = [ds['location'] for ds in datasets]
+        q = lambda x: tuple(sorted({x['location'] for x in datasets}))
+        s = lambda x: frozenset(x) if isinstance(x, set) else x
+        return self._ordered_dependencies(q(datasets), s(resolved_row))
+
+    @functools.lru_cache(maxsize=512)
+    def _ordered_dependencies(self, locations, resolved_row):
         get_faces = lambda loc: resolved_row if (loc == 'RoW' and resolved_row) else self(loc)
         size = lambda loc: sum(self.size_proxy(face)
                                for face in get_faces(loc))
