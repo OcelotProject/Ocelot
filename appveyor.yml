@@ -21,7 +21,7 @@ install:
     # Use the pre-installed Miniconda for the desired arch
     - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
     - cmd: conda update -y -q conda
-    - cmd: conda install -y -q -c cmutel -c conda-forge bw2parameters stats_arrays numpy scipy psutil bw2parameters appdirs arrow docopt docutils jinja2 lxml pandas pyprind pytest cytoolz wrapt voluptuous
+    - cmd: conda install -y -q -c cmutel -c conda-forge -c konstantinstadler bw2parameters stats_arrays numpy scipy psutil bw2parameters appdirs arrow docopt docutils jinja2 lxml pandas pyprind pytest cytoolz wrapt voluptuous constructive_geometries
     - cmd: pip install stats_arrays
 
 test_script:

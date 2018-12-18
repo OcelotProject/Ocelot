@@ -1,6 +1,7 @@
 appdirs
 arrow
 bw2parameters
+constructive_geometries
 docopt
 docutils
 jinja2

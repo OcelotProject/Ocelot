@@ -2,35 +2,47 @@
 import functools
 import json
 import os
+from constructive_geometries import ConstructiveGeometries
 
 
 class Topology(object):
-    fp = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)),
-        "..", "..", "data", "faces.json"
-    )
-
     compatibility = [
-        ('IAI Area 1', "IAI Area 1, Africa"),
+        # Power grids
+        ('ASCC', 'US-ASCC'),
+        ('CSG', 'CN-CSG'),
+        ('FRCC', 'US-FRCC'),
+        ('HICC', 'US-HICC'),
+        ('MRO, US only', 'US-MRO'),
+        ('NPCC, US only', 'US-NPCC'),
+        ('RFC', 'US-RFC'),
+        ('SERC', 'US-SERC'),
+        ('SGCC', 'CN-SGCC'),
+        ('SPP', 'US-SPP'),
+        ('TRE', 'US-TRE'),
+        ('WECC, US only', 'US-WECC'),
+        # Aluminium
+        ('IAI Area 2, North America', 'IAI Area, North America'),
+        ("IAI Area 1, Africa", 'IAI Area, Africa'),
+        ("IAI Area 3, South America", 'IAI Area, South America'),
+        ("IAI Area 4&5 without China", 'IAI Area, Asia, without China and GCC'),
+        ("IAI Area 8, Gulf", 'IAI Area, Gulf Cooperation Council'),
+        ('IAI Area 1', 'IAI Area, Africa'),
+        ('IAI Area 2, without Quebec', 'IAI Area, North America, without Quebec'),
         ('IAI Area 3', "IAI Area 3, South America"),
-        ("IAI Area 4&5 without China", 'IAI Area 4&5, without China'),
-        ('IAI Area 8', "IAI Area 8, Gulf"),
-        # Compatability for ecoinvent 3.3
-        ('IAI Area, North America, without Quebec', 'IAI Area 2, without Quebec'),
-        ('IAI Area, South America', 'IAI Area 3, South America'),
-        ('IAI Area, Russia & RER w/o EU27 & EFTA', 'IAI Area, Europe outside EU & EFTA'),
-        ('IAI Area, Asia, without China and GCC', 'IAI Area 4&5, without China'),
-        ('IAI Area, Gulf Cooperation Council', 'IAI Area 8, Gulf'),
-        ('IAI Area, Africa', 'IAI Area 1, Africa'),
+        ('IAI Area 4&5, without China', 'IAI Area, Asia, without China and GCC'),
+        ('IAI Area 8', 'IAI Area, Gulf Cooperation Council'),
+        ('IAI Area, Europe outside EU & EFTA', 'IAI Area, Russia & RER w/o EU27 & EFTA'),
     ]
 
     def __init__(self, size_proxy=None):
-        self.data = {key: set(value) for key, value in
-                     json.load(open(self.fp, encoding='utf-8'))['data']}
-        self.data['GLO'] = self.data.pop('__all__')
         self.size_proxy = size_proxy or self.default_size_proxy
+
+        cg = ConstructiveGeometries()
+        data = cg.data
+        data['GLO'] = cg.all_faces
         for old, fixed in self.compatibility:
-            self.data[old] = self.data[fixed]
+            data[old] = data[fixed]
+        self.data = {k: set(v) for k, v in data.items()}
 
     def default_size_proxy(self, face_id):
         """Proxy function to allow for better indicators of area or importance than mere number of faces."""
