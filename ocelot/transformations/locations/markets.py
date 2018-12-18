@@ -196,6 +196,18 @@ def allocate_suppliers(dataset, is_market=True, exc=None):
                 'function': 'allocate_suppliers'
             })
             total_pv = dataset['suppliers'][0]['production volume']['amount'] = 4321
+    else:
+        message = "Production volume of {} {} divided into {} suppliers"
+        detailed.info({
+            'ds': dataset,
+            'message': message.format(
+                total_pv,
+                exc['name'],
+                len(dataset['suppliers']),
+            ),
+            'function': 'allocate_suppliers'
+        })
+
 
     for supply_exc in dataset['suppliers']:
         scale_factor = supply_exc['production volume']['amount'] / total_pv

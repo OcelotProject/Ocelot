@@ -87,6 +87,7 @@ link_consumers_to_recycled_content_activities.__table__ = {
 }
 
 
+
 def link_consumers_to_markets(data):
     """Link technosphere exchange inputs to markets and market groups.
 
@@ -94,10 +95,20 @@ def link_consumers_to_markets(data):
 
     Add the field ``code`` to each exchange with the code of the linked market activity."""
     no_mg_filter = lambda x: x['type'] != "market group"
-    filter_func = lambda x: x['type'] in ("market activity", "market group")
-    market_mapping = dict(toolz.groupby(
+    ma_filter = lambda x: x['type'] == "market activity"
+    ta_filter = lambda x: x['type'] == "transforming activity"
+    markets_filter = lambda x: x['type'] in ("market activity", "market group")
+    markets_mapping = dict(toolz.groupby(
         'reference product',
-        filter(filter_func, data)
+        filter(markets_filter, data)
+    ))
+    ma_mapping = dict(toolz.groupby(
+        'reference product',
+        filter(ma_filter, data)
+    ))
+    ta_mapping = dict(toolz.groupby(
+        'reference product',
+        filter(ta_filter, data)
     ))
 
     def annotate(exc, ds):
@@ -109,43 +120,65 @@ def link_consumers_to_markets(data):
         # Only unlinked (not recycled content or direct linked) technosphere inputs
         loc = ds['location']
 
+        if loc == 'RoW':
+            if ds['type'] == 'transforming activity':
+                dct = ta_mapping
+            else:
+                dct = ma_mapping
+            consumer_row = topology.resolve_row(
+                [x['location'] for x in dct[ds['reference product']]]
+            )
+        else:
+            consumer_row = None
+
+        def contains_wrapper(consumer, supplier, found, consumer_row, supplier_row):
+            kwargs = {
+                'parent': consumer,
+                'child': supplier_row if supplier == 'RoW' else supplier,
+                'subtract': found,
+                'resolved_row': consumer_row if consumer == 'RoW' else None
+            }
+            return topology.contains(**kwargs)
+
         for exc in list(filter(unlinked, ds['exchanges'])):
             try:
-                candidates = market_mapping[exc['name']]
+                candidates = markets_mapping[exc['name']]
             except KeyError:
                 if exc['name'] == 'refinery gas':
                     pass
                 else:
                     raise MissingSupplier("No markets found for product {}".format(exc['name']))
+
             found, to_add = [], []
 
             markets = {x['location']: x for x in candidates if x['type'] == 'market activity'}
             market_groups = {x['location']: x for x in candidates if x['type'] == 'market group'}
 
             if 'RoW' in markets:
-                resolved_market_row = topology.resolve_row(markets)
+                supplier_row = topology.resolve_row(markets)
             else:
-                resolved_market_row = set()
+                supplier_row = set()
 
             together = set(markets).union(set(market_groups))
             ordered = topology.ordered_dependencies(
                 [{'location': l} for l in together],
-                resolved_market_row
+                supplier_row
             )
 
             for candidate in ordered:
-                if topology.contains(loc, candidate, subtract=found, resolved_row=resolved_market_row):
+                if contains_wrapper(loc, candidate, found, consumer_row, supplier_row):
                     found.append(candidate)
                     if candidate in markets:
                         to_add.append(markets[candidate])
                     else:
                         to_add.append(market_groups[candidate])
-
+                    if (ds['name'] == 'yarn production, kenaf' and ds['location'] == 'RoW'):
+                        print("Added:", candidate, [x['location'] for x in to_add])
             if not found:
                 # No market or market group within this location -
                 # Find smallest market or market group which contains this activity
                 for candidate in reversed(ordered):
-                    if topology.contains(candidate, loc, resolved_row=resolved_market_row):
+                    if contains_wrapper(candidate, loc, found, supplier_row, consumer_row):
                         found.append(candidate)
                         if candidate in markets:
                             to_add.append(markets[candidate])
@@ -157,7 +190,7 @@ def link_consumers_to_markets(data):
                 obj = to_add[0]
                 exc['code'] = obj['code']
 
-                message = "Link complete input of {} '{}' to '{}' ({})"
+                message = "Link complete input of {} '{}' from '{}' ({})"
                 detailed.info({
                     'ds': ds,
                     'message': message.format(
@@ -169,16 +202,31 @@ def link_consumers_to_markets(data):
                     'function': 'link_consumers_to_markets'
                 })
             else:
+                if (ds['name'] == 'yarn production, kenaf' and ds['location'] == 'RoW'):
+                    print("Starting allocation:", len(to_add))
                 ds['suppliers'] = [annotate(exc, obj) for obj in to_add]
 
                 if not ds['suppliers']:
                     del ds['suppliers']
                     continue
 
+                if (ds['name'] == 'yarn production, kenaf' and ds['location'] == 'RoW'):
+                    print("Suppliers:", [x['location'] for x in ds['suppliers']])
+
                 for e in ds['suppliers']:
                     logger.info({
                         'type': 'table element',
                         'data': (ds['name'], ds['location'], e['location'])
+                    })
+                    message = "Link consumption input of {} from '{}' ({})"
+                    detailed.info({
+                        'ds': ds,
+                        'message': message.format(
+                            exc['name'],
+                            e['name'],
+                            e['location']
+                        ),
+                        'function': 'link_consumers_to_markets'
                     })
 
                 allocate_suppliers(ds, is_market=False, exc=exc)
