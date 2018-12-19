@@ -39,6 +39,7 @@ setup(
     install_requires=[
         'appdirs',
         'bw2parameters',
+        "constructive_geometries",
         'docopt',
         'docutils',
         'jinja2',

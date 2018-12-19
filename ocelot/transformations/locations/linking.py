@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 from . import topology, RC_STRING
 from ... import toolz
-from ...errors import OverlappingMarkets  #, UnresolvableActivityLink
+from ...data_helpers import production_volume
+from ...errors import OverlappingMarkets, MissingSupplier
 from ..utils import get_single_reference_product
+from .markets import allocate_suppliers, annotate_exchange
 import logging
+
 
 logger = logging.getLogger('ocelot')
 detailed = logging.getLogger('ocelot-detailed')
@@ -84,78 +87,151 @@ link_consumers_to_recycled_content_activities.__table__ = {
 }
 
 
-def link_consumers_to_regional_markets(data):
-    """Link technosphere exchange inputs to markets.
+
+def link_consumers_to_markets(data):
+    """Link technosphere exchange inputs to markets and market groups.
 
     Should only be run after ``add_suppliers_to_markets``. Skips hard (activity) links, and exchanges which have already been linked.
 
     Add the field ``code`` to each exchange with the code of the linked market activity."""
-    filter_func = lambda x: x['type'] == "market activity"
-    market_mapping = toolz.groupby(
+    no_mg_filter = lambda x: x['type'] != "market group"
+    ma_filter = lambda x: x['type'] == "market activity"
+    ta_filter = lambda x: x['type'] == "transforming activity"
+    markets_filter = lambda x: x['type'] in ("market activity", "market group")
+    markets_mapping = dict(toolz.groupby(
         'reference product',
-        filter(filter_func, data)
-    )
-    for ds in data:
-        for exc in filter(unlinked, ds['exchanges']):
-            try:
-                contained = [
-                    market
-                    for market in market_mapping[exc['name']]
-                    if topology.contains(market['location'], ds['location'])]
-                assert contained
-            except (KeyError, AssertionError):
-                continue
-            if len(contained) == 1:
-                sup = contained[0]
-                exc['code'] = sup['code']
+        filter(markets_filter, data)
+    ))
 
-                message = "Link input of '{}' to '{}' ({})"
+    # Used only to resolve RoW for consumers
+    ma_mapping = dict(toolz.groupby(
+        'name',
+        filter(ma_filter, data)
+    ))
+    ta_mapping = dict(toolz.groupby(
+        'name',
+        filter(ta_filter, data)
+    ))
+
+    def annotate(exc, ds):
+        exc = annotate_exchange(exc, ds)
+        exc['production volume'] = {'amount': production_volume(ds, 0)}
+        return exc
+
+    for ds in filter(no_mg_filter, data):
+        # Only unlinked (not recycled content or direct linked) technosphere inputs
+        loc = ds['location']
+
+        if loc == 'RoW':
+            if ds['type'] == 'transforming activity':
+                dct = ta_mapping
+            else:
+                dct = ma_mapping
+            consumer_row = topology.resolve_row(
+                [x['location'] for x in dct[ds['name']]]
+            )
+        else:
+            consumer_row = None
+
+        def contains_wrapper(consumer, supplier, found, consumer_row, supplier_row):
+            kwargs = {
+                'parent': consumer,
+                'child': supplier_row if supplier == 'RoW' else supplier,
+                'subtract': found,
+                'resolved_row': consumer_row if consumer == 'RoW' else None
+            }
+            return topology.contains(**kwargs)
+
+        for exc in list(filter(unlinked, ds['exchanges'])):
+            try:
+                candidates = markets_mapping[exc['name']]
+            except KeyError:
+                if exc['name'] == 'refinery gas':
+                    pass
+                else:
+                    raise MissingSupplier("No markets found for product {}".format(exc['name']))
+
+            found, to_add = [], []
+
+            markets = {x['location']: x for x in candidates if x['type'] == 'market activity'}
+            market_groups = {x['location']: x for x in candidates if x['type'] == 'market group'}
+
+            if 'RoW' in markets:
+                supplier_row = topology.resolve_row(markets)
+            else:
+                supplier_row = set()
+
+            together = set(markets).union(set(market_groups))
+            ordered = topology.ordered_dependencies(
+                [{'location': l} for l in together],
+                supplier_row
+            )
+
+            for candidate in ordered:
+                if contains_wrapper(loc, candidate, found, consumer_row, supplier_row):
+                    found.append(candidate)
+                    if candidate in markets:
+                        to_add.append(markets[candidate])
+                    else:
+                        to_add.append(market_groups[candidate])
+            if not found:
+                # No market or market group within this location -
+                # Find smallest market or market group which contains this activity
+                for candidate in reversed(ordered):
+                    if contains_wrapper(candidate, loc, found, supplier_row, consumer_row):
+                        found.append(candidate)
+                        if candidate in markets:
+                            to_add.append(markets[candidate])
+                        else:
+                            to_add.append(market_groups[candidate])
+                        break
+
+            if len(to_add) == 1:
+                obj = to_add[0]
+                exc['code'] = obj['code']
+
+                message = "Link complete input of {} '{}' from '{}' ({})"
                 detailed.info({
                     'ds': ds,
-                    'message': message.format(exc['name'], sup['name'], sup['location']),
-                    'function': 'link_consumers_to_regional_markets'
+                    'message': message.format(
+                        exc['name'],
+                        exc['amount'],
+                        obj['name'],
+                        obj['location']
+                    ),
+                    'function': 'link_consumers_to_markets'
                 })
             else:
-                # Shouldn't be possible - markets shouldn't overlap
-                message = "Multiple markets contain {} in {}:\n{}"
-                raise OverlappingMarkets(message.format(
-                    exc['name'],
-                    ds['location'],
-                    [x['location'] for x in contained])
-                )
+                ds['suppliers'] = [annotate(exc, obj) for obj in to_add]
+
+                if not ds['suppliers']:
+                    del ds['suppliers']
+                    continue
+
+                for e in ds['suppliers']:
+                    logger.info({
+                        'type': 'table element',
+                        'data': (ds['name'], ds['location'], e['location'])
+                    })
+                    message = "Link consumption input of {} from '{}' ({})"
+                    detailed.info({
+                        'ds': ds,
+                        'message': message.format(
+                            exc['name'],
+                            e['name'],
+                            e['location']
+                        ),
+                        'function': 'link_consumers_to_markets'
+                    })
+
+                allocate_suppliers(ds, is_market=False, exc=exc)
+                del ds['suppliers']
     return data
 
-
-def link_consumers_to_global_markets(data):
-    """Link technosphere exchange inputs to ``GLO`` or ``RoW`` markets.
-
-    Add the field ``code`` to each exchange with the code of the linked market activity."""
-    filter_func = lambda x: x['type'] == "market activity"
-    market_mapping = toolz.groupby(
-        'reference product',
-        filter(filter_func, data)
-    )
-
-    for ds in data:
-        for exc in filter(unlinked, ds['exchanges']):
-            try:
-                contributors = [
-                    x for x in market_mapping[exc['name']]
-                    if x['location'] in ("GLO", "RoW")]
-                assert len(contributors) == 1
-            except (KeyError, AssertionError):
-                continue
-
-            sup = contributors[0]
-            exc['code'] = sup['code']
-
-            message = "Link input of '{}' to '{}' ({})"
-            detailed.info({
-                'ds': ds,
-                'message': message.format(exc['name'], sup['name'], sup['location']),
-                'function': 'link_consumers_to_global_markets'
-            })
-    return data
+link_consumers_to_markets.__table__ = {
+    'title': "Link market and market group suppliers to transforming activities.",
+    'columns': ["Name", "Location", "Supplier Location"]
+}
 
 
 def log_and_delete_unlinked_exchanges(data):

@@ -2,111 +2,193 @@
 import functools
 import json
 import os
+from constructive_geometries import ConstructiveGeometries
 
 
 class Topology(object):
-    fp = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)),
-        "..", "..", "data", "faces.json"
-    )
-
     compatibility = [
-        ('IAI Area 1', "IAI Area 1, Africa"),
+        # Power grids
+        ('ASCC', 'US-ASCC'),
+        ('CSG', 'CN-CSG'),
+        ('FRCC', 'US-FRCC'),
+        ('HICC', 'US-HICC'),
+        ('MRO, US only', 'US-MRO'),
+        ('NPCC, US only', 'US-NPCC'),
+        ('RFC', 'US-RFC'),
+        ('SERC', 'US-SERC'),
+        ('SGCC', 'CN-SGCC'),
+        ('SPP', 'US-SPP'),
+        ('TRE', 'US-TRE'),
+        ('WECC, US only', 'US-WECC'),
+        # Aluminium
+        ('IAI Area 2, North America', 'IAI Area, North America'),
+        ("IAI Area 1, Africa", 'IAI Area, Africa'),
+        ("IAI Area 3, South America", 'IAI Area, South America'),
+        ("IAI Area 4&5 without China", 'IAI Area, Asia, without China and GCC'),
+        ("IAI Area 8, Gulf", 'IAI Area, Gulf Cooperation Council'),
+        ('IAI Area 1', 'IAI Area, Africa'),
+        ('IAI Area 2, without Quebec', 'IAI Area, North America, without Quebec'),
         ('IAI Area 3', "IAI Area 3, South America"),
-        ("IAI Area 4&5 without China", 'IAI Area 4&5, without China'),
-        ('IAI Area 8', "IAI Area 8, Gulf"),
-        # Compatability for ecoinvent 3.3
-        ('IAI Area, North America, without Quebec', 'IAI Area 2, without Quebec'),
-        ('IAI Area, South America', 'IAI Area 3, South America'),
-        ('IAI Area, Russia & RER w/o EU27 & EFTA', 'IAI Area, Europe outside EU & EFTA'),
-        ('IAI Area, Asia, without China and GCC', 'IAI Area 4&5, without China'),
-        ('IAI Area, Gulf Cooperation Council', 'IAI Area 8, Gulf'),
-        ('IAI Area, Africa', 'IAI Area 1, Africa'),
+        ('IAI Area 4&5, without China', 'IAI Area, Asia, without China and GCC'),
+        ('IAI Area 8', 'IAI Area, Gulf Cooperation Council'),
+        ('IAI Area, Europe outside EU & EFTA', 'IAI Area, Russia & RER w/o EU27 & EFTA'),
     ]
 
-    def __init__(self):
-        self.data = {key: set(value) for key, value in
-                     json.load(open(self.fp, encoding='utf-8'))['data']}
+    def __init__(self, size_proxy=None):
+        self.size_proxy = size_proxy or self.default_size_proxy
+
+        cg = ConstructiveGeometries()
+        data = cg.data
+        data['GLO'] = cg.all_faces
         for old, fixed in self.compatibility:
-            self.data[old] = self.data[fixed]
+            data[old] = data[fixed]
+        self.data = {k: set(v) for k, v in data.items()}
 
-    @functools.lru_cache(maxsize=512)
-    def contained(self, location, exclude_self=False, subtract=None):
-        if location in ('GLO', 'RoW'):
-            return set()
-        faces = self(location)
-        if subtract:
-            faces = faces.difference(set.union(*[self(place) for place in subtract]))
-        return {key
-                for key, value in self.data.items()
-                if not value.difference(faces)
-                and not (key == location and exclude_self)}
+    def default_size_proxy(self, face_id):
+        """Proxy function to allow for better indicators of area or importance than mere number of faces."""
+        return 1
 
-    def contains(self, parent, child, subtract=None):
-        """Return boolean of whether ``parent`` contains ``child``"""
-        return child in self.contained(
-            parent,
-            tuple(subtract) if subtract else None
+    def resolve_row(self, others):
+        """Resolve a ``RoW`` against an iterable of specific regions.
+
+        Implicitly ignores ``RoW`` if present in ``others``."""
+        return self("GLO").difference(
+            set.union(*[self(place) for place in others])
         )
 
-    def tree(self, datasets):
-        """Construct a tree of containing geographic relationships.
+    def contained(self, location, exclude_self=False, subtract=None,
+            resolved_row=None):
+        """Return a set of locations which are contained within ``location``.
 
-        ``datasets`` is a list of datasets with the ``locations parameter``.
+        If ``resolved_row`` is ``None``, then ``RoW`` contains nothing, **not even itself** (because without ``resolved_row``, we don't know what is included in the "other" ``RoW``).
 
-        Returns a list of nested dictionaries like:
+        ``GLO`` contains ``RoW`` if a) ``RoW`` is resolved, and fits in ``GLO`` (taken ``subtract`` into account); or, b) ``RoW`` is not resolved and there is no ``subtract``.
 
-            .. code-block:: python
+        Args:
 
-            {
-                "Europe": {
-                    "Western Europe": {
-                        "France": {},
-                        "Belgium": {}
-                    }
-                }
-            }
-
-        ``GLO`` contains all other locations, including ``RoW``. However, ``RoW`` contains nothing.
-
-        Behavior is not defined if the provided locations make a "diamond" shape where "A" contains "B" and "C", which each contain "D".
+            * ``exclude_self``: Don't return ``location``
+            * ``subtract``: Iterable of locations to subtract from ``location`` before doing GIS comparison
+            * ``resolved_row``: Set of faces generated by ``topology.resolve_row()``. Used both if ``location`` is ``RoW``, and to determine if ``RoW`` is in ``location``.
 
         """
-        locations = {x['location'] for x in datasets}
-        filtered = lambda lst: {x for x in lst if x in locations}
-        contained = {loc: filtered(self.contained(loc, True)) for loc in locations}
+        s = lambda x: frozenset(x) if isinstance(x, set) else x
+        t = lambda x: tuple(x) if isinstance(x, list) else x
+        return self._contained(s(location), exclude_self, t(subtract), s(resolved_row))
 
-        # Remove redundant links, e.g. A contains B contains C; don't need A -> C.
-        for parent, children in contained.items():
-            give_up = []
-            for brother in children:
-                for sister in children:
-                    if brother == sister:
-                        continue
-                    elif brother in contained[sister]:
-                        give_up.append(brother)
-            for child in give_up:
-                children.discard(child)
+    @functools.lru_cache(maxsize=512)
+    def _contained(self, location, exclude_self, subtract,
+            resolved_row):
+        if location == 'RoW' and resolved_row is None:
+            return set()
+        elif location == 'RoW':
+            faces = resolved_row
+        elif isinstance(location, (set, frozenset)):
+            faces = location
+        else:
+            faces = self(location)
 
-        children = {elem for lst in contained.values() for elem in lst}
-        parents = locations.difference(children).difference({'GLO', 'RoW'})
+        if subtract:
+            faces = faces.difference(set.union(*[self(place) for place in subtract]))
 
-        # Depth first search
-        def add_children(keys):
-            return {key: add_children(contained[key]) for key in keys}
+        if not faces:
+            # Empty set has no faces - it doesn't include itself because it
+            # doesn't exist anywhere in space
+            return set()
 
-        tree = add_children(parents)
-        if 'GLO' in locations:
-            tree = {'GLO': tree}
-            if 'RoW' in locations:
-                tree['GLO']['RoW'] = {}
-        elif 'RoW' in locations:
-            tree['RoW'] = {}
+        result = {key
+                  for key, value in self.data.items()
+                  if not value.difference(faces)
+                  and not (key == location and exclude_self)}
+        if (resolved_row not in (set(), frozenset(), None)
+            and not resolved_row.difference(faces)
+            and not (location == 'RoW' and exclude_self)):
+            result.add("RoW")
+        # Always include RoW for 'GLO' unless ``resolved_row``
+        # (in which case it would already be there if it fit)
+        elif location == 'GLO' and resolved_row is None and not subtract:
+            result.add("RoW")
+        return result
 
-        return tree
+    def contains(self, parent, child, subtract=None, resolved_row=None):
+        """Return boolean of whether ``parent`` contains ``child``.
+
+        ``RoW`` handling is a but tricky. We have two possibilities for passing RoW - either the string "RoW", or a set of face ids from ``resolved_row()``. THe problem is that the ``RoW`` in parent is defined independently of ``RoW`` in child. The logic in this function follows the following guidelines:
+
+        * ``contains("RoW", "RoW")``: False. The two RoWs are defined differently, we can't say whether one contains the other.
+        * ``contains("RoW", some_set)``: False. Don't know how to define the first ``RoW``.
+        * ``contains("RoW", "RoW", resolved_row=some_set)``: False. Don't know how to define the second ``RoW``.
+        * resolved_row=another_set)``: True or False, depending on input data.
+
+        Note that the ``resolved_row`` is in the spatial system of ``parent``, not ``child``!
+
+        If ``child`` or ``resolved_row`` is an empty set (either directly, or as a result of ``subtract``), then that location does not exist in space (no face ids at all), and so cannot either contain or be contained by any other spatially resolved location.
+
+        ``GLO`` will contain ``RoW`` (even if ``RoW`` is undefined), as long as ``subtract`` is ``None``.
+
+        """
+        s = lambda x: frozenset(x) if isinstance(x, set) else x
+        t = lambda x: tuple(x) if isinstance(x, list) else x
+        return self._contains(s(parent), s(child), t(subtract), s(resolved_row))
+
+    @functools.lru_cache(maxsize=512)
+    def _contains(self, parent, child, subtract, resolved_row):
+        if isinstance(child, (set, frozenset)):
+            # Resolved RoW
+            if not child:
+                # Empty set
+                return False
+            elif parent == 'RoW':
+                faces = resolved_row or set()
+            elif isinstance(parent, (set, frozenset)):
+                faces = parent
+            else:
+                faces = self(parent)
+
+            if subtract:
+                faces = faces.difference(set.union(
+                    *[self(place) for place in subtract]
+                ))
+
+            return faces.issuperset(child)
+        elif parent == "GLO" and child == 'RoW' and not subtract:
+            return True
+        elif child == 'RoW' or (parent == 'RoW' and not resolved_row):
+            return False
+
+        if parent == 'RoW':
+            faces = resolved_row
+        elif isinstance(parent, (set, frozenset)):
+            faces = parent
+        else:
+            faces = self(parent)
+
+        if subtract:
+            faces = faces.difference(set.union(
+                *[self(place) for place in subtract]
+            ))
+
+        return faces.issuperset(self(child))
+
+    def ordered_dependencies(self, datasets, resolved_row=None):
+        """Return a list of locations from ``datasets`` in order from largest to smallest.
+
+        Area calculations use ``self.size_proxy``, which by default uses number of topological faces."""
+        q = lambda x: tuple(sorted({x['location'] for x in datasets}))
+        s = lambda x: frozenset(x) if isinstance(x, set) else x
+        return self._ordered_dependencies(q(datasets), s(resolved_row))
+
+    @functools.lru_cache(maxsize=512)
+    def _ordered_dependencies(self, locations, resolved_row):
+        get_faces = lambda loc: resolved_row if (loc == 'RoW' and resolved_row) else self(loc)
+        size = lambda loc: sum(self.size_proxy(face)
+                               for face in get_faces(loc))
+
+        ordered = sorted(locations, key=lambda k: (size(k), k), reverse=True)
+        return ordered
 
     @functools.lru_cache(maxsize=512)
     def intersected(self, location, exclude_self=False):
+        """Not used in Ocelot"""
         if location in ('GLO', 'RoW'):
             return set()
         faces = self(location)
@@ -116,17 +198,20 @@ class Topology(object):
                 and not (key == location and exclude_self)}
 
     def intersects(self, parent, child):
-        """Return boolean of whether ``parent`` contains ``child``"""
+        """Return boolean of whether ``parent`` contains ``child``.
+
+        Not used in Ocelot."""
         return child in self.intersected(parent)
 
     def overlaps(self, group):
-        """Return a boolean if any elements in ``group`` overlap each other"""
+        """Return a boolean if any elements in ``group`` overlap each other."""
         if not group:
             return None
         faces = [self(obj) for obj in group]
-        return len([o for f in faces for o in f]) != len(set.union(*faces))
+        return sum(len(o) for o in faces) != len(set.union(*faces))
 
     def __call__(self, location):
-        if location in ('GLO', 'RoW'):
+        if location == 'RoW':
             return set()
-        return self.data[location]
+        else:
+            return self.data[location]
