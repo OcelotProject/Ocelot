@@ -283,8 +283,7 @@ def update_market_production_volumes(data, kind="market activity"):
 
         total_pv = sum(get_original_pv(o)
                        for o in ds['suppliers'])
-        rp['production volume'][
-        'original total']: total_pv
+        rp['production volume']['original total']: total_pv
         missing_market_pv = rp['production volume'].get('subtracted activity link volume', 0)
         missing_inputs_pv = sum(
             s['production volume'].get("subtracted activity link volume", 0)
