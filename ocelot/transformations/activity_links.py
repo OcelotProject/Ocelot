@@ -181,6 +181,7 @@ def update_transforming_activity_production_volumes(data):
                 ),
                 'function': 'update_transforming_activity_production_volumes',
             })
+            exc['production volume']['original amount'] = exc['production volume']['amount']
             exc['production volume']['amount'] = max(
                 exc['production volume']['amount'] - \
                     exc['production volume']['subtracted activity link volume'],

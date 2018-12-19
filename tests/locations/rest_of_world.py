@@ -494,6 +494,53 @@ def test_relabel_global_to_row_subtract_pv():
     hashify = lambda x: {(y['name'], y['location'], y['exchanges'][0]['production volume']['amount']) for y in x}
     assert hashify(relabel_global_to_row(given)) == hashify(expected)
 
+def test_relabel_global_to_row_subtract_origianal_pv():
+    given = [{
+        'name': 'make something',
+        'location': 'GLO',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'amount': 1,
+            'production volume':{
+                'amount':100
+            }
+        }]
+    }, {
+        'name': 'make something',
+        'location': 'somewhere else',
+        'unit': '',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'amount': 1,
+            'production volume':{
+                'amount':10,
+                'subtracted activity link volume': 40,
+                'original amount': 50
+            }
+        }]
+    }]
+    expected = {
+        'name': 'make something',
+        'location': 'RoW',
+        'type': 'market activity',
+        'exchanges': [{
+            'name': 'a product',
+            'type': 'reference product',
+            'unit': '',
+            'amount': 1,
+            'production volume':{
+                'amount':50
+            }
+        }]
+    }
+    assert next(o for o in relabel_global_to_row(given) if o['location'] == 'RoW') == expected
+
 def test_relabel_global_to_row_subtract_pv_overspecified_regional_pv():
     given = [{
         'name': 'make something',

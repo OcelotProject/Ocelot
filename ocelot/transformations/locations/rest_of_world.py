@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from ... import toolz
-from ...data_helpers import reference_products_as_string, production_volume
+from ...data_helpers import (
+    original_production_volume,
+    production_volume,
+    reference_products_as_string,
+)
 from ..utils import allocatable_production, get_single_reference_product
 from .validation import check_single_global_dataset
 import logging
@@ -34,7 +38,7 @@ def relabel_global_to_row(data):
             check_single_global_dataset(group)
             glo = next(ds for ds in group if ds['location'] == 'GLO')
             region_specific_pv = sum(
-                production_volume(obj, 0)
+                original_production_volume(obj, 0)
                 for obj in group
                 if obj != glo
             )

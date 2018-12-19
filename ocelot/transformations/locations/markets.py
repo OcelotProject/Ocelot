@@ -209,7 +209,6 @@ def allocate_suppliers(dataset, is_market=True, exc=None):
             'function': 'allocate_suppliers'
         })
 
-
     for supply_exc in dataset['suppliers']:
         scale_factor = supply_exc['production volume']['amount'] / total_pv
         if not scale_factor:
@@ -259,6 +258,13 @@ def update_market_production_volumes(data, kind="market activity"):
     Activity link amounts are added by ``add_hard_linked_production_volumes`` and are currently given in ``rp_exchange['production volume']['subtracted activity link volume']``.
 
     Production volume is set to zero if the net production volume is negative."""
+    def get_original_pv(exc):
+        pv = exc['production volume']
+        if 'original amount' in pv:
+            return pv['original amount']
+        else:
+            return pv['amount']
+
     datasets = [o for o in data if o['type'] == kind]
 
     if kind == 'market group':
@@ -274,16 +280,20 @@ def update_market_production_volumes(data, kind="market activity"):
 
     for ds in datasets:
         rp = get_single_reference_product(ds)
-        total_pv = sum(o['production volume']['amount']
-                   for o in ds['suppliers'])
+
+        total_pv = sum(get_original_pv(o)
+                       for o in ds['suppliers'])
         rp['production volume'][
-        'without subtraction']: total_pv
-        missing_pv = (
-            sum([s['production volume'].get("subtracted activity link volume", 0)
-                 for s in ds['suppliers']]) +
-            rp['production volume'].get('subtracted activity link volume', 0)
+        'original total']: total_pv
+        missing_market_pv = rp['production volume'].get('subtracted activity link volume', 0)
+        missing_inputs_pv = sum(
+            s['production volume'].get("subtracted activity link volume", 0)
+            for s in ds['suppliers']
         )
-        pv = max(total_pv - missing_pv, 0)
+        pv = max(
+            sum(s['production volume']['amount'] for s in ds['suppliers']) - missing_market_pv,
+            0
+        )
         rp['production volume']['amount'] = pv
 
         if kind == 'market group':
@@ -298,13 +308,13 @@ def update_market_production_volumes(data, kind="market activity"):
         logger.info({
             'type': 'table element',
             'data': (ds['name'], rp['name'], ds['location'],
-                     total_pv, missing_pv, pv)
+                     total_pv, missing_inputs_pv, missing_market_pv, pv)
         })
     return data
 
 update_market_production_volumes.__table__ = {
     'title': 'Update market production volumes while subtracting hard links',
-    'columns': ["Name", "Product", "Location", "Total", "Activity links", "Net"]
+    'columns': ["Name", "Product", "Location", "Original", "Input subtractions", "Market subtractions", "Net"]
 }
 
 

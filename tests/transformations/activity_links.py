@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 from ocelot.errors import UnresolvableActivityLink
-from ocelot.transformations.activity_links import (
-    add_hard_linked_production_volumes,
-    check_activity_link_validity,
-    fix_35_activity_links,
-    update_activity_link_parent_child,
-)
+from ocelot.transformations.activity_links import *
 import pytest
 
 
@@ -279,4 +274,23 @@ def test_fix_35_activity_links():
     assert fix_35_activity_links(given) == expected
 
 def test_update_transforming_activity_production_volumes():
-    pass
+    given = [{
+        'type': 'transforming activity',
+        'exchanges': [{
+            'production volume': {
+                'amount': 100,
+                'subtracted activity link volume': 25},
+            'type': 'reference product',
+        }]
+    }]
+    expected = [{
+        'type': 'transforming activity',
+        'exchanges': [{
+            'production volume': {
+                'amount': 75,
+                'original amount': 100,
+                'subtracted activity link volume': 25},
+            'type': 'reference product',
+        }]
+    }]
+    assert update_transforming_activity_production_volumes(given) == expected
