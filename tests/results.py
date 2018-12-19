@@ -5,7 +5,7 @@ import pytest
 def test_default_save_strategy():
     ss = SaveStrategy()
     assert ss(0)
-    assert ss(5)
+    assert ss(1000)
     assert not ss(1)
 
 def test_index_as_int():
