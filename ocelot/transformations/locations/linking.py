@@ -102,12 +102,14 @@ def link_consumers_to_markets(data):
         'reference product',
         filter(markets_filter, data)
     ))
+
+    # Used only to resolve RoW for consumers
     ma_mapping = dict(toolz.groupby(
-        'reference product',
+        'name',
         filter(ma_filter, data)
     ))
     ta_mapping = dict(toolz.groupby(
-        'reference product',
+        'name',
         filter(ta_filter, data)
     ))
 
@@ -126,7 +128,7 @@ def link_consumers_to_markets(data):
             else:
                 dct = ma_mapping
             consumer_row = topology.resolve_row(
-                [x['location'] for x in dct[ds['reference product']]]
+                [x['location'] for x in dct[ds['name']]]
             )
         else:
             consumer_row = None
@@ -223,7 +225,7 @@ def link_consumers_to_markets(data):
                     })
 
                 allocate_suppliers(ds, is_market=False, exc=exc)
-                # del ds['suppliers']
+                del ds['suppliers']
     return data
 
 link_consumers_to_markets.__table__ = {
