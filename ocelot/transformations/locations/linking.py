@@ -172,8 +172,6 @@ def link_consumers_to_markets(data):
                         to_add.append(markets[candidate])
                     else:
                         to_add.append(market_groups[candidate])
-                    if (ds['name'] == 'yarn production, kenaf' and ds['location'] == 'RoW'):
-                        print("Added:", candidate, [x['location'] for x in to_add])
             if not found:
                 # No market or market group within this location -
                 # Find smallest market or market group which contains this activity
@@ -202,16 +200,11 @@ def link_consumers_to_markets(data):
                     'function': 'link_consumers_to_markets'
                 })
             else:
-                if (ds['name'] == 'yarn production, kenaf' and ds['location'] == 'RoW'):
-                    print("Starting allocation:", len(to_add))
                 ds['suppliers'] = [annotate(exc, obj) for obj in to_add]
 
                 if not ds['suppliers']:
                     del ds['suppliers']
                     continue
-
-                if (ds['name'] == 'yarn production, kenaf' and ds['location'] == 'RoW'):
-                    print("Suppliers:", [x['location'] for x in ds['suppliers']])
 
                 for e in ds['suppliers']:
                     logger.info({
@@ -230,7 +223,7 @@ def link_consumers_to_markets(data):
                     })
 
                 allocate_suppliers(ds, is_market=False, exc=exc)
-                del ds['suppliers']
+                # del ds['suppliers']
     return data
 
 link_consumers_to_markets.__table__ = {

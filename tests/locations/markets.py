@@ -147,8 +147,13 @@ def test_astc_row_supplier():
         generate_dataset('RER'),
         generate_dataset('RoW'),
     ]
+    # If we change here to make RoW always a backup
+    # If geomatched it is exlcuded
+    # expected = {
+    #     'UCTE without Francefb': ['RoWfb'],
+    #     'RoWfb': ['RoWfb']
+    # }
     expected = {
-        'UCTE without Francefb': ['RoWfb'],
         'RoWfb': ['RoWfb']
     }
     apportion_market_suppliers_to_consumers(consumers, suppliers)
@@ -196,9 +201,14 @@ def test_astc_row_supplier_and_consumer_consumer_within_supplier():
         generate_dataset('Europe without Switzerland'),
         generate_dataset('RoW'),
     ]
+    # If we change here to make RoW always a backup
+    # RoW excluded from supplier because it covers NAFTA as well
+    # expected = {
+    #     'NAFTAfb': ['RoWfb'], # Fallback
+    #     'RoWfb': ['RoWfb'],
+    #     'RERfb': ['CHfb', 'Europe without Switzerlandfb']
+    # }
     expected = {
-        'NAFTAfb': ['RoWfb'], # Fallback
-        'RoWfb': ['RoWfb'],
         'RERfb': ['CHfb', 'Europe without Switzerlandfb']
     }
     apportion_market_suppliers_to_consumers(consumers, suppliers)
@@ -214,11 +224,14 @@ def test_astc_row_supplier_and_consumer_overlap_but_not_contained():
         generate_dataset('RER'),
         generate_dataset('RoW'),
     ]
-    expected = {
-        'NAFTAfb': ['RoWfb'], # Fallback
-        'WEUfb': ['RoWfb'],   # Contained by
-        'RoWfb': ['RoWfb'],   # Fallback
-    }
+    # If we change here to make RoW always a backup
+    # and not compare georesolved RoW to georesolved RoW
+    # expected = {
+    #     'NAFTAfb': ['RoWfb'], # Fallback
+    #     'WEUfb': ['RoWfb'],   # Contained by
+    #     'RoWfb': ['RoWfb'],   # Fallback
+    # }
+    expected = {}
     apportion_market_suppliers_to_consumers(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
@@ -230,10 +243,12 @@ def test_astc_row_consumer_glo_supplier():
     suppliers = [
         generate_dataset('GLO'),
     ]
-    expected = {
-        'WEUfb': ['GLOfb'],
-        'RoWfb': ['GLOfb'],
-    }
+    # If we change here to make GLO/RoW always a backup
+    # expected = {
+    #     'WEUfb': ['GLOfb'],
+    #     'RoWfb': ['GLOfb'],
+    # }
+    expected = {}
     apportion_market_suppliers_to_consumers(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
@@ -245,9 +260,11 @@ def test_astc_larger_regional_supplier():
         generate_dataset('RoW'),
         generate_dataset('RER'),
     ]
-    expected = {
-        'WEUfb': ['RoWfb'],
-    }
+    # If we change here to make GLO/RoW always a backup
+    # expected = {
+    #     'WEUfb': ['RoWfb'],
+    # }
+    expected = {}
     apportion_market_suppliers_to_consumers(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
@@ -258,9 +275,11 @@ def test_astc_single_global_supplier():
     suppliers = [
         generate_dataset('GLO'),
     ]
-    expected = {
-        'WEUfb': ['GLOfb'],
-    }
+    # If we change here to make GLO/RoW always a backup
+    # expected = {
+    #     'WEUfb': ['GLOfb'],
+    # }
+    expected = {}
     apportion_market_suppliers_to_consumers(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
@@ -671,7 +690,8 @@ def test_update_market_production_volumes_activity_link():
         }],
         'suppliers': [
             {'production volume': {
-                'amount': 10,
+                'original amount': 10,
+                'amount': 2,
                 'subtracted activity link volume': 8
             }},
             {'production volume': {'amount': 20}},
