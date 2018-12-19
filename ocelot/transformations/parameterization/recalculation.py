@@ -3,6 +3,11 @@ from ..uncertainty import get_uncertainty_class
 from ..utils import iterate_all_parameters, iterate_all_uncertainties
 from asteval import Interpreter
 from bw2parameters import ParameterSet
+from bw2parameters.errors import ParameterError, DuplicateName
+import logging
+
+logger = logging.getLogger('ocelot')
+detailed = logging.getLogger('ocelot-detailed')
 
 
 def extract_named_parameters(dataset):
@@ -76,3 +81,37 @@ def recalculate(dataset):
             get_uncertainty_class(obj).repair(obj)
 
     return dataset
+
+
+def recalculate_all_parameterized_datasets(data):
+    """Try to recalculate all datasets at end of system model.
+
+    Logs errors."""
+    for ds in data:
+        try:
+            recalculate(ds)
+        except (ParameterError, ZeroDivisionError,
+                TypeError, DuplicateName) as E:
+            logger.info({
+                'type': 'table element',
+                'data': (
+                    ds['name'], ds['reference product'], ds['location']
+                )
+            })
+            detailed.info({
+                'ds': ds,
+                'message': "Parameter recalculation error: {}".format(str(E)),
+                'function': 'recalculate'
+            })
+
+    return data
+
+recalculate_all_parameterized_datasets.__table__ = {
+    'title': 'Datasets with circular references which cause parameter set errors (see the detailed logs for each dataset for the specifics).',
+    'columns': ["Name", "Reference product", "Location"]
+}
+
+
+
+
+

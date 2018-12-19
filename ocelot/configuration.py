@@ -31,6 +31,8 @@ from .transformations.cutoff.cleanup import (
     drop_zero_amount_activity_links,
     remove_consequential_exchanges,
 )
+from .transformations.parameterization import (recalculate_all_parameterized_datasets,
+)
 from .transformations.locations import link_markets_by_pv
 from .wrapper import TransformationWrapper
 
@@ -59,6 +61,8 @@ cutoff_config = Collection(
     # extrapolate to database reference year
     TransformationWrapper(normalize_reference_production_amount),
     adjust_market_signs_for_allocatable_products,
+    # Need to fix many formula errors before this can work
+    # recalculate_all_parameterized_datasets,
     # final output processing
 )
 

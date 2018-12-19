@@ -9,7 +9,10 @@ from .python_compatibility import (
     lowercase_all_parameters,
     replace_reserved_words,
 )
-from .recalculation import recalculate
+from .recalculation import (
+    recalculate,
+    recalculate_all_parameterized_datasets,
+)
 from .uncertainty import repair_all_uncertainty_distributions
 from .validation import variable_names_are_unique
 
