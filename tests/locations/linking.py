@@ -371,6 +371,55 @@ def test_link_consumers_to_markets_prefer_m_to_mg():
     result = link_consumers_to_markets(given)
     assert set(x['code'] for x in result[-1]['exchanges']) == set('bc')
 
+def test_link_consumers_to_markets_same_product_name():
+    given = [{
+        'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': 'something different',
+        'location': 'GLO',
+        'code': 'a',
+        'exchanges': [{
+            'type': 'reference product',
+            'production volume': {'amount': 1},
+            'name': ''
+        }],
+    }, {
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'name': '',
+        'location': 'WECC',
+        'code': 'b',
+        'exchanges': [{
+            'type': 'reference product',
+            'production volume': {'amount': 1},
+            'name': ''
+        }],
+    }, {
+        'type': 'market activity',
+        'reference product': 'cheese',
+        'name': '',
+        'location': 'CA',
+        'code': 'c',
+        'exchanges': [{
+            'type': 'reference product',
+            'production volume': {'amount': 1},
+            'name': ''
+        }],
+    }, {
+        'type': 'transforming activity',
+        'reference product': 'crackers',
+        'name': 'something',
+        'location': 'NAFTA',
+        'exchanges': [{
+            'type': 'from technosphere',
+            'name': 'cheese',
+            'amount': 1,
+            'unit': ''
+        }]
+    }]
+    result = link_consumers_to_markets(given)
+    assert [x['code'] for x in result[-1]['exchanges']] == ['c']
+
 def test_link_consumers_to_markets_include_mg():
     given = [{
         'type': 'market group',
