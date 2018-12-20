@@ -91,14 +91,14 @@ def choose_allocation_method(dataset):
                                    if exc.get('conditional exchange'))
 
     if number_reference_products == 1 and not allocatable_byproducts:
-        return None
+        return "single product"
     elif dataset['type'] == 'market group':
-        return None
+        return "market group"
     elif dataset['type'] == 'market activity':
         if has_conditional_exchange:
             return "constrained market"
         else:
-            return None
+            return "unconstrained market"
     elif number_reference_products > 1:
         if not allocatable_products:
             return "combined production without products"
@@ -118,7 +118,9 @@ def choose_allocation_method(dataset):
 
 
 ALLOCATION_METHODS = (
-    (None, no_allocation),
+    ("single product", no_allocation),
+    ("market group", no_allocation),
+    ("unconstrained market", no_allocation),
     ("economic", economic_allocation),
     ("constrained market", constrained_market_allocation),
     ("recycling", recycling_allocation),
