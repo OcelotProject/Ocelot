@@ -4,6 +4,7 @@ from .filesystem import (
     cache_data,
     OutputDir,
     save_intermediate_result,
+    save_specific_dataset,
 )
 from .io import extract_directory
 from .logger import create_log, create_detailed_log
@@ -20,7 +21,7 @@ import wrapt
 logger = logging.getLogger('ocelot')
 
 
-def apply_transformation(function, counter, data, output_dir, save_strategy):
+def apply_transformation(function, counter, data, output_dir, save_strategy, follow):
     # A `function` can be a list of functions
     if (isinstance(function, Iterable)
         and not isinstance(function, wrapt.FunctionWrapper)):
@@ -47,11 +48,17 @@ def apply_transformation(function, counter, data, output_dir, save_strategy):
 
         if save_strategy(index):
             save_intermediate_result(output_dir, index, data, metadata['name'])
+
+        if follow:
+            save_specific_dataset(output_dir, index, data,
+                                  follow, metadata['name'])
+
         logger.info(metadata)
         return data
 
 
-def system_model(data_path, config=None, show=False, use_cache=True, save_strategy=None):
+def system_model(data_path, config=None, show=False, use_cache=True,
+                 save_strategy=None, follow=None):
     """A system model is a set of assumptions and modeling choices that define how to take a list of unlinked and unallocated datasets, and transform these datasets into a new list of datasets which are linked and each have a single reference product.
 
     The system model itself is a list of functions. The definition of this list - which functions are included, and in which order - is defined by the input parameter ``config``, which can be a list of functions or a :ref:`configuration` object. The ``system_model`` does the following:
@@ -67,6 +74,15 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
 
     Can be interrupted with CTRL-C. Interrupting will delete the partially completed report.
 
+    Args:
+
+        * ``datapath``: Filepath to directory of undefined dataset files.
+        * ``config``: System model choice. Default is cutoff system model.
+        * ``show``: Boolean flag to open the final report in a web browser after model completion.
+        * ``use_cache``: Boolean flag to use cached data instead of raw ecospold2 files when possible.
+        * ``save_strategy``: Optional input argument to initialize a ``SaveStrategy``.
+        * ``follow``: Optional filename of a file to follow (i.e. save after each transformation function) during system model execution.
+
     Returns:
 
         * An ``OutputDir`` object which tells you where the report was generated
@@ -76,11 +92,12 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
     print("Starting Ocelot model run")
     config = validate_configuration(config or cutoff_config)
     data = extract_directory(data_path, use_cache)
-    output_manager = OutputDir()
+    output_manager = OutputDir(follow=follow)
     try:
         counter = itertools.count()
         logfile_path = create_log(output_manager.directory)
         create_detailed_log(output_manager.directory)
+
         print("Opening log file at: {}".format(logfile_path))
 
         logger.info({
@@ -94,7 +111,7 @@ def system_model(data_path, config=None, show=False, use_cache=True, save_strate
         for obj in config:
             data = apply_transformation(obj, counter, data,
                                         output_manager.directory,
-                                        save_strategy)
+                                        save_strategy, follow)
 
         print("Saving final results")
         save_intermediate_result(output_manager.directory, "final-results", data)

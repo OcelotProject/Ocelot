@@ -12,8 +12,8 @@ Commands:
 See https://docs.ocelot.space/filesystem.html#writing-intermediate-results for information on saving strategies.
 
 Usage:
-  ocelot-cli run <dirpath> [--noshow] [--save=<strategy>]
-  ocelot-cli run <dirpath> <config> [--noshow] [--save=<strategy>]
+  ocelot-cli run <dirpath> [--noshow] [--save=<strategy>] [--follow=<filename>]
+  ocelot-cli run <dirpath> <config> [--noshow] [--save=<strategy>] [--follow=<filename>]
   ocelot-cli cleanup
   ocelot-cli validate <dirpath>
   ocelot-cli xsd <dirpath> <schema>
@@ -23,11 +23,12 @@ Usage:
   ocelot-cli --version
 
 Options:
-  --list             List the updates needed, but don't do anything
-  --noshow           Don't open HTML report in new web browser tab
-  --save=<strategy>  Strategy for which intermediate results to save.
-  -h --help          Show this screen.
-  --version          Show version.
+  --list              List the updates needed, but don't do anything
+  --noshow            Don't open HTML report in new web browser tab
+  --save=<strategy>   Strategy for which intermediate results to save.
+  --follow=<filename> Filename to follow during system model execution
+  -h --help           Show this screen.
+  --version           Show version.
 
 """
 from docopt import docopt
@@ -46,7 +47,13 @@ def main():
     try:
         args = docopt(__doc__, version='Ocelot open source linker CLI 0.2')
         if args['run']:
-            system_model(args["<dirpath>"], args['<config>'], show=not args['--noshow'], save_strategy=args['--save'])
+            system_model(
+                args["<dirpath>"],
+                args['<config>'],
+                show=not args['--noshow'],
+                save_strategy=args['--save'],
+                follow=args['--follow']
+            )
         elif args['validate']:
             validate_directory(args['<dirpath>'])
         elif args['xsd']:

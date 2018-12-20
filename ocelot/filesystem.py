@@ -122,7 +122,7 @@ def cache_data(data, data_path):
 
 class OutputDir(object):
     """OutputDir is responsible for creating and managing a model run output directory."""
-    def __init__(self, dir_path=None):
+    def __init__(self, dir_path=None, follow=False):
         """Create the job id and output directory"""
         self.report_id = uuid.uuid4().hex
         if dir_path is None:
@@ -131,6 +131,8 @@ class OutputDir(object):
         try:
             create_dir(self.directory)
             assert check_dir(self.directory)
+            if follow:
+                create_dir(os.path.join(self.directory, "follow"))
         except:
             raise OutputDirectoryError(
                 "Can't find or write to output directory:\n\t{}".format(
@@ -146,6 +148,25 @@ def save_intermediate_result(output_dir, index, data, func_name=None):
     dump_fp = os.path.join(
         output_dir,
         str(index) + func_name + ".pickle"
+    )
+    with open(dump_fp, "wb") as f:
+        pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def save_specific_dataset(output_dir, index, data, follow, func_name):
+    selected = [ds for ds in data if follow in ds['filepath']]
+    if not selected:
+        return
+    data = {
+        'index': index,
+        'function name': func_name or '',
+        'follow string': follow,
+        'datasets': selected
+    }
+    dump_fp = os.path.join(
+        output_dir,
+        "follow",
+        "{}.{}.pickle".format(index, follow)
     )
     with open(dump_fp, "wb") as f:
         pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
