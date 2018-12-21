@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from ..utils import nonreference_product, get_single_reference_product
 from ..uncertainty import scale_exchange
+from ... import toolz
 import logging
 
 logger = logging.getLogger('ocelot')
