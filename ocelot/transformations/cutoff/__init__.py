@@ -12,7 +12,11 @@ RC_STRING = ", Recycled Content cut-off"
 from .allocation import choose_allocation_method, cutoff_allocation
 from .economic import economic_allocation
 from .utils import apply_allocation_factors
-from .wastes import handle_waste_outputs, rename_recycled_content_products_after_linking
+from .wastes import (
+    flip_non_allocatable_byproducts,
+    handle_waste_outputs,
+    rename_recycled_content_products_after_linking,
+)
 from .markets import adjust_market_signs_for_allocatable_products
 
 from ...collection import Collection

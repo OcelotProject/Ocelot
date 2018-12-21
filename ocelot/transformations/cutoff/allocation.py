@@ -11,7 +11,11 @@ from .economic import economic_allocation
 from .markets import constrained_market_allocation
 from .utils import delete_allocation_method
 from .validation import valid_no_allocation_dataset
-from .wastes import waste_treatment_allocation, recycling_allocation
+from .wastes import (
+    waste_treatment_allocation,
+    recycling_allocation,
+    recycling_2_allocation,
+)
 import logging
 
 logger = logging.getLogger('ocelot')
@@ -87,10 +91,20 @@ def choose_allocation_method(dataset):
     allocatable_products = any(1 for exc in allocatable_production(dataset)
                                if exc['type'] == 'reference product'
                                and exc.get('byproduct classification') == 'allocatable product')
+
+    # https://github.com/OcelotProject/Ocelot/issues/155
+    recyclable_reference_product = reference_product_classifications == ['recyclable']
+    recyclable_byproduct = any((
+        exc.get('byproduct classification') == 'recyclable' and
+        exc.get('type') == 'byproduct'
+    ) for exc in dataset['exchanges'])
+
     has_conditional_exchange = any(1 for exc in dataset['exchanges']
                                    if exc.get('conditional exchange'))
 
-    if number_reference_products == 1 and not allocatable_byproducts:
+    if recyclable_reference_product and recyclable_byproduct:
+        return "recycling squared"
+    elif number_reference_products == 1 and not allocatable_byproducts:
         return "single product"
     elif dataset['type'] == 'market group':
         return "market group"
@@ -124,6 +138,7 @@ ALLOCATION_METHODS = (
     ("economic", economic_allocation),
     ("constrained market", constrained_market_allocation),
     ("recycling", recycling_allocation),
+    ("recycling squared", recycling_2_allocation),
     ("waste treatment", waste_treatment_allocation),
     ("combined production without products", combined_production_without_products),
     ("combined production", combined_production),
