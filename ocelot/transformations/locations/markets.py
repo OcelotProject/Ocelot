@@ -405,11 +405,11 @@ assign_fake_pv_to_confidential_datasets.__table__ = {
 }
 
 
-def delete_global_markets_with_zero_pv_when_regional_market_present(data):
+def delete_global_with_zero_pv_when_regional_present(data, kind="market activity"):
     """"""
     purge = []
-    market_filter = lambda x: x['type'] == "market activity"
-    grouped = toolz.groupby("reference product", filter(market_filter, data))
+    act_filter = lambda x: x['type'] == kind
+    grouped = toolz.groupby("reference product", filter(act_filter, data))
     for rp, group in grouped.items():
         if len(group) < 2:
             continue
@@ -425,7 +425,7 @@ def delete_global_markets_with_zero_pv_when_regional_market_present(data):
             continue
     return [ds for ds in data if ds not in purge]
 
-delete_global_markets_with_zero_pv_when_regional_market_present.__table__ = {
-    'title': 'Delete global markets with zero production volumes when regional markets are present',
+delete_global_with_zero_pv_when_regional_present.__table__ = {
+    'title': 'Delete global activities with zero production volumes when regional activities are present',
     'columns': ["Name", "Product", "Location"]
 }
