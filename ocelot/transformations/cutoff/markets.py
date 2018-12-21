@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from . import RC_STRING
 from ..utils import nonreference_product, get_single_reference_product
 from ..uncertainty import scale_exchange
 from ... import toolz
