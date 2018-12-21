@@ -44,6 +44,7 @@ def relabel_global_to_row(data):
             )
             rp = get_single_reference_product(glo)
             original = production_volume(glo)
+            rp['production volume']['global amount'] = original
             rp['production volume']['amount'] = max(
                 rp['production volume']['amount'] - region_specific_pv,
                 0

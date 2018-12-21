@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import topology, RC_STRING
 from ... import toolz
-from ...data_helpers import production_volume
+from ...data_helpers import original_production_volume
 from ...errors import MissingSupplier
 from ..utils import (
     get_single_reference_product,
@@ -411,7 +411,7 @@ def delete_global_markets_with_zero_pv_when_regional_market_present(data):
             continue
         try:
             row = next(ds for ds in group if ds['location'] == 'RoW')
-            assert not production_volume(row)
+            assert not original_production_volume(row)
             purge.append(row)
             logger.info({
                 'type': 'table element',

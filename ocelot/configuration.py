@@ -23,6 +23,7 @@ from .transformations.cutoff import (
     adjust_market_signs_for_allocatable_products,
     cleanup_activity_links,
     cutoff_allocation,
+    flip_non_allocatable_byproducts,
     handle_waste_outputs,
     rename_recycled_content_products_after_linking,
 )
@@ -59,6 +60,7 @@ cutoff_config = Collection(
     link_markets_by_pv,
     rename_recycled_content_products_after_linking,
     # extrapolate to database reference year
+    flip_non_allocatable_byproducts,
     TransformationWrapper(normalize_reference_production_amount),
     adjust_market_signs_for_allocatable_products,
     # Need to fix many formula errors before this can work
