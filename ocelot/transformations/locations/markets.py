@@ -279,6 +279,10 @@ def update_market_production_volumes(data, kind="market activity"):
         )
 
     for ds in datasets:
+        if ds.get("production volume set by cutoff"):
+            del ds["production volume set by cutoff"]
+            continue
+
         rp = get_single_reference_product(ds)
 
         total_pv = sum(get_original_pv(o)

@@ -71,3 +71,35 @@ adjust_market_signs_for_allocatable_products.__table__ = {
     'title': 'Flip signs for negative non-waste markets',
     'columns': ["Activity name", "Location"]
 }
+
+
+def set_market_pv_when_consumer_recycled_content_cutoff(data):
+    """Set artificial production volumes for markets which consumer products from ``Recycled Content, cut-off`` datasets. These datasets are artificial, and therefore have no production volume.
+
+    See https://github.com/OcelotProject/Ocelot/issues/156."""
+    market_filter = lambda x: x['type'] == "market activity"
+    transforming_filter = lambda x: x['type'] == "transforming activity"
+    rc_filter = lambda x: x['name'].endswith(RC_STRING)
+    grouped = toolz.groupby("reference product", filter(transforming_filter, filter(rc_filter, data)))
+
+    for ds in filter(transforming_filter, data):
+        if ds['reference product'] in grouped:
+            rp = get_single_reference_product(ds)
+            rp['production volume'] = {"amount": 1}
+            ds["production volume set by cutoff"] = True
+            logger.info({
+                'type': 'table element',
+                'data': (
+                    ds['name'],
+                    ds['reference product'],
+                    ds['location'],
+                    grouped[ds['reference product']][0]['name']
+                )
+            })
+
+    return data
+
+set_market_pv_when_consumer_recycled_content_cutoff.__table__ = {
+    'title': 'Add artificial production volumes for market consumers of recycled content activities',
+    'columns': ["Name", "Product", "Location", "Provider"]
+}

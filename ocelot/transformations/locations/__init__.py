@@ -2,7 +2,10 @@
 from ._topology import Topology
 topology = Topology()
 
-from ..cutoff import RC_STRING
+from ..cutoff import (
+    RC_STRING,
+    set_market_pv_when_consumer_recycled_content_cutoff,
+)
 from ...collection import Collection
 from ..utils import label_reference_product
 from ..identifying import add_unique_codes
@@ -44,6 +47,7 @@ link_markets_by_pv = Collection(
     actualize_activity_links,
     add_recycled_content_suppliers_to_markets,
     add_suppliers_to_markets,
+    set_market_pv_when_consumer_recycled_content_cutoff,
     update_market_production_volumes,
     delete_global_markets_with_zero_pv_when_regional_market_present,
     allocate_all_market_suppliers,

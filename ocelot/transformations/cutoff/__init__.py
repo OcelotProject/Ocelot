@@ -17,8 +17,10 @@ from .wastes import (
     handle_waste_outputs,
     rename_recycled_content_products_after_linking,
 )
-from .markets import adjust_market_signs_for_allocatable_products
-
+from .markets import (
+    adjust_market_signs_for_allocatable_products,
+    set_market_pv_when_consumer_recycled_content_cutoff,
+)
 from ...collection import Collection
 from ..activity_links import check_activity_link_validity
 from .cleanup import (
