@@ -37,22 +37,22 @@ def recycling_allocation(dataset):
     return economic_allocation(dataset)
 
 
-def recycling_2_allocation(dataset):
-    """Allocate an activity which consumes a recyclable and produces a recyclable.
+# def recycling_2_allocation(dataset):
+#     """Allocate an activity which consumes a recyclable and produces a recyclable.
 
-    See https://github.com/OcelotProject/Ocelot/issues/155"""
-    rp = get_single_reference_product(dataset)
-    rp['type'] = 'from technosphere'
-    rp = scale_exchange(rp, -1)
+#     See https://github.com/OcelotProject/Ocelot/issues/155"""
+#     rp = get_single_reference_product(dataset)
+#     rp['type'] = 'from technosphere'
+#     rp = scale_exchange(rp, -1)
 
-    recyclable_byproducts = (
-        exc for exc in dataset['exchanges']
-        if exc.get('byproduct classification') == 'recyclable'
-        and exc.get('type') == 'byproduct'
-    )
-    for exc in recyclable_byproducts:
-        exc['type'] = 'reference product'
-    return economic_allocation(dataset)
+#     recyclable_byproducts = (
+#         exc for exc in dataset['exchanges']
+#         if exc.get('byproduct classification') == 'recyclable'
+#         and exc.get('type') == 'byproduct'
+#     )
+#     for exc in recyclable_byproducts:
+#         exc['type'] = 'reference product'
+#     return economic_allocation(dataset)
 
 
 @valid_waste_treatment_activity
@@ -212,5 +212,5 @@ handle_waste_outputs = Collection(
     "Handle waste outputs",
     rename_recyclable_content_exchanges,
     create_recycled_content_datasets,
-    # flip_non_allocatable_byproducts,
+    flip_non_allocatable_byproducts,
 )

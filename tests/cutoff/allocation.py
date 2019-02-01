@@ -131,9 +131,9 @@ COMBINED_WITH_BYPRODUCTS = {
 }
 
 def test_allocation_choice():
-    assert choose_allocation_method(NO_ALLOCATION) is None
-    assert choose_allocation_method(MARKET_GROUP) is None
-    assert choose_allocation_method(MARKET_ACTIVITY) is None
+    assert choose_allocation_method(NO_ALLOCATION) == 'single product'
+    assert choose_allocation_method(MARKET_GROUP) == 'market group'
+    assert choose_allocation_method(MARKET_ACTIVITY) == "unconstrained market"
     assert choose_allocation_method(CONSTRAINED_MARKET) == 'constrained market'
     assert choose_allocation_method(COMBINED) == 'combined production'
     assert choose_allocation_method(COMBINED_WITH_BYPRODUCTS) == 'combined production with byproducts'
