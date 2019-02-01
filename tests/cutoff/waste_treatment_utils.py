@@ -86,6 +86,7 @@ def test_create_new_recycled_content_dataset():
             'tag': 'intermediateExchange',
             'type': 'reference product',
             'production volume': {'amount': 4},
+            'byproduct classification': 'recyclable',
             'unit': 'Fun!',
         }],
         "parameters": [],
