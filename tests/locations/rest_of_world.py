@@ -535,7 +535,8 @@ def test_relabel_global_to_row_subtract_origianal_pv():
             'unit': '',
             'amount': 1,
             'production volume':{
-                'amount':50
+                'amount':50,
+                'global amount': 100,
             }
         }]
     }
