@@ -177,6 +177,49 @@ create_recycled_content_datasets.__table__ = {
 }
 
 
+def create_recycled_content_datasets_for_markets(data):
+    """Create new datasets for a few markets that consume post-consumer recyclable goods in the cutoff system model.
+
+    Create a new transforming activity that produces these recyclable inputs without any environmental burdens.
+
+    Used for markets like ``market for used vegetable cooking oil`` or ``market for waste newspaper``, where we don't have any activity producing the recyclable products."""
+    new_datasets = {}
+    all_names = {ds['name'] for ds in data}
+    for ds in data:
+        if ds['type'] != "market activity":
+            continue
+        products = [exc
+                    for exc in ds['exchanges']
+                    if exc['type'] in ('reference product', 'byproduct')
+                    and exc['amount']]
+        if len(products) != 1:
+            continue
+        recyclabes = [exc
+                      for exc in products
+                      if exc.get('byproduct classification') == 'recyclable']
+        if len(recyclabes) != 1:
+            continue
+
+        exc = recyclabes[0]
+        exc['name'] += RC_STRING
+
+        if exc['name'] not in all_names:
+            rc = create_new_recycled_content_dataset(ds, exc)
+            new_datasets[rc['name']] = rc
+    for name in new_datasets:
+        logger.info({
+            'type': 'table element',
+            'data': (name,),
+        })
+    return data + list(new_datasets.values())
+
+create_recycled_content_datasets_for_markets.__table__ = {
+    'title': 'Create new datasets to consume recyclable byproducts for markets',
+    'columns': ["Activity name"]
+}
+
+
+
 @single_input
 def flip_non_allocatable_byproducts(dataset):
     """Change non-allocatable byproducts (i.e. classification ``recyclable`` or ``waste``) from outputs to technosphere to inputs from technosphere.
@@ -213,5 +256,6 @@ handle_waste_outputs = Collection(
     "Handle waste outputs",
     rename_recyclable_content_exchanges,
     create_recycled_content_datasets,
+    create_recycled_content_datasets_for_markets,
     flip_non_allocatable_byproducts,
 )
