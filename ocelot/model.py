@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-from .configuration import cutoff_config
+from .configuration import (
+    cutoff_config,
+    cutoff_config_ecoinvent_row,
+    consequential_config,
+)
 from .filesystem import (
     cache_data,
     OutputDir,
@@ -19,6 +23,12 @@ import sys
 import wrapt
 
 logger = logging.getLogger('ocelot')
+
+mapping = {
+    'cutoff': cutoff_config,
+    'cutoff_ecoinvent_row': cutoff_config_ecoinvent_row,
+    'consequential': consequential_config,
+}
 
 
 def apply_transformation(function, counter, data, output_dir, save_strategy, follow):
@@ -90,7 +100,7 @@ def system_model(data_path, config=None, show=False, use_cache=True,
 
     """
     print("Starting Ocelot model run")
-    config = validate_configuration(config or cutoff_config)
+    config = validate_configuration(mapping.get(config) or cutoff_config)
     data = extract_directory(data_path, use_cache)
     output_manager = OutputDir(follow=follow)
     try:

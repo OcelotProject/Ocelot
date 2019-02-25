@@ -34,7 +34,10 @@ from .transformations.cutoff.cleanup import (
 )
 from .transformations.parameterization import (recalculate_all_parameterized_datasets,
 )
-from .transformations.locations import link_markets_by_pv
+from .transformations.locations import (
+    link_markets_by_pv,
+    link_markets_by_pv_ecoinvent_row,
+)
 from .wrapper import TransformationWrapper
 
 
@@ -58,6 +61,35 @@ cutoff_config = Collection(
     cutoff_allocation,
     drop_rp_activity_links,
     link_markets_by_pv,
+    rename_recycled_content_products_after_linking,
+    # extrapolate to database reference year
+    flip_non_allocatable_byproducts,
+    TransformationWrapper(normalize_reference_production_amount),
+    adjust_market_signs_for_allocatable_products,
+    # Need to fix many formula errors before this can work
+    # recalculate_all_parameterized_datasets,
+    # final output processing
+)
+
+cutoff_config_ecoinvent_row = Collection(
+    'Ecoinvent 3 cutoff by classification system model, with ecoinvent-specific RoW handling',
+    ensure_ids_are_unique,
+    copy_original_exchange_id,
+    variable_names_are_unique,
+    # There are a *lot* of missing mandatory properties
+    # No point adding them to this report
+    # ensure_mandatory_properties,
+    validate_markets,
+    fix_ecoinvent_parameters,
+    pv_cleanup,
+    remove_consequential_exchanges,
+    cleanup_activity_links,
+    update_activity_link_parent_child,
+    manage_activity_links,
+    handle_waste_outputs,
+    cutoff_allocation,
+    drop_rp_activity_links,
+    link_markets_by_pv_ecoinvent_row,
     rename_recycled_content_products_after_linking,
     # extrapolate to database reference year
     flip_non_allocatable_byproducts,

@@ -59,3 +59,31 @@ link_markets_by_pv = Collection(
     add_reference_product_codes,
     log_and_delete_unlinked_exchanges,
 )
+
+link_markets_by_pv_ecoinvent_row = Collection(
+    "Link markets and market groups with ecoinvent RoW handling",
+    label_reference_product,
+    delete_whitelisted_zero_pv_market_datsets,
+    assign_fake_pv_to_confidential_datasets,
+    correct_natural_gas_pipeline_location,
+    relabel_global_to_row,
+    check_no_row_market_groups,
+    add_unique_codes,
+    actualize_activity_links,
+    add_recycled_content_suppliers_to_markets,
+    add_suppliers_to_markets,
+    update_market_production_volumes,
+    delete_global_with_zero_pv_when_regional_present,
+    partial(delete_global_with_zero_pv_when_regional_present, kind='transforming activity'),
+    allocate_all_market_suppliers,
+    link_market_group_suppliers,
+    partial(update_market_production_volumes, kind='market group'),
+    partial(allocate_all_market_suppliers, kind='market group'),
+    # Commented out during development
+    # delete_suppliers_list,
+    # drop_zero_pv_row_datasets,
+    link_consumers_to_recycled_content_activities,
+    link_consumers_to_markets,
+    add_reference_product_codes,
+    log_and_delete_unlinked_exchanges,
+)
