@@ -104,7 +104,7 @@ def choose_allocation_method(dataset):
 
     # if recyclable_reference_product and recyclable_byproduct:
     #     return "recycling squared"
-    elif number_reference_products == 1 and not allocatable_byproducts:
+    if number_reference_products == 1 and not allocatable_byproducts:
         return "single product"
     elif dataset['type'] == 'market group':
         return "market group"
