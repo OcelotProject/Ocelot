@@ -15,7 +15,7 @@ from .logger import create_log, create_detailed_log
 from .report import HTMLReport
 from .results import SaveStrategy
 from .utils import get_function_meta, validate_configuration
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 import itertools
 import logging
 import shutil
@@ -100,7 +100,7 @@ def system_model(data_path, config=None, show=False, use_cache=True,
 
     """
     print("Starting Ocelot model run")
-    if not isinstance(config, (tuple, list)):
+    if not isinstance(config, Sequence):
         config = validate_configuration(mapping.get(config) or cutoff_config)
     data = extract_directory(data_path, use_cache)
     output_manager = OutputDir(follow=follow)
