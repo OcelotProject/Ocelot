@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from .configuration import (
-    cutoff_config,
+    cutoff_config_resolved_row,
     cutoff_config_ecoinvent_row,
     consequential_config,
 )
@@ -15,7 +15,7 @@ from .logger import create_log, create_detailed_log
 from .report import HTMLReport
 from .results import SaveStrategy
 from .utils import get_function_meta, validate_configuration
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 import itertools
 import logging
 import shutil
@@ -25,7 +25,7 @@ import wrapt
 logger = logging.getLogger('ocelot')
 
 mapping = {
-    'cutoff': cutoff_config,
+    'cutoff': cutoff_config_resolved_row,
     'cutoff_ecoinvent_row': cutoff_config_ecoinvent_row,
     'consequential': consequential_config,
 }
@@ -100,8 +100,12 @@ def system_model(data_path, config=None, show=False, use_cache=True,
 
     """
     print("Starting Ocelot model run")
-    if not isinstance(config, Sequence):
-        config = validate_configuration(mapping.get(config) or cutoff_config)
+    if config in mapping:
+        print("Using configuration {}".format(config))
+        config = mapping[config]
+    elif not config:
+        config = cutoff_config_resolved_row
+    config = validate_configuration(config)
     data = extract_directory(data_path, use_cache)
     output_manager = OutputDir(follow=follow)
     try:
