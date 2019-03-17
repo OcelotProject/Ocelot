@@ -102,8 +102,8 @@ def choose_allocation_method(dataset):
     has_conditional_exchange = any(1 for exc in dataset['exchanges']
                                    if exc.get('conditional exchange'))
 
-    if recyclable_reference_product and recyclable_byproduct:
-        return "recycling squared"
+    # if recyclable_reference_product and recyclable_byproduct:
+    #     return "recycling squared"
     elif number_reference_products == 1 and not allocatable_byproducts:
         return "single product"
     elif dataset['type'] == 'market group':
@@ -138,7 +138,7 @@ ALLOCATION_METHODS = (
     ("economic", economic_allocation),
     ("constrained market", constrained_market_allocation),
     ("recycling", recycling_allocation),
-    ("recycling squared", recycling_2_allocation),
+    # ("recycling squared", recycling_2_allocation),
     ("waste treatment", waste_treatment_allocation),
     ("combined production without products", combined_production_without_products),
     ("combined production", combined_production),
