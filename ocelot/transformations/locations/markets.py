@@ -471,17 +471,19 @@ def delete_global_with_zero_pv_when_regional_present(data, kind="market activity
     for rp, group in grouped.items():
         if len(group) < 2:
             continue
-        try:
-            row = next(ds for ds in group if ds['location'] == 'RoW')
-            assert not original_production_volume(row)
+        for row in [ds for ds in group if ds['location'] == 'RoW']:
+            rp = get_single_reference_product(row)
+            amount = rp['production volume']['amount']
+            global_amount = rp['production volume']['global amount']
+            if amount > (1e-3 * global_amount):
+                continue
             purge.append(row)
             logger.info({
                 'type': 'table element',
                 'data': (row['name'], rp, row['location'])
             })
-        except (StopIteration, AssertionError):
-            continue
-    return [ds for ds in data if ds not in purge]
+    lst = [ds for ds in data if ds not in purge]
+    return lst
 
 delete_global_with_zero_pv_when_regional_present.__table__ = {
     'title': 'Delete global activities with zero production volumes when regional activities are present',
