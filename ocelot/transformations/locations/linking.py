@@ -88,10 +88,12 @@ link_consumers_to_recycled_content_activities.__table__ = {
 
 
 
-def link_consumers_to_markets(data):
+def link_consumers_to_markets(data, resolved_row=True):
     """Link technosphere exchange inputs to markets and market groups.
 
     Should only be run after ``add_suppliers_to_markets``. Skips hard (activity) links, and exchanges which have already been linked.
+
+    Used for both transforming activities, and market activities. We still need to link market inputs of extra services like transport.
 
     Add the field ``code`` to each exchange with the code of the linked market activity."""
     no_mg_filter = lambda x: x['type'] != "market group"
@@ -122,7 +124,9 @@ def link_consumers_to_markets(data):
         # Only unlinked (not recycled content or direct linked) technosphere inputs
         loc = ds['location']
 
-        if loc == 'RoW':
+        if loc == 'RoW' and not resolved_row:
+            continue
+        elif loc == 'RoW' and resolved_row:
             if ds['type'] == 'transforming activity':
                 dct = ta_mapping
             else:
@@ -156,7 +160,7 @@ def link_consumers_to_markets(data):
             markets = {x['location']: x for x in candidates if x['type'] == 'market activity'}
             market_groups = {x['location']: x for x in candidates if x['type'] == 'market group'}
 
-            if 'RoW' in markets:
+            if 'RoW' in markets and resolved_row:
                 supplier_row = topology.resolve_row(markets)
             else:
                 supplier_row = set()
@@ -231,6 +235,127 @@ def link_consumers_to_markets(data):
 link_consumers_to_markets.__table__ = {
     'title': "Link market and market group suppliers to transforming activities.",
     'columns': ["Name", "Location", "Supplier Location"]
+}
+
+
+def link_ecoinvent_row_consumers_to_markets(data):
+    """Link ``RoW`` consumers to markets. Specific to ecoinvent ``RoW`` handling, which doesn't use spatial relations."""
+    # no_mg_filter = lambda x: x['type'] != "market group"
+    ma_filter = lambda x: x['type'] == "market activity"
+    row_filter = lambda x: x['location'] == 'RoW'
+    # ta_filter = lambda x: x['type'] == "transforming activity"
+    # markets_filter = lambda x: x['type'] in ("market activity", "market group")
+    markets_mapping = dict(toolz.groupby(
+        'reference product',
+        filter(ma_filter, data)
+    ))
+
+    # Used only to resolve RoW for consumers
+    name_mapping = dict(toolz.groupby('name', data))
+    # ta_mapping = dict(toolz.groupby(
+    #     'name',
+    #     filter(ta_filter, data)
+    # ))
+
+    def annotate(exc, ds):
+        exc = annotate_exchange(exc, ds)
+        exc['production volume'] = {'amount': production_volume(ds, 0)}
+        return exc
+
+    for ds in filter(row_filter, data):
+        consumed_markets = {exc['code']
+                            for ds in name_mapping[ds['name']]
+                            for exc in ds['exchanges']
+                            if exc['type'] == 'from technosphere'
+                            and 'code' in exc}
+
+        # # Only unlinked (not recycled content or direct linked) technosphere inputs
+        # loc = ds['location']
+
+        # if loc == 'RoW' and not resolved_row:
+        #     continue
+        # elif loc == 'RoW' and resolved_row:
+        #     if ds['type'] == 'transforming activity':
+        #         dct = ta_mapping
+        #     else:
+        #         dct = ma_mapping
+        #     consumer_row = topology.resolve_row(
+        #         [x['location'] for x in dct[ds['name']]]
+        #     )
+        # else:
+        #     consumer_row = None
+
+        # def contains_wrapper(consumer, supplier, found, consumer_row, supplier_row):
+        #     kwargs = {
+        #         'parent': consumer,
+        #         'child': supplier_row if supplier == 'RoW' else supplier,
+        #         'subtract': found,
+        #         'resolved_row': consumer_row if consumer == 'RoW' else None
+        #     }
+        #     return topology.contains(**kwargs)
+
+        for exc in list(filter(unlinked, ds['exchanges'])):
+            try:
+                candidates = markets_mapping[exc['name']]
+            except KeyError:
+                if exc['name'] == 'refinery gas':
+                    pass
+                else:
+                    raise MissingSupplier("No markets found for product {}".format(exc['name']))
+
+            candidates.sort(key=lambda x: get_single_reference_product(x)['production volume']['amount'],
+                            reverse=True)
+
+            to_add = [o for o in candidates if o['code'] not in consumed_markets]
+
+            if not to_add:
+                to_add = candidates[:1]
+
+            if len(to_add) == 1:
+                obj = to_add[0]
+                exc['code'] = obj['code']
+
+                message = "Link complete input of {} '{}' from '{}' ({})"
+                detailed.info({
+                    'ds': ds,
+                    'message': message.format(
+                        exc['name'],
+                        exc['amount'],
+                        obj['name'],
+                        obj['location']
+                    ),
+                    'function': 'link_ecoinvent_row_consumers_to_markets'
+                })
+            else:
+                ds['suppliers'] = [annotate(exc, obj) for obj in to_add]
+
+                if not ds['suppliers']:
+                    del ds['suppliers']
+                    continue
+
+                for e in ds['suppliers']:
+                    logger.info({
+                        'type': 'table element',
+                        'data': (ds['name'], ds['location'], e['location'])
+                    })
+                    message = "Link consumption input of {} from '{}' ({})"
+                    detailed.info({
+                        'ds': ds,
+                        'message': message.format(
+                            exc['name'],
+                            e['name'],
+                            e['location']
+                        ),
+                        'function': 'link_ecoinvent_row_consumers_to_markets'
+                    })
+
+                allocate_suppliers(ds, is_market=False, exc=exc)
+                del ds['suppliers']
+    return data
+
+link_ecoinvent_row_consumers_to_markets.__table__ = {
+    'title': "Link market and market group suppliers to RoW transforming activities.",
+    'columns': ["Consumer Name", "Supplier Name", "Location"]
 }
 
 

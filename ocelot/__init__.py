@@ -4,7 +4,8 @@ __all__ = (
     "OutputDir",
     "system_model",
     'consequential_config',
-    'cutoff_config',
+    'cutoff_config_ecoinvent_row',
+    'cutoff_config_resolved_row',
 )
 
 __version__ = (0, 1)
@@ -28,7 +29,8 @@ from .data import data_dir
 from .collection import Collection
 from .io import *
 from .configuration import (
-    cutoff_config,
+    cutoff_config_resolved_row,
+    cutoff_config_ecoinvent_row,
     consequential_config,
 )
 from .filesystem import OutputDir

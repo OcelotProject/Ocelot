@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from ._topology import Topology
 topology = Topology()
+unresolved_row_topology = Topology(unresolved_row=True)
 
 from ..cutoff import RC_STRING
 from ...collection import Collection
@@ -12,6 +13,7 @@ from .linking import (
     add_reference_product_codes,
     link_consumers_to_markets,
     link_consumers_to_recycled_content_activities,
+    link_ecoinvent_row_consumers_to_markets,
     log_and_delete_unlinked_exchanges,
 )
 from .markets import (
@@ -32,7 +34,7 @@ from .rest_of_world import relabel_global_to_row, drop_zero_pv_row_datasets
 from functools import partial
 
 
-link_markets_by_pv = Collection(
+link_markets_by_pv_resolved_row = Collection(
     "Link markets and market groups",
     label_reference_product,
     delete_whitelisted_zero_pv_market_datsets,
@@ -42,8 +44,8 @@ link_markets_by_pv = Collection(
     check_no_row_market_groups,
     add_unique_codes,
     actualize_activity_links,
-    add_recycled_content_suppliers_to_markets,
-    add_suppliers_to_markets,
+    partial(add_recycled_content_suppliers_to_markets, resolved_row=False),
+    partial(add_suppliers_to_markets, resolved_row=False),
     update_market_production_volumes,
     delete_global_with_zero_pv_when_regional_present,
     partial(delete_global_with_zero_pv_when_regional_present, kind='transforming activity'),
@@ -83,7 +85,8 @@ link_markets_by_pv_ecoinvent_row = Collection(
     # delete_suppliers_list,
     # drop_zero_pv_row_datasets,
     link_consumers_to_recycled_content_activities,
-    link_consumers_to_markets,
+    partial(link_consumers_to_markets, resolved_row=False),
+    link_ecoinvent_row_consumers_to_markets,
     add_reference_product_codes,
     log_and_delete_unlinked_exchanges,
 )

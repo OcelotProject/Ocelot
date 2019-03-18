@@ -34,7 +34,7 @@ class Topology(object):
         ('IAI Area, Europe outside EU & EFTA', 'IAI Area, Russia & RER w/o EU27 & EFTA'),
     ]
 
-    def __init__(self, size_proxy=None):
+    def __init__(self, size_proxy=None, unresolved_row=False):
         self.size_proxy = size_proxy or self.default_size_proxy
 
         cg = ConstructiveGeometries()

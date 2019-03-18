@@ -22,14 +22,14 @@ def reformat_suppliers(result):
 
 
 ###
-### apportion_market_suppliers_to_consumers
+### apportion_market_suppliers_to_consumers_resolved_row
 ###
 
 def test_astc_no_suppliers():
     consumers = [
         generate_dataset('UCTE without France'),
     ]
-    apportion_market_suppliers_to_consumers(consumers, [])
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, [])
 
 def test_astc_nonlinked_suppliers():
     consumers = [
@@ -38,7 +38,7 @@ def test_astc_nonlinked_suppliers():
     suppliers = [
         generate_dataset('FR'),
     ]
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
 
 def test_astc_exclude_supplier():
     consumers = [
@@ -51,7 +51,7 @@ def test_astc_exclude_supplier():
     expected = {
         'NAFTAfb': ['MXfb'],
     }
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
 def test_astc_plain():
@@ -69,7 +69,7 @@ def test_astc_plain():
         'UCTE without Francefb': ['DEfb'],
         'RUfb': ['Russia (Asia)fb'],
     }
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
 def test_astc_global_consumer():
@@ -85,7 +85,7 @@ def test_astc_global_consumer():
     expected = {
         'GLOfb': ['DEfb', 'FRfb', 'MYfb', 'Russia (Asia)fb'],
     }
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
 def test_astc_global_consumer_row_supplier():
@@ -102,7 +102,7 @@ def test_astc_global_consumer_row_supplier():
     expected = {
         'GLOfb': ['DEfb', 'FRfb', 'MYfb', 'RoWfb', 'Russia (Asia)fb'],
     }
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
 def test_astc_global_consumer_row_only_supplier():
@@ -115,7 +115,7 @@ def test_astc_global_consumer_row_only_supplier():
     expected = {
         'GLOfb': ['RoWfb'],
     }
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
 def test_astc_row_consumer():
@@ -135,7 +135,7 @@ def test_astc_row_consumer():
         'RUfb': ['Russia (Asia)fb'],
         'RoWfb': ['FRfb', 'MYfb']
     }
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
 def test_astc_row_supplier():
@@ -156,7 +156,7 @@ def test_astc_row_supplier():
     expected = {
         'RoWfb': ['RoWfb']
     }
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
 def test_astc_row_not_in_smaller_consuming_region():
@@ -170,7 +170,7 @@ def test_astc_row_not_in_smaller_consuming_region():
     expected = {
         'NAFTAfb': ['MXfb'],
     }
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
 def test_astc_row_supplier_and_consumer_supplier_within_consumer():
@@ -187,7 +187,7 @@ def test_astc_row_supplier_and_consumer_supplier_within_consumer():
         'UCTEfb': ['CHfb'],
         'RoWfb': ['RoWfb']
     }
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
 def test_astc_row_supplier_and_consumer_consumer_within_supplier():
@@ -211,7 +211,7 @@ def test_astc_row_supplier_and_consumer_consumer_within_supplier():
     expected = {
         'RERfb': ['CHfb', 'Europe without Switzerlandfb']
     }
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
 def test_astc_row_supplier_and_consumer_overlap_but_not_contained():
@@ -232,7 +232,7 @@ def test_astc_row_supplier_and_consumer_overlap_but_not_contained():
     #     'RoWfb': ['RoWfb'],   # Fallback
     # }
     expected = {}
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
 def test_astc_row_consumer_glo_supplier():
@@ -249,7 +249,7 @@ def test_astc_row_consumer_glo_supplier():
     #     'RoWfb': ['GLOfb'],
     # }
     expected = {}
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
 def test_astc_larger_regional_supplier():
@@ -265,7 +265,7 @@ def test_astc_larger_regional_supplier():
     #     'WEUfb': ['RoWfb'],
     # }
     expected = {}
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
 def test_astc_single_global_supplier():
@@ -280,7 +280,7 @@ def test_astc_single_global_supplier():
     #     'WEUfb': ['GLOfb'],
     # }
     expected = {}
-    apportion_market_suppliers_to_consumers(consumers, suppliers)
+    apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
     assert reformat_suppliers(consumers) == expected
 
 

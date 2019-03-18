@@ -10,15 +10,14 @@ The linking needed to match consumers and suppliers in space can quickly get dee
 
 #. The input master datasets do not link to a specific provider of a good and service - rather, they say that they need product X in location Y. Ocelot needs to find the supplier(s) which can meet this demand.
 
-   #. There is an exception for direct (activity) links, but as these are already resolved in space we just skip them.
+   #. There is an exception for direct (activity) links, but as these are already resolved in space we can ignore them.
 
 #. Transforming activities, market activities, and market groups are all linked following the same general principles.
 
 #. Suppliers are chosen using one of three GIS relationships, in the following order:
 
    #. Supplier(s) completely contained within the location of the consumer.
-   #. A single regional supplier which completely contains the consumer.
-   #. A ``RoW`` supplier (``GLO`` would already have been used in the previous step).
+   #. A single supplier which completely contains the consumer (can be regional, ``RoW`` or ``GLO``).
 
 #. A market is for a *product*, not a *technology*. Markets can't overlap.
 
@@ -26,16 +25,35 @@ The linking needed to match consumers and suppliers in space can quickly get dee
 
 #. A market group is supplied only by other markets and market groups. Market groups can overlap.
 
-#. ``RoW`` locations are resolved in space during linking. ``RoW`` is calculated per technology and reference product for transforming activities, and per product for markets. Market groups can't have the ``RoW`` location.
-
 #. The production volumes of markets and market groups are the sum of the production volumes of their suppliers with the same reference product.
 
 #. The production volumes of ``RoW`` datasets are calculated by subtracting the region-specific production volumes, and subtracting from the global production volume. This value is rounded up to zero if necessary.
 
+#. Geographic linking rules are the same for all system modelling concepts
+
 These general principles have the following side effects:
 
 *. A potential supplier whose location *partially* overlaps a consumer will not meet any of the three GIS relationships, and so will never be chosen as a supplier.
-*. The search for suppliers will stop as soon as at least one supplier is found. That means that a large consuming region can be supplied by a single small supplier, if it is the only supplier whose location is completely inside the consuming region.
+*. The search for suppliers will stop as soon as at least one supplier is found for each step of the algorithm. That means that a large consuming region can be supplied by a single small supplier, if it is the only supplier whose location is completely inside the consuming region.
+
+Handling of Rest-of-Worlds ``RoW``
+==================================
+
+Ocelot has two different approaches to handling ``RoW``: The geographically resolved one, and the ecoinvent legacy one.
+
+Geographically resolved ``RoW``
+-------------------------------
+
+The location ``RoW`` is resolved in space by taking a set of topological faces covering the Earth's land mass, and then removing any faces used in region-specific markets. Each ``RoW`` is specific to a group of markets or transforming activities, and so a given ``RoW`` may or may not be contained within another ``RoW``.
+
+Ecoinvent legacy ``RoW``
+------------------------
+
+In this approach, ``RoW`` is not resolved in space. It does not contain any other location, and is contained only by ``GLO``.
+
+When an activity with the location ``RoW`` is looking for suitable suppliers, it takes only supplying activities which do not supply any region-specific activities. If no suppliers of a given input are found, the activity with the highest production volume is used.
+
+Note that a transforming activity in a location other than ``RoW`` can link to a supplying ``RoW`` market is no region-specific market is found.
 
 Preparation
 ===========

@@ -35,14 +35,14 @@ from .transformations.cutoff.cleanup import (
 from .transformations.parameterization import (recalculate_all_parameterized_datasets,
 )
 from .transformations.locations import (
-    link_markets_by_pv,
+    link_markets_by_pv_resolved_row,
     link_markets_by_pv_ecoinvent_row,
 )
 from .wrapper import TransformationWrapper
 
 
 # Default config for now is cutoff
-cutoff_config = Collection(
+cutoff_config_resolved_row = Collection(
     'Ecoinvent 3 cutoff by classification system model',
     ensure_ids_are_unique,
     copy_original_exchange_id,
@@ -60,7 +60,7 @@ cutoff_config = Collection(
     handle_waste_outputs,
     cutoff_allocation,
     drop_rp_activity_links,
-    link_markets_by_pv,
+    link_markets_by_pv_resolved_row,
     rename_recycled_content_products_after_linking,
     # extrapolate to database reference year
     flip_non_allocatable_byproducts,

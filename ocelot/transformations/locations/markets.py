@@ -27,7 +27,7 @@ def annotate_exchange(exc, ds):
     return exc
 
 @no_geo_duplicates
-def apportion_market_suppliers_to_consumers(consumers, suppliers):
+def apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers):
     """Apportion suppliers to consumers based on their geographic relationships.
 
     Used only for reference products (other market inputs are linked by ``link_consumers_to_markets``).
@@ -83,13 +83,70 @@ def apportion_market_suppliers_to_consumers(consumers, suppliers):
                 obj
             ) for obj in contained])
 
-apportion_market_suppliers_to_consumers.__table__ = {
+apportion_market_suppliers_to_consumers_resolved_row.__table__ = {
     'title': 'Defaulted to ``RoW`` suppliers, even though it fails GIS test.',
     'columns': ["Market name", "Market location", "Supplier locations", "Supplier name"]
 }
 
 
-def add_recycled_content_suppliers_to_markets(data):
+@no_geo_duplicates
+def apportion_market_suppliers_to_consumers_ecoinvent_row(consumers, suppliers):
+    """Apportion suppliers to consumers based on their geographic relationships.
+
+    Used only for reference products (other market inputs are linked by ``link_consumers_to_markets``).
+
+    A supplier must be completely contained within a consumer. Region-specific markets (i.e. those without locations ``GLO`` or ``RoW``) do not consume from global providers.
+
+    Modifies in place."""
+    for consumer in sorted(consumers, key=lambda x: (x['location'] == 'RoW', x['location'])):
+        if 'suppliers' not in consumer:
+            consumer['suppliers'] = []
+        location = consumer['location']
+
+        if consumer['location'] != 'RoW':
+            for name, group in toolz.groupby('name', suppliers).items():
+                # Calculate separately for each technology (activity name)
+                # No overlaps allowed per technology/product combo
+                no_overlaps(group)
+
+                sd = {o['location']: o for o in group}
+                contained = [sd[key] for key in topology.contained(
+                    location,
+                ).intersection(set(sd))]
+
+                for obj in contained:
+                    obj['used'] = True
+                consumer['suppliers'].extend([annotate_exchange(
+                    get_single_reference_product(obj),
+                    obj
+                ) for obj in contained])
+        else:
+            candidates = [o for o in suppliers if not o.get('used')]
+            if candidates:
+                consumer['suppliers'].extend([annotate_exchange(
+                    get_single_reference_product(obj),
+                    obj
+                ) for obj in contained])
+            else:
+                chosen = sorted(suppliers,
+                                key=lambda x: get_single_reference_product(x)['production volume']['amount'])[-1]
+                consumer['suppliers'].append(annotate_exchange(
+                    get_single_reference_product(chosen),
+                    chosen
+                ))
+
+            for obj in contained:
+                if 'used' in obj:
+                    del obj['used']
+            return
+
+apportion_market_suppliers_to_consumers_ecoinvent_row.__table__ = {
+    'title': 'Defaulted to ``RoW`` suppliers, even though it fails GIS test.',
+    'columns': ["Market name", "Market location", "Supplier locations", "Supplier name"]
+}
+
+
+def add_recycled_content_suppliers_to_markets(data, resolved_row=True):
     """Link markets to recycled content producing activities.
 
     At this point, the markets have not been modified in any way, but the recycled content cut-off processes have been created by ``create_recycled_content_datasets``. So, we have the following:
@@ -114,7 +171,10 @@ def add_recycled_content_suppliers_to_markets(data):
         ]
         no_overlaps(markets)
         if suppliers:
-            apportion_market_suppliers_to_consumers(markets, suppliers)
+            if resolved_row:
+                apportion_market_suppliers_to_consumers_resolved_row(markets, suppliers)
+            else:
+                apportion_market_suppliers_to_consumers_ecoinvent_row(markets, suppliers)
     return data
 
 add_recycled_content_suppliers_to_markets.__table__ = {
@@ -124,7 +184,7 @@ add_recycled_content_suppliers_to_markets.__table__ = {
 
 
 def add_suppliers_to_markets(data, from_type="transforming activity",
-                             to_type="market activity"):
+                             to_type="market activity", resolved_row=True):
     """Add references to supplying exchanges to markets in field ``suppliers``.
 
     By default works with inputs to markets, but can be curried to work with market groups.
@@ -146,7 +206,10 @@ def add_suppliers_to_markets(data, from_type="transforming activity",
         if to_type == 'market activity':
             # Markets can't overlap
             no_overlaps(consumers)
-        apportion_market_suppliers_to_consumers(consumers, suppliers)
+        if resolved_row:
+            apportion_market_suppliers_to_consumers_resolved_row(consumers, suppliers)
+        else:
+            apportion_market_suppliers_to_consumers_ecoinvent_row(consumers, suppliers)
     return data
 
 add_suppliers_to_markets.__table__ = {
