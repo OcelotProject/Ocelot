@@ -30,6 +30,16 @@ def no_allocation(dataset):
     return [dataset]
 
 
+def missing_formulas(dataset):
+    """Return boolean of whether each technosphere and biosphere are parameterized.
+
+    Used to check if datasets which are indicated for combined production can be used as such."""
+    TYPES = {'from environment', 'to environment', 'from technosphere'}
+    return not all(exc.get('formula')
+                   for exc in dataset['exchanges']
+                   if exc['type'] in TYPES)
+
+
 def choose_allocation_method(dataset):
     """Choose from among the following allocation methods:
 
@@ -118,6 +128,10 @@ def choose_allocation_method(dataset):
             return "combined production without products"
         elif allocatable_byproducts:
             return "combined production with byproducts"
+        # elif missing_formulas(dataset):
+        elif dataset['name'] == ('rare earth oxides production '
+                                 'from bastnäsite concentrate'):
+            return "economic"
         else:
             return "combined production"
     elif negative_reference_production:
