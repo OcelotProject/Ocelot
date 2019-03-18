@@ -79,6 +79,7 @@ RECYCLING = {
 
 COMBINED = {
     'type': 'transforming activity',
+    'name': 'something',
     'exchanges': [
         {
             'type': 'reference product',
@@ -89,6 +90,32 @@ COMBINED = {
             'type': 'reference product',
             'amount': 1,
             'byproduct classification': 'allocatable product'
+        },
+        {
+            'type': 'from technosphere',
+            'amount': 1,
+            'formula': 'foo',
+        },
+    ]
+}
+
+COMBINED_RE = {
+    'type': 'transforming activity',
+    'name': 'rare earth oxides production from bastnäsite concentrate',
+    'exchanges': [
+        {
+            'type': 'reference product',
+            'amount': 1,
+            'byproduct classification': 'waste',
+        },
+        {
+            'type': 'reference product',
+            'amount': 1,
+            'byproduct classification': 'allocatable product',
+        },
+        {
+            'type': 'from technosphere',
+            'amount': 1,
         },
     ]
 }
@@ -136,6 +163,7 @@ def test_allocation_choice():
     assert choose_allocation_method(MARKET_ACTIVITY) == "unconstrained market"
     assert choose_allocation_method(CONSTRAINED_MARKET) == 'constrained market'
     assert choose_allocation_method(COMBINED) == 'combined production'
+    assert choose_allocation_method(COMBINED_RE) == 'economic'
     assert choose_allocation_method(COMBINED_WITH_BYPRODUCTS) == 'combined production with byproducts'
     assert choose_allocation_method(COMBINED_WITHOUT_PRODUCTS) == 'combined production without products'
     assert choose_allocation_method(WASTE) == 'waste treatment'
@@ -159,3 +187,7 @@ def test_create_allocation_filter():
     func = create_allocation_filter("foo")
     assert func({'allocation method': 'foo'})
     assert not func({'allocation method': 'bar'})
+
+def test_missing_formulas():
+    assert missing_formulas(COMBINED_RE)
+    assert not missing_formulas(COMBINED)
