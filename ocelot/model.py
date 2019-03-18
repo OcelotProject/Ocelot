@@ -100,8 +100,11 @@ def system_model(data_path, config=None, show=False, use_cache=True,
 
     """
     print("Starting Ocelot model run")
-    if not isinstance(config, Sequence):
-        config = validate_configuration(mapping.get(config) or cutoff_config)
+    if isinstance(config, str) and config in mapping:
+        config = mapping[config]
+    elif not config:
+        config = cutoff_config
+    config = validate_configuration(config)
     data = extract_directory(data_path, use_cache)
     output_manager = OutputDir(follow=follow)
     try:
