@@ -103,7 +103,7 @@ def apportion_market_suppliers_to_consumers_ecoinvent_row(consumers, suppliers):
             consumer['suppliers'] = []
         location = consumer['location']
 
-        if consumer['location'] != 'RoW':
+        if location != 'RoW':
             for name, group in toolz.groupby('name', suppliers).items():
                 # Calculate separately for each technology (activity name)
                 # No overlaps allowed per technology/product combo
@@ -121,12 +121,12 @@ def apportion_market_suppliers_to_consumers_ecoinvent_row(consumers, suppliers):
                     obj
                 ) for obj in contained])
         else:
-            candidates = [o for o in suppliers if not o.get('used')]
-            if candidates:
+            unused = [o for o in suppliers if not o.get('used')]
+            if unused:
                 consumer['suppliers'].extend([annotate_exchange(
                     get_single_reference_product(obj),
                     obj
-                ) for obj in contained])
+                ) for obj in unused])
             else:
                 chosen = sorted(suppliers,
                                 key=lambda x: get_single_reference_product(x)['production volume']['amount'])[-1]
@@ -135,10 +135,9 @@ def apportion_market_suppliers_to_consumers_ecoinvent_row(consumers, suppliers):
                     chosen
                 ))
 
-            for obj in contained:
-                if 'used' in obj:
-                    del obj['used']
-            return
+    for obj in suppliers:
+        if 'used' in obj:
+            del obj['used']
 
 apportion_market_suppliers_to_consumers_ecoinvent_row.__table__ = {
     'title': 'Defaulted to ``RoW`` suppliers, even though it fails GIS test.',
