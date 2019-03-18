@@ -100,7 +100,7 @@ def system_model(data_path, config=None, show=False, use_cache=True,
 
     """
     print("Starting Ocelot model run")
-    if config in mapping:
+    if isinstance(config, str) and config in mapping:
         print("Using configuration {}".format(config))
         config = mapping[config]
     elif not config:
