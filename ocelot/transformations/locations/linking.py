@@ -87,6 +87,35 @@ link_consumers_to_recycled_content_activities.__table__ = {
 }
 
 
+def maybe_add_row(ordered, together):
+    """If ``RoW`` present in ``together``, add to ``ordered`` in right spot.
+
+    Modified ``ordered`` in place."""
+    if "RoW" in together:
+        if "GLO" in ordered:
+            ordered.insert(ordered.index("GLO"), "RoW")
+        else:
+            ordered.insert(0, "RoW")
+
+
+def contains_with_row(consumer, supplier, found, consumer_row, supplier_row):
+    kwargs = {
+        'parent': consumer,
+        'child': supplier_row if supplier == 'RoW' else supplier,
+        'subtract': found,
+        'resolved_row': consumer_row if consumer == 'RoW' else None
+    }
+    return topology.contains(**kwargs)
+
+
+def contains_without_row(consumer, supplier, found, consumer_row, supplier_row):
+    if supplier == 'RoW':
+        return consumer != "GLO"
+    elif consumer == 'RoW':
+        return supplier == 'GLO'
+    else:
+        return contains_with_row(consumer, supplier, found, consumer_row, supplier_row)
+
 
 def link_consumers_to_markets(data, resolved_row=True):
     """Link technosphere exchange inputs to markets and market groups.
@@ -124,6 +153,8 @@ def link_consumers_to_markets(data, resolved_row=True):
         # Only unlinked (not recycled content or direct linked) technosphere inputs
         loc = ds['location']
 
+        contains_wrapper = contains_with_row if resolved_row else contains_without_row
+
         if loc == 'RoW' and not resolved_row:
             continue
         elif loc == 'RoW' and resolved_row:
@@ -136,15 +167,6 @@ def link_consumers_to_markets(data, resolved_row=True):
             )
         else:
             consumer_row = None
-
-        def contains_wrapper(consumer, supplier, found, consumer_row, supplier_row):
-            kwargs = {
-                'parent': consumer,
-                'child': supplier_row if supplier == 'RoW' else supplier,
-                'subtract': found,
-                'resolved_row': consumer_row if consumer == 'RoW' else None
-            }
-            return topology.contains(**kwargs)
 
         for exc in list(filter(unlinked, ds['exchanges'])):
             try:
@@ -170,6 +192,9 @@ def link_consumers_to_markets(data, resolved_row=True):
                 [{'location': l} for l in together],
                 supplier_row
             )
+
+            if not resolved_row:
+                maybe_add_row(ordered, together)
 
             for candidate in ordered:
                 if contains_wrapper(loc, candidate, found, consumer_row, supplier_row):
